@@ -3,10 +3,17 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { Heart, MessageSquare, History, Brain, Stethoscope, Activity } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { Heart, MessageSquare, History, Brain, Stethoscope, Activity, LogOut, User } from 'lucide-react';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   const features = [
     {
@@ -60,13 +67,27 @@ const Dashboard = () => {
                 <p className="text-blue-600 font-medium">Your AI Health Companion</p>
               </div>
             </div>
-            <Button 
-              onClick={() => navigate('/')}
-              variant="outline"
-              className="border-blue-200 text-blue-600 hover:bg-blue-50"
-            >
-              Quick Diagnosis
-            </Button>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 text-gray-700">
+                <User className="h-5 w-5" />
+                <span className="font-medium">{user?.name}</span>
+              </div>
+              <Button 
+                onClick={() => navigate('/diagnosis')}
+                variant="outline"
+                className="border-blue-200 text-blue-600 hover:bg-blue-50"
+              >
+                Quick Diagnosis
+              </Button>
+              <Button 
+                onClick={handleLogout}
+                variant="outline"
+                className="border-red-200 text-red-600 hover:bg-red-50"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -74,7 +95,7 @@ const Dashboard = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome back!</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome back, {user?.name}!</h2>
           <p className="text-gray-600">How can we help you with your health today?</p>
         </div>
 
