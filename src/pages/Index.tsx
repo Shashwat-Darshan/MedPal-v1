@@ -2,21 +2,15 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import VoiceRecorder from '@/components/VoiceRecorder';
 import DiagnosisCard from '@/components/DiagnosisCard';
 import QuestionCard from '@/components/QuestionCard';
-import { Mic, MessageSquare, Heart, Shield } from 'lucide-react';
-
-interface Disease {
-  name: string;
-  confidence: number;
-  description: string;
-  symptoms: string[];
-}
+import { useNavigate } from 'react-router-dom';
+import { geminiService, Disease } from '@/services/geminiService';
+import { Mic, MessageSquare, Heart, Shield, Menu } from 'lucide-react';
 
 interface Question {
   id: string;
@@ -26,87 +20,86 @@ interface Question {
 }
 
 const Index = () => {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<'welcome' | 'symptoms' | 'diagnosis' | 'questions'>('welcome');
   const [symptoms, setSymptoms] = useState('');
   const [diseases, setDiseases] = useState<Disease[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
+  const [questionCount, setQuestionCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [useVoice, setUseVoice] = useState(false);
-
-  // Mock data for demonstration
-  const mockDiseases: Disease[] = [
-    {
-      name: "Common Cold",
-      confidence: 75,
-      description: "A viral infection of the upper respiratory tract",
-      symptoms: ["runny nose", "cough", "sore throat", "fatigue"]
-    },
-    {
-      name: "Seasonal Allergies",
-      confidence: 65,
-      description: "Allergic reaction to environmental allergens",
-      symptoms: ["sneezing", "runny nose", "itchy eyes", "congestion"]
-    },
-    {
-      name: "Sinusitis",
-      confidence: 45,
-      description: "Inflammation of the sinus cavities",
-      symptoms: ["facial pressure", "thick nasal discharge", "headache"]
-    }
-  ];
-
-  const mockQuestion: Question = {
-    id: "1",
-    text: "Do you have a fever?",
-    type: "yes_no"
-  };
+  const [error, setError] = useState<string | null>(null);
 
   const handleSymptomSubmit = async () => {
     if (!symptoms.trim()) return;
     
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setDiseases(mockDiseases);
-      setCurrentQuestion(mockQuestion);
+    setError(null);
+    
+    try {
+      const response = await geminiService.startDiagnosis(symptoms);
+      setDiseases(response.diseases);
+      setCurrentQuestion({
+        id: '1',
+        text: response.question,
+        type: 'yes_no'
+      });
+      setQuestionCount(1);
       setCurrentStep('diagnosis');
+    } catch (err) {
+      console.error('Diagnosis error:', err);
+      setError('Unable to process your symptoms right now. Please try again.');
+    } finally {
       setIsLoading(false);
-    }, 2000);
+    }
   };
 
-  const handleQuestionAnswer = (answer: string) => {
-    // Update confidence levels based on answer
-    const updatedDiseases = diseases.map(disease => {
-      if (disease.name === "Common Cold" && answer === "yes") {
-        return { ...disease, confidence: Math.min(95, disease.confidence + 15) };
+  const handleQuestionAnswer = async (answer: string) => {
+    if (!currentQuestion) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await geminiService.updateDiagnosis(
+        diseases,
+        currentQuestion.text,
+        answer,
+        questionCount
+      );
+      
+      setDiseases(response.diseases);
+      setQuestionCount(prev => prev + 1);
+      
+      if (response.isComplete || questionCount >= 10) {
+        setCurrentQuestion(null);
+      } else {
+        setCurrentQuestion({
+          id: (questionCount + 1).toString(),
+          text: response.question,
+          type: 'yes_no'
+        });
       }
-      if (disease.name === "Seasonal Allergies" && answer === "no") {
-        return { ...disease, confidence: Math.max(30, disease.confidence + 10) };
-      }
-      return disease;
-    });
-    
-    setDiseases(updatedDiseases);
-    
-    // Check if we have a conclusive diagnosis
-    const topDisease = updatedDiseases[0];
-    const secondDisease = updatedDiseases[1];
-    
-    if (topDisease.confidence >= 90 || 
-        (topDisease.confidence >= 60 && topDisease.confidence - secondDisease.confidence >= 20)) {
-      setCurrentQuestion(null);
-    } else {
-      // Generate next question (mock)
-      setCurrentQuestion({
-        id: "2",
-        text: "Have you been experiencing this for more than a week?",
-        type: "yes_no"
-      });
+    } catch (err) {
+      console.error('Question answer error:', err);
+      setError('Unable to process your answer. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleVoiceInput = (transcript: string) => {
     setSymptoms(transcript);
+  };
+
+  const resetDiagnosis = () => {
+    setCurrentStep('welcome');
+    setSymptoms('');
+    setDiseases([]);
+    setCurrentQuestion(null);
+    setQuestionCount(0);
+    setError(null);
+    setUseVoice(false);
   };
 
   return (
@@ -122,9 +115,19 @@ const Index = () => {
               <h1 className="text-2xl font-bold text-gray-900">MedPal</h1>
               <span className="text-sm text-blue-600 font-medium">AI Health Assistant</span>
             </div>
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <Shield className="h-4 w-4" />
-              <span>Secure & Private</span>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <Shield className="h-4 w-4" />
+                <span>Secure & Private</span>
+              </div>
+              <Button 
+                variant="outline"
+                onClick={() => navigate('/dashboard')}
+                className="flex items-center space-x-2"
+              >
+                <Menu className="h-4 w-4" />
+                <span>Dashboard</span>
+              </Button>
             </div>
           </div>
         </div>
@@ -138,6 +141,14 @@ const Index = () => {
             ⚠️ This is not professional medical advice. Please consult a healthcare provider for proper diagnosis and treatment.
           </AlertDescription>
         </Alert>
+
+        {error && (
+          <Alert className="mb-8 border-red-200 bg-red-50">
+            <AlertDescription className="text-red-800">
+              {error}
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Welcome Step */}
         {currentStep === 'welcome' && (
@@ -211,12 +222,12 @@ const Index = () => {
                   className="w-full"
                   size="lg"
                 >
-                  {isLoading ? 'Analyzing...' : 'Get AI Analysis'}
+                  {isLoading ? 'Analyzing with AI...' : 'Get AI Analysis'}
                 </Button>
                 {isLoading && (
                   <div className="mt-4">
                     <Progress value={33} className="w-full" />
-                    <p className="text-sm text-gray-600 mt-2 text-center">Processing your symptoms...</p>
+                    <p className="text-sm text-gray-600 mt-2 text-center">Processing your symptoms with Gemini AI...</p>
                   </div>
                 )}
               </CardContent>
@@ -245,7 +256,7 @@ const Index = () => {
               />
             )}
 
-            {!currentQuestion && (
+            {!currentQuestion && diseases.length > 0 && (
               <Card className="border-green-200 bg-green-50">
                 <CardContent className="pt-6">
                   <div className="text-center">
@@ -253,7 +264,7 @@ const Index = () => {
                       Analysis Complete
                     </h3>
                     <p className="text-green-700">
-                      Based on your responses, we recommend discussing {diseases[0].name} with your healthcare provider.
+                      Based on your responses, we recommend discussing <strong>{diseases[0].name}</strong> with your healthcare provider.
                     </p>
                   </div>
                 </CardContent>
@@ -263,14 +274,15 @@ const Index = () => {
             <div className="flex justify-center space-x-4">
               <Button 
                 variant="outline" 
-                onClick={() => {
-                  setCurrentStep('welcome');
-                  setSymptoms('');
-                  setDiseases([]);
-                  setCurrentQuestion(null);
-                }}
+                onClick={resetDiagnosis}
               >
                 Start Over
+              </Button>
+              <Button 
+                onClick={() => navigate('/dashboard')}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Go to Dashboard
               </Button>
             </div>
           </div>
