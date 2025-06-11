@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,8 +10,6 @@ import { Slider } from '@/components/ui/slider';
 import VoiceRecorder from '@/components/VoiceRecorder';
 import DiagnosisCard from '@/components/DiagnosisCard';
 import QuestionCard from '@/components/QuestionCard';
-import LoadingSpinner from '@/components/LoadingSpinner';
-import DiagnosisChat from '@/components/DiagnosisChat';
 import { useNavigate } from 'react-router-dom';
 import { geminiService, Disease } from '@/services/geminiService';
 import { Mic, MessageSquare, Heart, Shield, Menu, Clock, Activity } from 'lucide-react';
@@ -34,7 +33,6 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [useVoice, setUseVoice] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showChat, setShowChat] = useState(false);
 
   const handleSymptomSubmit = async () => {
     if (!symptoms.trim()) return;
@@ -79,7 +77,6 @@ const Index = () => {
       
       if (response.isComplete || questionCount >= 10) {
         setCurrentQuestion(null);
-        setShowChat(true);
       } else {
         setCurrentQuestion({
           id: (questionCount + 1).toString(),
@@ -109,7 +106,6 @@ const Index = () => {
     setQuestionCount(0);
     setError(null);
     setUseVoice(false);
-    setShowChat(false);
   };
 
   const getProgressPercentage = () => {
@@ -163,18 +159,6 @@ const Index = () => {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Loading Overlay */}
-        {isLoading && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-8">
-              <LoadingSpinner 
-                message={currentStep === 'welcome' ? 'Analyzing your symptoms...' : 'Processing your answer...'}
-                size="lg"
-              />
-            </div>
-          </div>
-        )}
-
         {/* Welcome Banner */}
         {currentStep === 'welcome' && (
           <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-8 text-white mb-8">
@@ -378,39 +362,23 @@ const Index = () => {
               {currentQuestion && (
                 <QuestionCard 
                   question={currentQuestion} 
-                  onAnswer={handleQuestionAnswer}
-                  isLoading={isLoading}
+                  onAnswer={handleQuestionAnswer} 
                 />
               )}
 
-              {!currentQuestion && diseases.length > 0 && !showChat && (
+              {!currentQuestion && diseases.length > 0 && (
                 <Card className="border-green-200 bg-green-50">
                   <CardContent className="pt-6">
                     <div className="text-center">
                       <h3 className="text-lg font-semibold text-green-800 mb-2">
                         Analysis Complete
                       </h3>
-                      <p className="text-green-700 mb-4">
+                      <p className="text-green-700">
                         Based on your responses, we recommend discussing <strong>{diseases[0].name}</strong> with your healthcare provider.
                       </p>
-                      <Button
-                        onClick={() => setShowChat(true)}
-                        className="bg-blue-600 hover:bg-blue-700"
-                      >
-                        <MessageSquare className="h-4 w-4 mr-2" />
-                        Ask Questions About Your Diagnosis
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>
-              )}
-
-              {showChat && diseases.length > 0 && (
-                <DiagnosisChat
-                  finalDiagnosis={diseases[0]}
-                  symptoms={symptoms}
-                  allDiseases={diseases}
-                />
               )}
             </div>
 
