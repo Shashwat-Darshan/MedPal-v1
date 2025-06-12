@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,18 +8,191 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { useNavigate } from 'react-router-dom';
 import { Heart, Shield, Activity, Clock, Mic, MessageSquare } from 'lucide-react';
+import DiagnosisCard from '@/components/DiagnosisCard';
+import QuestionCard from '@/components/QuestionCard';
+import DiagnosisChat from '@/components/DiagnosisChat';
+import { useUserHistory } from '@/hooks/useUserHistory';
+
+interface Disease {
+  name: string;
+  confidence: number;
+  description: string;
+  symptoms: string[];
+}
+
+interface Question {
+  id: string;
+  text: string;
+  type: 'yes_no' | 'multiple_choice';
+  options?: string[];
+}
 
 const Index = () => {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState<'welcome' | 'symptoms' | 'diagnosis'>('welcome');
+  const { addHistoryItem } = useUserHistory();
+  const [currentStep, setCurrentStep] = useState<'welcome' | 'symptoms' | 'diagnosis' | 'questions' | 'final'>('welcome');
   const [symptoms, setSymptoms] = useState('');
   const [duration, setDuration] = useState('');
   const [severity, setSeverity] = useState([5]);
   const [useVoice, setUseVoice] = useState(false);
+  const [diseases, setDiseases] = useState<Disease[]>([]);
+  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
+  const [questionCount, setQuestionCount] = useState(0);
+  const [finalDiagnosis, setFinalDiagnosis] = useState<Disease | null>(null);
 
   const handleSymptomSubmit = () => {
     if (!symptoms.trim()) return;
+    
+    // Generate initial 5 diseases with confidence levels
+    const initialDiseases: Disease[] = [
+      {
+        name: 'Common Cold',
+        confidence: 75,
+        description: 'A viral upper respiratory tract infection',
+        symptoms: ['runny nose', 'cough', 'sore throat', 'mild fever']
+      },
+      {
+        name: 'Influenza (Flu)',
+        confidence: 70,
+        description: 'A viral infection that attacks respiratory system',
+        symptoms: ['high fever', 'body aches', 'fatigue', 'headache']
+      },
+      {
+        name: 'Sinusitis',
+        confidence: 65,
+        description: 'Inflammation of the sinuses',
+        symptoms: ['facial pain', 'nasal congestion', 'headache', 'thick nasal discharge']
+      },
+      {
+        name: 'Allergic Rhinitis',
+        confidence: 60,
+        description: 'Allergic reaction causing nasal symptoms',
+        symptoms: ['sneezing', 'runny nose', 'itchy eyes', 'nasal congestion']
+      },
+      {
+        name: 'Migraine',
+        confidence: 55,
+        description: 'A type of headache disorder',
+        symptoms: ['severe headache', 'nausea', 'light sensitivity', 'aura']
+      }
+    ];
+
+    setDiseases(initialDiseases);
     setCurrentStep('diagnosis');
+    generateNextQuestion();
+  };
+
+  const generateNextQuestion = () => {
+    const questions: Question[] = [
+      {
+        id: '1',
+        text: 'Do you have a fever?',
+        type: 'yes_no'
+      },
+      {
+        id: '2',
+        text: 'How long have you been experiencing these symptoms?',
+        type: 'multiple_choice',
+        options: ['Less than 24 hours', '1-3 days', '4-7 days', 'More than a week']
+      },
+      {
+        id: '3',
+        text: 'Are you experiencing any body aches?',
+        type: 'yes_no'
+      },
+      {
+        id: '4',
+        text: 'Do you have a runny or stuffy nose?',
+        type: 'yes_no'
+      },
+      {
+        id: '5',
+        text: 'Is your headache severe and throbbing?',
+        type: 'yes_no'
+      }
+    ];
+
+    if (questionCount < questions.length) {
+      setCurrentQuestion(questions[questionCount]);
+      setCurrentStep('questions');
+    }
+  };
+
+  const handleAnswerQuestion = (answer: string) => {
+    if (!currentQuestion) return;
+
+    // Adjust confidence levels based on answer
+    const updatedDiseases = diseases.map(disease => {
+      let confidenceChange = 0;
+
+      // Logic to adjust confidence based on question and answer
+      if (currentQuestion.id === '1') { // Fever question
+        if (answer === 'yes') {
+          if (disease.name === 'Influenza (Flu)') confidenceChange = +15;
+          if (disease.name === 'Common Cold') confidenceChange = +5;
+          if (disease.name === 'Allergic Rhinitis') confidenceChange = -10;
+        } else {
+          if (disease.name === 'Allergic Rhinitis') confidenceChange = +10;
+          if (disease.name === 'Influenza (Flu)') confidenceChange = -10;
+        }
+      }
+
+      if (currentQuestion.id === '3') { // Body aches question
+        if (answer === 'yes') {
+          if (disease.name === 'Influenza (Flu)') confidenceChange = +10;
+          if (disease.name === 'Migraine') confidenceChange = +5;
+          if (disease.name === 'Allergic Rhinitis') confidenceChange = -5;
+        }
+      }
+
+      if (currentQuestion.id === '4') { // Runny nose question
+        if (answer === 'yes') {
+          if (disease.name === 'Common Cold') confidenceChange = +10;
+          if (disease.name === 'Allergic Rhinitis') confidenceChange = +15;
+          if (disease.name === 'Sinusitis') confidenceChange = +8;
+        }
+      }
+
+      if (currentQuestion.id === '5') { // Severe headache question
+        if (answer === 'yes') {
+          if (disease.name === 'Migraine') confidenceChange = +20;
+          if (disease.name === 'Sinusitis') confidenceChange = +5;
+        }
+      }
+
+      return {
+        ...disease,
+        confidence: Math.min(100, Math.max(0, disease.confidence + confidenceChange))
+      };
+    });
+
+    // Sort by confidence
+    const sortedDiseases = updatedDiseases.sort((a, b) => b.confidence - a.confidence);
+    setDiseases(sortedDiseases);
+
+    // Check if we should stop asking questions
+    const topDisease = sortedDiseases[0];
+    const secondDisease = sortedDiseases[1];
+    
+    const shouldStop = 
+      topDisease.confidence >= 90 || 
+      (topDisease.confidence - secondDisease.confidence >= 20 && secondDisease.confidence >= 60);
+
+    if (shouldStop || questionCount >= 4) {
+      setFinalDiagnosis(topDisease);
+      setCurrentStep('final');
+      
+      // Add to history
+      addHistoryItem({
+        symptoms,
+        diagnosis: topDisease.name,
+        confidence: topDisease.confidence,
+        status: 'completed'
+      });
+    } else {
+      setQuestionCount(prev => prev + 1);
+      generateNextQuestion();
+    }
   };
 
   const resetDiagnosis = () => {
@@ -29,13 +201,19 @@ const Index = () => {
     setDuration('');
     setSeverity([5]);
     setUseVoice(false);
+    setDiseases([]);
+    setCurrentQuestion(null);
+    setQuestionCount(0);
+    setFinalDiagnosis(null);
   };
 
   const getProgressPercentage = () => {
     if (currentStep === 'welcome') return 0;
-    if (currentStep === 'symptoms') return 25;
-    if (currentStep === 'diagnosis') return 75;
-    return 100;
+    if (currentStep === 'symptoms') return 20;
+    if (currentStep === 'diagnosis') return 40;
+    if (currentStep === 'questions') return 60 + (questionCount * 8);
+    if (currentStep === 'final') return 100;
+    return 0;
   };
 
   return (
@@ -85,7 +263,7 @@ const Index = () => {
         {currentStep === 'welcome' && (
           <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-8 text-white mb-8">
             <h2 className="text-3xl font-bold mb-4">Welcome to MedPal, User</h2>
-            <p className="text-lg mb-4">I'll help diagnose your condition by asking targeted questions and analyzing your responses with AI.</p>
+            <p className="text-lg mb-4">How can I help you today? Please describe your symptoms and I'll help diagnose your condition through targeted questions.</p>
             <Alert className="bg-orange-100 border-orange-300 text-orange-800 mb-0">
               <Shield className="h-4 w-4" />
               <AlertDescription>
@@ -104,13 +282,16 @@ const Index = () => {
             </div>
             <Progress value={getProgressPercentage()} className="mb-4" />
             <div className="flex justify-between text-sm text-gray-600">
-              <span className={currentStep === 'symptoms' || currentStep === 'diagnosis' ? 'text-blue-600 font-medium' : ''}>
+              <span className={currentStep === 'symptoms' ? 'text-blue-600 font-medium' : ''}>
                 Symptoms
               </span>
               <span className={currentStep === 'diagnosis' ? 'text-blue-600 font-medium' : ''}>
+                Analysis
+              </span>
+              <span className={currentStep === 'questions' ? 'text-blue-600 font-medium' : ''}>
                 Questions
               </span>
-              <span className={currentStep === 'diagnosis' ? 'text-green-600 font-medium' : ''}>
+              <span className={currentStep === 'final' ? 'text-green-600 font-medium' : ''}>
                 Results
               </span>
             </div>
@@ -252,59 +433,113 @@ const Index = () => {
           </div>
         )}
 
-        {/* Diagnosis Results */}
+        {/* Initial Diagnosis Display */}
         {currentStep === 'diagnosis' && (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Initial Analysis</CardTitle>
+                <p className="text-gray-600">Based on your symptoms, here are the possible conditions. I'll ask some questions to refine the diagnosis.</p>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                  <p className="text-gray-700 font-medium">Your symptoms: {symptoms}</p>
+                </div>
+                <div className="grid gap-4">
+                  {diseases.map((disease, index) => (
+                    <DiagnosisCard key={disease.name} disease={disease} rank={index + 1} />
+                  ))}
+                </div>
+                <div className="mt-6 text-center">
+                  <Button onClick={generateNextQuestion} className="bg-blue-600 hover:bg-blue-700">
+                    Continue with Questions
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Question Phase */}
+        {currentStep === 'questions' && currentQuestion && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <QuestionCard
+                  question={currentQuestion}
+                  onAnswer={handleAnswerQuestion}
+                />
+              </div>
+              
+              <div>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Current Analysis</CardTitle>
+                    <p className="text-sm text-gray-600">Question {questionCount + 1} of 5</p>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {diseases.slice(0, 3).map((disease, index) => (
+                      <div key={disease.name} className="p-3 bg-gray-50 rounded-lg">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-medium text-sm">{disease.name}</span>
+                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                            {disease.confidence}%
+                          </span>
+                        </div>
+                        <Progress value={disease.confidence} className="h-2" />
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Final Diagnosis */}
+        {currentStep === 'final' && finalDiagnosis && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-6">
-              <Card>
+              <Card className="border-green-200 bg-green-50">
                 <CardHeader>
-                  <CardTitle>Your Symptoms</CardTitle>
+                  <CardTitle className="text-green-800">Diagnosis Complete</CardTitle>
+                  <p className="text-green-700">Based on your responses, here's my analysis:</p>
                 </CardHeader>
                 <CardContent>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-gray-700">{symptoms}</p>
-                    {duration && <p className="text-sm text-gray-500 mt-2">Duration: {duration.replace('-', ' ')}</p>}
-                    {severity[0] > 1 && <p className="text-sm text-gray-500">Severity: {severity[0]}/10</p>}
+                  <DiagnosisCard disease={finalDiagnosis} rank={1} />
+                  <div className="mt-6">
+                    <Alert className="bg-blue-50 border-blue-200">
+                      <Shield className="h-4 w-4" />
+                      <AlertDescription className="text-blue-800">
+                        Please consult with a healthcare provider for proper diagnosis and treatment. This AI analysis is for informational purposes only.
+                      </AlertDescription>
+                    </Alert>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="border-green-200 bg-green-50">
-                <CardContent className="pt-6">
-                  <div className="text-center">
-                    <h3 className="text-lg font-semibold text-green-800 mb-2">
-                      Analysis Complete
-                    </h3>
-                    <p className="text-green-700 mb-4">
-                      Based on your symptoms, here are the possible conditions. Please consult with a healthcare provider for proper diagnosis.
-                    </p>
-                    <Button
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      <MessageSquare className="h-4 w-4 mr-2" />
-                      Ask Questions About Your Diagnosis
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <DiagnosisChat 
+                finalDiagnosis={finalDiagnosis}
+                symptoms={symptoms}
+                allDiseases={diseases}
+              />
             </div>
 
             <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Possible Conditions</CardTitle>
-                  <p className="text-sm text-gray-600">Based on current analysis</p>
+                  <CardTitle className="text-lg">All Considered Conditions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {['Common Cold', 'Flu', 'Sinusitis', 'Allergies', 'Migraine'].map((condition, index) => (
-                    <div key={index} className="p-3 bg-gray-50 rounded-lg">
+                  {diseases.map((disease, index) => (
+                    <div key={disease.name} className="p-3 bg-gray-50 rounded-lg">
                       <div className="flex justify-between items-center mb-2">
-                        <span className="font-medium text-sm">{condition}</span>
+                        <span className="font-medium text-sm">{disease.name}</span>
                         <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                          {85 - index * 10}%
+                          {disease.confidence}%
                         </span>
                       </div>
-                      <Progress value={85 - index * 10} className="h-1" />
+                      <Progress value={disease.confidence} className="h-1" />
                     </div>
                   ))}
                 </CardContent>
@@ -316,7 +551,7 @@ const Index = () => {
                   onClick={resetDiagnosis}
                   className="w-full"
                 >
-                  Start Over
+                  Start New Diagnosis
                 </Button>
                 <Button 
                   onClick={() => navigate('/dashboard')}
