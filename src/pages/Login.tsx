@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,7 +27,8 @@ const Login = () => {
     const userData = {
       id: '1',
       email,
-      name: isLogin ? email.split('@')[0] : name
+      name: isLogin ? email.split('@')[0] : name,
+      isAuthenticated: true
     };
 
     login(userData);
