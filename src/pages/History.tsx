@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, Clock, FileText } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface HistoryItem {
   id: string;
@@ -17,34 +18,32 @@ interface HistoryItem {
 
 const History = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  // Mock history data
-  const history: HistoryItem[] = [
-    {
-      id: '1',
-      date: new Date('2024-01-15'),
-      symptoms: 'Headache, fever, body aches',
-      diagnosis: 'Common Flu',
-      confidence: 85,
-      status: 'completed'
-    },
-    {
-      id: '2',
-      date: new Date('2024-01-10'),
-      symptoms: 'Stomach pain, nausea',
-      diagnosis: 'Gastritis',
-      confidence: 78,
-      status: 'completed'
-    },
-    {
-      id: '3',
-      date: new Date('2024-01-05'),
-      symptoms: 'Cough, runny nose, sore throat',
-      diagnosis: 'Common Cold',
-      confidence: 90,
-      status: 'completed'
+  // Get user-specific history from localStorage
+  const getUserHistory = (): HistoryItem[] => {
+    if (!user?.email) return [];
+    
+    const storageKey = `medpal_history_${user.email}`;
+    const storedHistory = localStorage.getItem(storageKey);
+    
+    if (storedHistory) {
+      try {
+        const parsed = JSON.parse(storedHistory);
+        return parsed.map((item: any) => ({
+          ...item,
+          date: new Date(item.date)
+        }));
+      } catch (error) {
+        console.error('Error parsing user history:', error);
+        return [];
+      }
     }
-  ];
+    
+    return [];
+  };
+
+  const history = getUserHistory();
 
   const getConfidenceBadgeColor = (confidence: number) => {
     if (confidence >= 80) return 'bg-green-100 text-green-800';
@@ -85,7 +84,7 @@ const History = () => {
               <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">No consultation history</h3>
               <p className="text-gray-600 mb-6">Start your first AI diagnosis to see your history here.</p>
-              <Button onClick={() => navigate('/')} className="bg-purple-600 hover:bg-purple-700">
+              <Button onClick={() => navigate('/diagnosis')} className="bg-purple-600 hover:bg-purple-700">
                 Start New Consultation
               </Button>
             </CardContent>
@@ -94,7 +93,7 @@ const History = () => {
           <div className="space-y-4">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold text-gray-900">Your Consultations</h2>
-              <Button onClick={() => navigate('/')} className="bg-purple-600 hover:bg-purple-700">
+              <Button onClick={() => navigate('/diagnosis')} className="bg-purple-600 hover:bg-purple-700">
                 New Consultation
               </Button>
             </div>
