@@ -7,20 +7,93 @@ import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
+import VoiceRecorder from '@/components/VoiceRecorder';
+import DiagnosisCard from '@/components/DiagnosisCard';
+import QuestionCard from '@/components/QuestionCard';
 import { useNavigate } from 'react-router-dom';
-import { Heart, Shield, Activity, Clock, Mic, MessageSquare } from 'lucide-react';
+import { geminiService, Disease } from '@/services/geminiService';
+import { Mic, MessageSquare, Heart, Shield, Menu, Clock, Activity } from 'lucide-react';
+
+interface Question {
+  id: string;
+  text: string;
+  type: 'yes_no' | 'multiple_choice';
+  options?: string[];
+}
 
 const Index = () => {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState<'welcome' | 'symptoms' | 'diagnosis'>('welcome');
+  const [currentStep, setCurrentStep] = useState<'welcome' | 'symptoms' | 'diagnosis' | 'questions'>('welcome');
   const [symptoms, setSymptoms] = useState('');
   const [duration, setDuration] = useState('');
   const [severity, setSeverity] = useState([5]);
+  const [diseases, setDiseases] = useState<Disease[]>([]);
+  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
+  const [questionCount, setQuestionCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
   const [useVoice, setUseVoice] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSymptomSubmit = () => {
+  const handleSymptomSubmit = async () => {
     if (!symptoms.trim()) return;
-    setCurrentStep('diagnosis');
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await geminiService.startDiagnosis(symptoms);
+      setDiseases(response.diseases);
+      setCurrentQuestion({
+        id: '1',
+        text: response.question,
+        type: 'yes_no'
+      });
+      setQuestionCount(1);
+      setCurrentStep('diagnosis');
+    } catch (err) {
+      console.error('Diagnosis error:', err);
+      setError('Unable to process your symptoms right now. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleQuestionAnswer = async (answer: string) => {
+    if (!currentQuestion) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await geminiService.updateDiagnosis(
+        diseases,
+        currentQuestion.text,
+        answer,
+        questionCount
+      );
+      
+      setDiseases(response.diseases);
+      setQuestionCount(prev => prev + 1);
+      
+      if (response.isComplete || questionCount >= 10) {
+        setCurrentQuestion(null);
+      } else {
+        setCurrentQuestion({
+          id: (questionCount + 1).toString(),
+          text: response.question,
+          type: 'yes_no'
+        });
+      }
+    } catch (err) {
+      console.error('Question answer error:', err);
+      setError('Unable to process your answer. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVoiceInput = (transcript: string) => {
+    setSymptoms(transcript);
   };
 
   const resetDiagnosis = () => {
@@ -28,13 +101,18 @@ const Index = () => {
     setSymptoms('');
     setDuration('');
     setSeverity([5]);
+    setDiseases([]);
+    setCurrentQuestion(null);
+    setQuestionCount(0);
+    setError(null);
     setUseVoice(false);
   };
 
   const getProgressPercentage = () => {
     if (currentStep === 'welcome') return 0;
     if (currentStep === 'symptoms') return 25;
-    if (currentStep === 'diagnosis') return 75;
+    if (currentStep === 'diagnosis' && questionCount === 0) return 50;
+    if (currentStep === 'diagnosis' && questionCount > 0) return 50 + (questionCount * 5);
     return 100;
   };
 
@@ -70,9 +148,9 @@ const Index = () => {
               </Button>
               <div className="flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1">
                 <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs">
-                  U
+                  S
                 </div>
-                <span className="text-sm font-medium">User</span>
+                <span className="text-sm font-medium">shashwat153790</span>
               </div>
               <Button variant="outline" size="sm">Logout</Button>
             </div>
@@ -110,12 +188,20 @@ const Index = () => {
               <span className={currentStep === 'diagnosis' ? 'text-blue-600 font-medium' : ''}>
                 Questions
               </span>
-              <span className={currentStep === 'diagnosis' ? 'text-green-600 font-medium' : ''}>
+              <span className={!currentQuestion && diseases.length > 0 ? 'text-green-600 font-medium' : ''}>
                 Results
               </span>
             </div>
           </CardContent>
         </Card>
+
+        {error && (
+          <Alert className="mb-8 border-red-200 bg-red-50">
+            <AlertDescription className="text-red-800">
+              {error}
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Symptoms Input */}
         {currentStep === 'welcome' && (
@@ -146,12 +232,16 @@ const Index = () => {
                       <span className="text-sm text-gray-500">or type below</span>
                     </div>
 
-                    <Textarea
-                      placeholder="Example: I've been having a persistent headache for 2 days, feeling tired, and have a slight fever..."
-                      value={symptoms}
-                      onChange={(e) => setSymptoms(e.target.value)}
-                      className="min-h-24"
-                    />
+                    {useVoice ? (
+                      <VoiceRecorder onTranscript={handleVoiceInput} />
+                    ) : (
+                      <Textarea
+                        placeholder="Example: I've been having a persistent headache for 2 days, feeling tired, and have a slight fever..."
+                        value={symptoms}
+                        onChange={(e) => setSymptoms(e.target.value)}
+                        className="min-h-24"
+                      />
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -196,11 +286,11 @@ const Index = () => {
 
                   <Button 
                     onClick={handleSymptomSubmit}
-                    disabled={!symptoms.trim()}
+                    disabled={!symptoms.trim() || isLoading}
                     className="w-full bg-blue-600 hover:bg-blue-700"
                     size="lg"
                   >
-                    Start Diagnosis
+                    {isLoading ? 'Analyzing...' : 'Start Diagnosis'}
                   </Button>
                 </CardContent>
               </Card>
@@ -269,24 +359,27 @@ const Index = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-green-200 bg-green-50">
-                <CardContent className="pt-6">
-                  <div className="text-center">
-                    <h3 className="text-lg font-semibold text-green-800 mb-2">
-                      Analysis Complete
-                    </h3>
-                    <p className="text-green-700 mb-4">
-                      Based on your symptoms, here are the possible conditions. Please consult with a healthcare provider for proper diagnosis.
-                    </p>
-                    <Button
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      <MessageSquare className="h-4 w-4 mr-2" />
-                      Ask Questions About Your Diagnosis
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              {currentQuestion && (
+                <QuestionCard 
+                  question={currentQuestion} 
+                  onAnswer={handleQuestionAnswer} 
+                />
+              )}
+
+              {!currentQuestion && diseases.length > 0 && (
+                <Card className="border-green-200 bg-green-50">
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <h3 className="text-lg font-semibold text-green-800 mb-2">
+                        Analysis Complete
+                      </h3>
+                      <p className="text-green-700">
+                        Based on your responses, we recommend discussing <strong>{diseases[0].name}</strong> with your healthcare provider.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
 
             <div className="space-y-6">
@@ -296,15 +389,15 @@ const Index = () => {
                   <p className="text-sm text-gray-600">Based on current analysis</p>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {['Common Cold', 'Flu', 'Sinusitis', 'Allergies', 'Migraine'].map((condition, index) => (
+                  {diseases.slice(0, 5).map((disease, index) => (
                     <div key={index} className="p-3 bg-gray-50 rounded-lg">
                       <div className="flex justify-between items-center mb-2">
-                        <span className="font-medium text-sm">{condition}</span>
+                        <span className="font-medium text-sm">{disease.name}</span>
                         <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                          {85 - index * 10}%
+                          {disease.confidence}%
                         </span>
                       </div>
-                      <Progress value={85 - index * 10} className="h-1" />
+                      <Progress value={disease.confidence} className="h-1" />
                     </div>
                   ))}
                 </CardContent>

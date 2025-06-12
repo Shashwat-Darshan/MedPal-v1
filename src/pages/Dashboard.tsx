@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { Heart, Activity, MessageSquare, History, Monitor, Stethoscope } from 'lucide-react';
+import { Heart, MessageSquare, History, Brain, Stethoscope, Activity, LogOut, User } from 'lucide-react';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -15,29 +15,76 @@ const Dashboard = () => {
     navigate('/');
   };
 
+  const features = [
+    {
+      title: "AI Diagnosis",
+      description: "Get AI-powered health analysis based on your symptoms",
+      icon: Brain,
+      action: () => navigate('/diagnosis'),
+      color: "bg-blue-500"
+    },
+    {
+      title: "Health Chat",
+      description: "Chat with our AI assistant about health concerns",
+      icon: MessageSquare,
+      action: () => navigate('/chat'),
+      color: "bg-green-500"
+    },
+    {
+      title: "Consultation History",
+      description: "View your previous consultations and diagnoses",
+      icon: History,
+      action: () => navigate('/history'),
+      color: "bg-purple-500"
+    },
+    {
+      title: "Health Monitor",
+      description: "Track your health metrics and symptoms over time",
+      icon: Activity,
+      action: () => navigate('/monitor'),
+      color: "bg-orange-500"
+    }
+  ];
+
+  const stats = [
+    { label: "Total Consultations", value: "0", icon: Stethoscope },
+    { label: "Health Score", value: "95%", icon: Heart },
+    { label: "Active Monitoring", value: "3", icon: Activity }
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-blue-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="bg-blue-600 p-2 rounded-lg">
-                <Heart className="h-6 w-6 text-white" />
+              <div className="bg-blue-600 p-3 rounded-lg">
+                <Heart className="h-8 w-8 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">MedPal</h1>
-                <span className="text-sm text-blue-600 font-medium">AI Healthcare Assistant</span>
+                <h1 className="text-3xl font-bold text-gray-900">MedPal Dashboard</h1>
+                <p className="text-blue-600 font-medium">Your AI Health Companion</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1">
-                <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs">
-                  {user?.name?.charAt(0).toUpperCase() || 'U'}
-                </div>
-                <span className="text-sm font-medium">{user?.name || 'User'}</span>
+              <div className="flex items-center space-x-2 text-gray-700">
+                <User className="h-5 w-5" />
+                <span className="font-medium">{user?.name}</span>
               </div>
-              <Button variant="outline" size="sm" onClick={handleLogout}>
+              <Button 
+                onClick={() => navigate('/diagnosis')}
+                variant="outline"
+                className="border-blue-200 text-blue-600 hover:bg-blue-50"
+              >
+                Quick Diagnosis
+              </Button>
+              <Button 
+                onClick={handleLogout}
+                variant="outline"
+                className="border-red-200 text-red-600 hover:bg-red-50"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
                 Logout
               </Button>
             </div>
@@ -48,111 +95,67 @@ const Dashboard = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome back, {user?.name || 'User'}!
-          </h2>
-          <p className="text-gray-600">
-            Your AI-powered healthcare assistant is ready to help you with symptom analysis and health monitoring.
-          </p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome back, {user?.name}!</h2>
+          <p className="text-gray-600">How can we help you with your health today?</p>
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/diagnosis')}>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2 text-lg">
-                <Stethoscope className="h-5 w-5 text-blue-600" />
-                <span>AI Diagnosis</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 mb-4">
-                Describe your symptoms and get AI-powered diagnostic suggestions.
-              </p>
-              <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                Start Diagnosis
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/chat')}>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2 text-lg">
-                <MessageSquare className="h-5 w-5 text-green-600" />
-                <span>Health Chat</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 mb-4">
-                Chat with our AI assistant about health concerns and questions.
-              </p>
-              <Button variant="outline" className="w-full">
-                Start Chat
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/monitor')}>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2 text-lg">
-                <Monitor className="h-5 w-5 text-purple-600" />
-                <span>Health Monitor</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 mb-4">
-                Track your health metrics and vital signs over time.
-              </p>
-              <Button variant="outline" className="w-full">
-                View Monitor
-              </Button>
-            </CardContent>
-          </Card>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {stats.map((stat, index) => (
+            <Card key={index} className="border-blue-100">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">{stat.label}</p>
+                    <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                  </div>
+                  <div className="bg-blue-100 p-3 rounded-lg">
+                    <stat.icon className="h-6 w-6 text-blue-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
-        {/* Recent Activity */}
-        <Card>
+        {/* Feature Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {features.map((feature, index) => (
+            <Card key={index} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={feature.action}>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-3">
+                  <div className={`${feature.color} p-2 rounded-lg`}>
+                    <feature.icon className="h-6 w-6 text-white" />
+                  </div>
+                  <span className="text-xl">{feature.title}</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-4">{feature.description}</p>
+                <Button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    feature.action();
+                  }}
+                  className="w-full"
+                >
+                  Get Started
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Quick Tips */}
+        <Card className="mt-8 border-green-200 bg-green-50">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <History className="h-5 w-5 text-gray-600" />
-              <span>Recent Activity</span>
-            </CardTitle>
+            <CardTitle className="text-green-800">💡 Health Tip of the Day</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Completed health consultation</p>
-                  <p className="text-xs text-gray-500">2 hours ago</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Updated health profile</p>
-                  <p className="text-xs text-gray-500">1 day ago</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Scheduled check-up reminder</p>
-                  <p className="text-xs text-gray-500">3 days ago</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="mt-4 pt-4 border-t">
-              <Button 
-                variant="outline" 
-                className="w-full"
-                onClick={() => navigate('/history')}
-              >
-                <History className="h-4 w-4 mr-2" />
-                View Full History
-              </Button>
-            </div>
+            <p className="text-green-700">
+              Stay hydrated! Drinking adequate water helps your body function optimally and can prevent many health issues.
+              Aim for at least 8 glasses of water per day.
+            </p>
           </CardContent>
         </Card>
       </main>
