@@ -1,8 +1,13 @@
-
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
+import { Groq } from 'groq-sdk';
 
 const API_KEY = 'AIzaSyDcmdzZwQf9s-iFyANNWyCgLIKOSbBKKSE';
+const GROQ_API_KEY = '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';
+
 const genAI = new GoogleGenerativeAI(API_KEY);
+const genAI2 = new GoogleGenAI({ apiKey: API_KEY });
+const groq = new Groq({ apiKey: GROQ_API_KEY });
 
 export interface Disease {
   name: string;
@@ -28,8 +33,79 @@ export interface DiagnosisResponse {
   finalDiagnosis?: Disease;
 }
 
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+}
+
 class GeminiService {
   private model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+  private async tryGeminiPro2_5(prompt: string): Promise<string> {
+    try {
+      const contents = [
+        {
+          role: 'user' as const,
+          parts: [{ text: prompt }],
+        },
+      ];
+
+      const response = await genAI2.models.generateContentStream({
+        model: 'gemini-2.5-pro-preview-06-05',
+        config: { responseMimeType: 'text/plain' },
+        contents,
+      });
+
+      let fullResponse = '';
+      for await (const chunk of response) {
+        fullResponse += chunk.text || '';
+      }
+      return fullResponse;
+    } catch (error) {
+      console.error('Gemini Pro 2.5 error:', error);
+      throw error;
+    }
+  }
+
+  private async tryGroqFallback(prompt: string): Promise<string> {
+    try {
+      const chatCompletion = await groq.chat.completions.create({
+        messages: [{ role: 'user', content: prompt }],
+        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+        temperature: 0.7,
+        max_completion_tokens: 1024,
+        top_p: 1,
+        stream: false,
+      });
+
+      return chatCompletion.choices[0]?.message?.content || '';
+    } catch (error) {
+      console.error('Groq fallback error:', error);
+      throw error;
+    }
+  }
+
+  private async tryOriginalGemini(prompt: string): Promise<string> {
+    const result = await this.model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
+  }
+
+  private async generateWithFallback(prompt: string): Promise<string> {
+    // Try Gemini Pro 2.5 first
+    try {
+      return await this.tryGeminiPro2_5(prompt);
+    } catch (error) {
+      console.log('Falling back to Groq...');
+      try {
+        return await this.tryGroqFallback(prompt);
+      } catch (groqError) {
+        console.log('Falling back to original Gemini...');
+        return await this.tryOriginalGemini(prompt);
+      }
+    }
+  }
 
   async startDiagnosis(symptoms: string): Promise<DiagnosisResponse> {
     const prompt = `
@@ -58,11 +134,9 @@ Rules:
 
     try {
       console.log('Starting diagnosis with symptoms:', symptoms);
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+      const text = await this.generateWithFallback(prompt);
       
-      console.log('Raw Gemini response:', text);
+      console.log('Raw AI response:', text);
       
       // Clean the response to extract JSON
       const cleanedText = text.replace(/```json\n?|\n?```/g, '').trim();
@@ -70,7 +144,7 @@ Rules:
       
       if (!jsonMatch) {
         console.error('No JSON found in response:', cleanedText);
-        throw new Error('Invalid response format from Gemini');
+        throw new Error('Invalid response format from AI');
       }
       
       const parsedResponse = JSON.parse(jsonMatch[0]);
@@ -82,7 +156,7 @@ Rules:
         isComplete: false
       };
     } catch (error) {
-      console.error('Gemini API error:', error);
+      console.error('AI API error:', error);
       return this.getFallbackResponse(symptoms);
     }
   }
@@ -125,9 +199,7 @@ Order by confidence and ask relevant follow-up questions if not complete. No add
 
     try {
       console.log('Updating diagnosis with answer:', answer);
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+      const text = await this.generateWithFallback(prompt);
       
       console.log('Raw update response:', text);
       
@@ -136,7 +208,7 @@ Order by confidence and ask relevant follow-up questions if not complete. No add
       
       if (!jsonMatch) {
         console.error('No JSON found in update response:', cleanedText);
-        throw new Error('Invalid response format from Gemini');
+        throw new Error('Invalid response format from AI');
       }
       
       const parsedResponse = JSON.parse(jsonMatch[0]);
@@ -160,7 +232,7 @@ Order by confidence and ask relevant follow-up questions if not complete. No add
         finalDiagnosis: isComplete ? topDisease : parsedResponse.finalDiagnosis
       };
     } catch (error) {
-      console.error('Gemini update API error:', error);
+      console.error('AI update API error:', error);
       const updatedDiseases = currentDiseases.map(disease => {
         let adjustment = 0;
         const answerLower = answer.toLowerCase();
@@ -188,6 +260,36 @@ Order by confidence and ask relevant follow-up questions if not complete. No add
         isComplete,
         finalDiagnosis: isComplete ? topDisease : undefined
       };
+    }
+  }
+
+  async chatAboutDiagnosis(
+    diagnosisContext: string,
+    userMessage: string,
+    chatHistory: ChatMessage[]
+  ): Promise<string> {
+    const historyText = chatHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n');
+    
+    const prompt = `
+You are a medical AI assistant helping a patient understand their diagnosis. 
+
+Diagnosis Context: ${diagnosisContext}
+
+Chat History:
+${historyText}
+
+User Question: ${userMessage}
+
+Provide a helpful, informative response about the diagnosis. Be empathetic and educational, but always remind them to consult with healthcare professionals for proper medical advice.
+
+Keep responses concise and easy to understand.
+`;
+
+    try {
+      return await this.generateWithFallback(prompt);
+    } catch (error) {
+      console.error('Chat API error:', error);
+      return "I'm sorry, I'm having trouble responding right now. Please try again or consult with a healthcare professional for more information about your diagnosis.";
     }
   }
 
