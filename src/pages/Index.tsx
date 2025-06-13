@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,15 +8,18 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { useNavigate } from 'react-router-dom';
-import { Heart, Shield, Activity, Clock, Mic, MessageSquare, HelpCircle, CheckCircle, History, Phone } from 'lucide-react';
+import { Heart, Shield, Activity, Clock, Mic, MessageSquare, HelpCircle, CheckCircle, History, Phone, RotateCcw } from 'lucide-react';
 import { geminiService, Disease, DiagnosisResponse } from '@/services/geminiService';
 import QuestionCard from '@/components/QuestionCard';
 import DiagnosisChat from '@/components/DiagnosisChat';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import VoiceRecorder from '@/components/VoiceRecorder';
+import Navbar from '@/components/Navbar';
+import { useAuth } from '@/hooks/useAuth';
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState<'welcome' | 'symptoms' | 'diagnosis' | 'questions' | 'complete'>('welcome');
   const [symptoms, setSymptoms] = useState('');
   const [duration, setDuration] = useState('');
@@ -28,6 +32,40 @@ const Index = () => {
   const [currentQuestion, setCurrentQuestion] = useState('');
   const [questionCount, setQuestionCount] = useState(0);
   const [finalDiagnosis, setFinalDiagnosis] = useState<Disease | null>(null);
+
+  // Health tips that change on refresh
+  const healthTips = [
+    "💧 Drink at least 8 glasses of water daily to stay hydrated!",
+    "🚶‍♂️ Take a 10-minute walk after meals to aid digestion.",
+    "😴 Aim for 7-9 hours of quality sleep each night.",
+    "🥗 Include colorful fruits and vegetables in your daily diet.",
+    "🧘‍♀️ Practice deep breathing for 5 minutes to reduce stress.",
+    "🌞 Get some sunlight exposure for natural Vitamin D.",
+    "🏃‍♂️ Regular exercise boosts both physical and mental health.",
+    "📱 Take breaks from screens every 20 minutes to rest your eyes."
+  ];
+
+  const [currentTip] = useState(() => 
+    healthTips[Math.floor(Math.random() * healthTips.length)]
+  );
+
+  const saveToHistory = (diagnosis: Disease) => {
+    if (!user?.email) return;
+    
+    const historyItem = {
+      id: Date.now().toString(),
+      date: new Date().toISOString(),
+      symptoms,
+      diagnosis: diagnosis.name,
+      confidence: diagnosis.confidence,
+      status: 'completed' as const
+    };
+
+    const storageKey = `medpal_history_${user.email}`;
+    const existingHistory = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    const updatedHistory = [historyItem, ...existingHistory];
+    localStorage.setItem(storageKey, JSON.stringify(updatedHistory));
+  };
 
   const handleSymptomSubmit = async () => {
     if (!symptoms.trim()) return;
@@ -64,7 +102,9 @@ const Index = () => {
       setQuestionCount(prev => prev + 1);
       
       if (response.isComplete || shouldComplete(response.diseases)) {
-        setFinalDiagnosis(response.diseases[0]);
+        const topDisease = response.diseases[0];
+        setFinalDiagnosis(topDisease);
+        saveToHistory(topDisease);
         setCurrentStep('complete');
       } else {
         setCurrentQuestion(response.question);
@@ -120,47 +160,17 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="bg-blue-600 p-2 rounded-lg">
-                <Heart className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">MedPal</h1>
-                <span className="text-sm text-blue-600 font-medium">AI Healthcare Assistant</span>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Button 
-                variant="ghost" 
-                onClick={() => navigate('/dashboard')}
-                className="text-blue-600"
-              >
-                Dashboard
-              </Button>
-              <Button 
-                variant="ghost" 
-                onClick={() => navigate('/history')}
-                className="text-blue-600"
-              >
-                History
-              </Button>
-              <div className="flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1">
-                <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs">
-                  U
-                </div>
-                <span className="text-sm font-medium">User</span>
-              </div>
-              <Button variant="outline" size="sm">Logout</Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Health Tip Banner */}
+        <Alert className="mb-6 bg-green-50 border-green-200">
+          <Heart className="h-4 w-4 text-green-600" />
+          <AlertDescription className="text-green-800">
+            <strong>💡 Health Tip:</strong> {currentTip}
+          </AlertDescription>
+        </Alert>
+
         {/* Welcome/Symptoms Step */}
         {(currentStep === 'welcome' || currentStep === 'symptoms') && (
           <>
@@ -195,8 +205,8 @@ const Index = () => {
               </div>
             </div>
 
+            {/* Main Content */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Main Content */}
               <div className="lg:col-span-2 space-y-6">
                 {/* Symptom Description */}
                 <Card>
@@ -380,7 +390,18 @@ const Index = () => {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-gray-900">Diagnostic Assessment</h3>
-                  <span className="text-sm text-gray-600">Question {questionCount}</span>
+                  <div className="flex items-center space-x-4">
+                    <span className="text-sm text-gray-600">Question {questionCount}</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={resetDiagnosis}
+                      className="flex items-center space-x-2 text-orange-600 border-orange-300 hover:bg-orange-50"
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                      <span>Restart Checkup</span>
+                    </Button>
+                  </div>
                 </div>
                 <Progress value={getProgressPercentage()} className="mb-4" />
               </CardContent>

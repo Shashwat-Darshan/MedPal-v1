@@ -2,197 +2,371 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Activity, Heart, Thermometer, Scale } from 'lucide-react';
-
-interface HealthMetric {
-  id: string;
-  name: string;
-  value: number;
-  unit: string;
-  status: 'normal' | 'warning' | 'critical';
-  icon: React.ComponentType<any>;
-  lastUpdated: Date;
-}
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { Heart, Activity, Droplets, Moon, Plus, TrendingUp, TrendingDown } from 'lucide-react';
+import Navbar from '@/components/Navbar';
 
 const HealthMonitor = () => {
-  const navigate = useNavigate();
-  
-  const [metrics] = useState<HealthMetric[]>([
-    {
-      id: '1',
-      name: 'Heart Rate',
-      value: 72,
-      unit: 'bpm',
-      status: 'normal',
-      icon: Heart,
-      lastUpdated: new Date()
-    },
-    {
-      id: '2',
-      name: 'Body Temperature',
-      value: 98.6,
-      unit: '°F',
-      status: 'normal',
-      icon: Thermometer,
-      lastUpdated: new Date()
-    },
-    {
-      id: '3',
-      name: 'BMI',
-      value: 23.5,
-      unit: 'kg/m²',
-      status: 'normal',
-      icon: Scale,
-      lastUpdated: new Date()
-    }
-  ]);
+  const [metrics, setMetrics] = useState({
+    heartRate: '',
+    bloodPressure: { systolic: '', diastolic: '' },
+    weight: '',
+    sleep: '',
+    water: '',
+    steps: '',
+  });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'normal': return 'text-green-600 bg-green-100';
-      case 'warning': return 'text-yellow-600 bg-yellow-100';
-      case 'critical': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
+  // Sample data for charts
+  const heartRateData = [
+    { date: '06/08', value: 72 },
+    { date: '06/09', value: 75 },
+    { date: '06/10', value: 69 },
+    { date: '06/11', value: 74 },
+    { date: '06/12', value: 71 },
+    { date: '06/13', value: 73 },
+  ];
+
+  const sleepData = [
+    { date: '06/08', hours: 7.5 },
+    { date: '06/09', hours: 8.2 },
+    { date: '06/10', hours: 6.8 },
+    { date: '06/11', hours: 7.9 },
+    { date: '06/12', hours: 8.1 },
+    { date: '06/13', hours: 7.6 },
+  ];
+
+  const stepsData = [
+    { date: '06/08', steps: 8420 },
+    { date: '06/09', steps: 9150 },
+    { date: '06/10', steps: 7890 },
+    { date: '06/11', steps: 10200 },
+    { date: '06/12', steps: 8950 },
+    { date: '06/13', steps: 8432 },
+  ];
+
+  const handleInputChange = (field: string, value: string) => {
+    if (field.includes('.')) {
+      const [parent, child] = field.split('.');
+      setMetrics(prev => ({
+        ...prev,
+        [parent]: {
+          ...prev[parent as keyof typeof prev],
+          [child]: value
+        }
+      }));
+    } else {
+      setMetrics(prev => ({ ...prev, [field]: value }));
     }
   };
 
-  const getProgressColor = (status: string) => {
-    switch (status) {
-      case 'normal': return 'bg-green-500';
-      case 'warning': return 'bg-yellow-500';
-      case 'critical': return 'bg-red-500';
-      default: return 'bg-gray-500';
-    }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // In a real app, this would save to a database
+    console.log('Saving metrics:', metrics);
+    // Reset form
+    setMetrics({
+      heartRate: '',
+      bloodPressure: { systolic: '', diastolic: '' },
+      weight: '',
+      sleep: '',
+      water: '',
+      steps: '',
+    });
   };
 
-  const healthScore = 95; // Mock health score
+  const getTrendIcon = (current: number, previous: number) => {
+    if (current > previous) return <TrendingUp className="h-4 w-4 text-green-600" />;
+    if (current < previous) return <TrendingDown className="h-4 w-4 text-red-600" />;
+    return <div className="h-4 w-4" />;
+  };
+
+  const getHealthStatus = (value: number, type: string) => {
+    switch (type) {
+      case 'heartRate':
+        if (value >= 60 && value <= 100) return { status: 'Normal', color: 'bg-green-100 text-green-800' };
+        return { status: 'Check', color: 'bg-yellow-100 text-yellow-800' };
+      case 'sleep':
+        if (value >= 7 && value <= 9) return { status: 'Good', color: 'bg-green-100 text-green-800' };
+        return { status: 'Needs Improvement', color: 'bg-yellow-100 text-yellow-800' };
+      case 'steps':
+        if (value >= 8000) return { status: 'Active', color: 'bg-green-100 text-green-800' };
+        return { status: 'Low Activity', color: 'bg-yellow-100 text-yellow-800' };
+      default:
+        return { status: 'Normal', color: 'bg-gray-100 text-gray-800' };
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-blue-100">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center space-x-4">
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate('/dashboard')}
-              className="p-2"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div className="flex items-center space-x-3">
-              <div className="bg-orange-600 p-2 rounded-lg">
-                <Activity className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Health Monitor</h1>
-                <p className="text-sm text-orange-600">Track your vital signs and health metrics</p>
-              </div>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-50">
+      <Navbar />
+      
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="bg-purple-600 p-2 rounded-lg">
+              <Activity className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Health Monitor</h1>
+              <p className="text-sm text-purple-600">Track and monitor your health metrics</p>
             </div>
           </div>
         </div>
-      </header>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Health Score */}
-        <Card className="mb-8 border-green-200 bg-green-50">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-green-800">
-              <Heart className="h-6 w-6" />
-              <span>Overall Health Score</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center space-x-4">
-              <div className="flex-1">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-2xl font-bold text-green-800">{healthScore}%</span>
-                  <span className="text-sm text-green-600">Excellent</span>
-                </div>
-                <Progress value={healthScore} className="h-3" />
-              </div>
-              <div className="text-center">
-                <div className="w-20 h-20 rounded-full bg-green-600 flex items-center justify-center">
-                  <Heart className="h-8 w-8 text-white" />
-                </div>
-              </div>
-            </div>
-            <p className="text-green-700 mt-3 text-sm">
-              Your health metrics are looking great! Keep up the good work with your health routine.
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {metrics.map((metric) => (
-            <Card key={metric.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <metric.icon className="h-5 w-5 text-gray-600" />
-                    <span className="text-lg">{metric.name}</span>
-                  </div>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(metric.status)}`}>
-                    {metric.status}
-                  </span>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Metrics Input */}
+          <div>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Plus className="h-5 w-5 text-purple-600" />
+                  <span>Log Today's Metrics</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  <div className="text-center">
-                    <span className="text-3xl font-bold text-gray-900">{metric.value}</span>
-                    <span className="text-lg text-gray-600 ml-1">{metric.unit}</span>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <Label htmlFor="heartRate">Heart Rate (bpm)</Label>
+                    <Input
+                      id="heartRate"
+                      type="number"
+                      placeholder="72"
+                      value={metrics.heartRate}
+                      onChange={(e) => handleInputChange('heartRate', e.target.value)}
+                    />
                   </div>
-                  
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className={`h-2 rounded-full ${getProgressColor(metric.status)}`}
-                      style={{ width: '75%' }}
-                    ></div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label htmlFor="systolic">Systolic BP</Label>
+                      <Input
+                        id="systolic"
+                        type="number"
+                        placeholder="120"
+                        value={metrics.bloodPressure.systolic}
+                        onChange={(e) => handleInputChange('bloodPressure.systolic', e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="diastolic">Diastolic BP</Label>
+                      <Input
+                        id="diastolic"
+                        type="number"
+                        placeholder="80"
+                        value={metrics.bloodPressure.diastolic}
+                        onChange={(e) => handleInputChange('bloodPressure.diastolic', e.target.value)}
+                      />
+                    </div>
                   </div>
-                  
-                  <p className="text-xs text-gray-500 text-center">
-                    Last updated: {metric.lastUpdated.toLocaleTimeString()}
-                  </p>
-                  
-                  <Button variant="outline" size="sm" className="w-full">
-                    Update Reading
+
+                  <div>
+                    <Label htmlFor="weight">Weight (kg)</Label>
+                    <Input
+                      id="weight"
+                      type="number"
+                      step="0.1"
+                      placeholder="70.5"
+                      value={metrics.weight}
+                      onChange={(e) => handleInputChange('weight', e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="sleep">Sleep Hours</Label>
+                    <Input
+                      id="sleep"
+                      type="number"
+                      step="0.1"
+                      placeholder="8.0"
+                      value={metrics.sleep}
+                      onChange={(e) => handleInputChange('sleep', e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="water">Water Intake (glasses)</Label>
+                    <Input
+                      id="water"
+                      type="number"
+                      placeholder="8"
+                      value={metrics.water}
+                      onChange={(e) => handleInputChange('water', e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="steps">Steps</Label>
+                    <Input
+                      id="steps"
+                      type="number"
+                      placeholder="8000"
+                      value={metrics.steps}
+                      onChange={(e) => handleInputChange('steps', e.target.value)}
+                    />
+                  </div>
+
+                  <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700">
+                    Log Metrics
                   </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Charts and Analytics */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Current Stats Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600">Heart Rate</p>
+                      <p className="text-2xl font-bold text-gray-900">73 bpm</p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Heart className="h-8 w-8 text-red-500" />
+                      {getTrendIcon(73, 71)}
+                    </div>
+                  </div>
+                  <Badge className={getHealthStatus(73, 'heartRate').color}>
+                    {getHealthStatus(73, 'heartRate').status}
+                  </Badge>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600">Sleep</p>
+                      <p className="text-2xl font-bold text-gray-900">7.6 hrs</p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Moon className="h-8 w-8 text-blue-500" />
+                      {getTrendIcon(7.6, 8.1)}
+                    </div>
+                  </div>
+                  <Badge className={getHealthStatus(7.6, 'sleep').color}>
+                    {getHealthStatus(7.6, 'sleep').status}
+                  </Badge>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600">Steps</p>
+                      <p className="text-2xl font-bold text-gray-900">8,432</p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Activity className="h-8 w-8 text-green-500" />
+                      {getTrendIcon(8432, 8950)}
+                    </div>
+                  </div>
+                  <Badge className={getHealthStatus(8432, 'steps').color}>
+                    {getHealthStatus(8432, 'steps').status}
+                  </Badge>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Charts */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Health Trends</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Tabs defaultValue="heartRate" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="heartRate">Heart Rate</TabsTrigger>
+                    <TabsTrigger value="sleep">Sleep</TabsTrigger>
+                    <TabsTrigger value="steps">Steps</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="heartRate" className="mt-6">
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={heartRateData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="date" />
+                          <YAxis />
+                          <Tooltip />
+                          <Line type="monotone" dataKey="value" stroke="#ef4444" strokeWidth={2} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="sleep" className="mt-6">
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={sleepData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="date" />
+                          <YAxis />
+                          <Tooltip />
+                          <Line type="monotone" dataKey="hours" stroke="#3b82f6" strokeWidth={2} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="steps" className="mt-6">
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={stepsData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="date" />
+                          <YAxis />
+                          <Tooltip />
+                          <Bar dataKey="steps" fill="#10b981" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
+
+            {/* Goals */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Today's Goals</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>Water Intake</span>
+                    <span>6/8 glasses</span>
+                  </div>
+                  <Progress value={75} className="h-2" />
+                </div>
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>Steps</span>
+                    <span>8,432/10,000</span>
+                  </div>
+                  <Progress value={84} className="h-2" />
+                </div>
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>Sleep Goal</span>
+                    <span>7.6/8.0 hours</span>
+                  </div>
+                  <Progress value={95} className="h-2" />
                 </div>
               </CardContent>
             </Card>
-          ))}
+          </div>
         </div>
-
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Button variant="outline" className="h-20 flex flex-col space-y-2">
-                <Heart className="h-6 w-6" />
-                <span>Record Heart Rate</span>
-              </Button>
-              <Button variant="outline" className="h-20 flex flex-col space-y-2">
-                <Thermometer className="h-6 w-6" />
-                <span>Log Temperature</span>
-              </Button>
-              <Button variant="outline" className="h-20 flex flex-col space-y-2">
-                <Scale className="h-6 w-6" />
-                <span>Update Weight</span>
-              </Button>
-              <Button variant="outline" className="h-20 flex flex-col space-y-2">
-                <Activity className="h-6 w-6" />
-                <span>Log Symptoms</span>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
       </main>
     </div>
   );
