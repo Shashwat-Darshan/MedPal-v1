@@ -7,11 +7,12 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { useNavigate } from 'react-router-dom';
-import { Heart, Shield, Activity, Clock, Mic, MessageSquare, HelpCircle, CheckCircle } from 'lucide-react';
+import { Heart, Shield, Activity, Clock, Mic, MessageSquare, HelpCircle, CheckCircle, History, Phone } from 'lucide-react';
 import { geminiService, Disease, DiagnosisResponse } from '@/services/geminiService';
 import QuestionCard from '@/components/QuestionCard';
 import DiagnosisChat from '@/components/DiagnosisChat';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import VoiceRecorder from '@/components/VoiceRecorder';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -42,7 +43,6 @@ const Index = () => {
       setCurrentStep('questions');
     } catch (error) {
       console.error('Error starting diagnosis:', error);
-      // Keep showing a fallback
       setCurrentStep('symptoms');
     } finally {
       setIsLoading(false);
@@ -82,10 +82,8 @@ const Index = () => {
     const topDisease = currentDiseases[0];
     const secondDisease = currentDiseases[1];
     
-    // Stop if any disease above 90%
     if (topDisease.confidence >= 90) return true;
     
-    // Stop if difference between top 2 is >= 20% and second is >= 60%
     if (secondDisease && secondDisease.confidence >= 60) {
       const difference = topDisease.confidence - secondDisease.confidence;
       if (difference >= 20) return true;
@@ -115,10 +113,15 @@ const Index = () => {
     return 0;
   };
 
+  const handleVoiceTranscript = (transcript: string) => {
+    setSymptoms(transcript);
+    setUseVoice(false);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-blue-100">
+      <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -157,124 +160,209 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Step */}
-        {currentStep === 'welcome' && (
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Welcome/Symptoms Step */}
+        {(currentStep === 'welcome' || currentStep === 'symptoms') && (
           <>
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-8 text-white mb-8">
-              <h2 className="text-3xl font-bold mb-4">Hello! How can I help you today?</h2>
-              <p className="text-lg mb-4">I'm your AI medical assistant. Tell me about your symptoms and I'll help provide a preliminary diagnosis.</p>
-              <Alert className="bg-orange-100 border-orange-300 text-orange-800 mb-0">
-                <Shield className="h-4 w-4" />
-                <AlertDescription>
-                  ⚠️ Important: This is not professional medical advice. Please consult a healthcare provider for proper diagnosis and treatment.
-                </AlertDescription>
-              </Alert>
+            {/* Diagnostic Progress */}
+            <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">Diagnostic Progress</h2>
+                <span className="text-sm text-gray-600">{Math.round(getProgressPercentage())}%</span>
+              </div>
+              <Progress value={getProgressPercentage()} className="mb-4" />
+              
+              {/* Progress Steps */}
+              <div className="flex justify-between text-sm">
+                <div className={`flex flex-col items-center ${currentStep === 'welcome' || currentStep === 'symptoms' ? 'text-blue-600' : 'text-gray-400'}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-1 ${currentStep === 'welcome' || currentStep === 'symptoms' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>
+                    1
+                  </div>
+                  <span>Symptoms</span>
+                </div>
+                <div className={`flex flex-col items-center ${currentStep === 'questions' ? 'text-blue-600' : 'text-gray-400'}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-1 ${currentStep === 'questions' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>
+                    2
+                  </div>
+                  <span>Questions</span>
+                </div>
+                <div className={`flex flex-col items-center ${currentStep === 'complete' ? 'text-blue-600' : 'text-gray-400'}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-1 ${currentStep === 'complete' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>
+                    3
+                  </div>
+                  <span>Results</span>
+                </div>
+              </div>
             </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <MessageSquare className="h-5 w-5 text-blue-600" />
-                  <span>Tell me about your symptoms</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <Textarea
-                  placeholder="Please describe what symptoms you're experiencing..."
-                  value={symptoms}
-                  onChange={(e) => setSymptoms(e.target.value)}
-                  className="min-h-32"
-                />
-                <Button 
-                  onClick={() => setCurrentStep('symptoms')}
-                  disabled={!symptoms.trim()}
-                  className="w-full bg-blue-600 hover:bg-blue-700"
-                  size="lg"
-                >
-                  Continue
-                </Button>
-              </CardContent>
-            </Card>
-          </>
-        )}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Main Content */}
+              <div className="lg:col-span-2 space-y-6">
+                {/* Symptom Description */}
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center space-x-2">
+                      <Activity className="h-5 w-5 text-blue-600" />
+                      <CardTitle>Describe Your Symptoms</CardTitle>
+                    </div>
+                    <p className="text-gray-600">Tell me about what you're experiencing so I can help with an accurate assessment</p>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                        What symptoms are you experiencing?
+                      </label>
+                      
+                      {/* Voice Input Toggle */}
+                      <div className="flex items-center space-x-4 mb-4">
+                        <Button
+                          variant={useVoice ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setUseVoice(!useVoice)}
+                          className="flex items-center space-x-2"
+                        >
+                          <Mic className="h-4 w-4" />
+                          <span>Voice Input</span>
+                        </Button>
+                        <span className="text-sm text-gray-500">or type below</span>
+                      </div>
 
-        {/* Symptoms Detail Step */}
-        {currentStep === 'symptoms' && (
-          <>
-            <Card className="mb-6">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Provide Additional Details</h3>
-                  <span className="text-sm text-gray-600">{Math.round(getProgressPercentage())}%</span>
-                </div>
-                <Progress value={getProgressPercentage()} className="mb-4" />
-              </CardContent>
-            </Card>
+                      {useVoice ? (
+                        <VoiceRecorder onTranscript={handleVoiceTranscript} />
+                      ) : (
+                        <Textarea
+                          placeholder="Example: I've been having a persistent headache for 2 days, feeling tired, and have a slight fever..."
+                          value={symptoms}
+                          onChange={(e) => setSymptoms(e.target.value)}
+                          className="min-h-32"
+                        />
+                      )}
+                    </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Additional Information</CardTitle>
-                <p className="text-gray-600">Help me understand your condition better</p>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Your symptoms:</label>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-gray-700">{symptoms}</p>
-                  </div>
-                </div>
+                    {/* Duration and Severity */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Duration</label>
+                        <Select value={duration} onValueChange={setDuration}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select duration" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="few-hours">Few hours</SelectItem>
+                            <SelectItem value="1-day">1 day</SelectItem>
+                            <SelectItem value="2-3-days">2-3 days</SelectItem>
+                            <SelectItem value="1-week">1 week</SelectItem>
+                            <SelectItem value="2-weeks">2+ weeks</SelectItem>
+                            <SelectItem value="1-month">1+ month</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Duration</label>
-                    <Select value={duration} onValueChange={setDuration}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select duration" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="few-hours">Few hours</SelectItem>
-                        <SelectItem value="1-day">1 day</SelectItem>
-                        <SelectItem value="2-3-days">2-3 days</SelectItem>
-                        <SelectItem value="1-week">1 week</SelectItem>
-                        <SelectItem value="2-weeks">2+ weeks</SelectItem>
-                        <SelectItem value="1-month">1+ month</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Severity (1-10): {severity[0]}
-                    </label>
-                    <div className="px-3">
-                      <Slider
-                        value={severity}
-                        onValueChange={setSeverity}
-                        max={10}
-                        min={1}
-                        step={1}
-                        className="w-full"
-                      />
-                      <div className="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>Mild</span>
-                        <span>Moderate</span>
-                        <span>Severe</span>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Severity (1-10): {severity[0]}
+                        </label>
+                        <div className="px-3">
+                          <Slider
+                            value={severity}
+                            onValueChange={setSeverity}
+                            max={10}
+                            min={1}
+                            step={1}
+                            className="w-full"
+                          />
+                          <div className="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>Mild</span>
+                            <span>Moderate</span>
+                            <span>Severe</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
 
-                <Button 
-                  onClick={handleSymptomSubmit}
-                  disabled={isLoading}
-                  className="w-full bg-blue-600 hover:bg-blue-700"
-                  size="lg"
-                >
-                  {isLoading ? <LoadingSpinner size="sm" message="Analyzing..." /> : "Start Diagnosis"}
-                </Button>
-              </CardContent>
-            </Card>
+                    <Button 
+                      onClick={handleSymptomSubmit}
+                      disabled={!symptoms.trim() || isLoading}
+                      className="w-full bg-blue-600 hover:bg-blue-700"
+                      size="lg"
+                    >
+                      {isLoading ? <LoadingSpinner size="sm" message="Starting Diagnosis..." /> : "Start Diagnosis"}
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Medical Disclaimer */}
+                <Alert className="bg-orange-50 border-orange-200">
+                  <Shield className="h-4 w-4 text-orange-600" />
+                  <AlertDescription className="text-orange-800">
+                    <strong>Important:</strong> This is not professional medical advice. Please consult a healthcare provider for proper diagnosis and treatment.
+                  </AlertDescription>
+                </Alert>
+              </div>
+
+              {/* Sidebar */}
+              <div className="space-y-6">
+                {/* Quick Actions */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Quick Actions</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start"
+                      onClick={() => navigate('/history')}
+                    >
+                      <History className="h-4 w-4 mr-3" />
+                      <div className="text-left">
+                        <div className="font-medium">View History</div>
+                        <div className="text-xs text-gray-500">Past consultations</div>
+                      </div>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start"
+                    >
+                      <Phone className="h-4 w-4 mr-3" />
+                      <div className="text-left">
+                        <div className="font-medium">Emergency Contacts</div>
+                        <div className="text-xs text-gray-500">Quick access numbers</div>
+                      </div>
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Recent Activity */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Recent Activity</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <div className="flex-1">
+                        <div className="font-medium text-sm">Consultation #4</div>
+                        <div className="text-xs text-gray-500">Jun 14, 2025</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <div className="flex-1">
+                        <div className="font-medium text-sm">Consultation #3</div>
+                        <div className="text-xs text-gray-500">Jun 13, 2025</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <div className="flex-1">
+                        <div className="font-medium text-sm">Consultation #2</div>
+                        <div className="text-xs text-gray-500">Jun 12, 2025</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           </>
         )}
 
