@@ -7,10 +7,7 @@ const GROQ_API_KEY = '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';
 
 const genAI = new GoogleGenerativeAI(API_KEY);
 const genAI2 = new GoogleGenAI({ apiKey: API_KEY });
-const groq = new Groq({ 
-  apiKey: GROQ_API_KEY,
-  dangerouslyAllowBrowser: true 
-});
+const groq = new Groq({ apiKey: GROQ_API_KEY });
 
 export interface Disease {
   name: string;
