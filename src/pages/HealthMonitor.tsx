@@ -7,9 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { Heart, Activity, Droplets, Moon, Plus, TrendingUp, TrendingDown } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, AreaChart, Area } from 'recharts';
+import { Heart, Activity, Droplets, Moon, Plus, TrendingUp, TrendingDown, Zap, Target, Calendar } from 'lucide-react';
 import Navbar from '@/components/Navbar';
+import HealthEducation from '@/components/HealthEducation';
 
 const HealthMonitor = () => {
   const [metrics, setMetrics] = useState({
@@ -21,32 +22,42 @@ const HealthMonitor = () => {
     steps: '',
   });
 
-  // Sample data for charts
+  // Enhanced sample data for charts
   const heartRateData = [
-    { date: '06/08', value: 72 },
-    { date: '06/09', value: 75 },
-    { date: '06/10', value: 69 },
-    { date: '06/11', value: 74 },
-    { date: '06/12', value: 71 },
-    { date: '06/13', value: 73 },
+    { date: '06/08', value: 72, zone: 'Rest' },
+    { date: '06/09', value: 75, zone: 'Rest' },
+    { date: '06/10', value: 69, zone: 'Rest' },
+    { date: '06/11', value: 74, zone: 'Rest' },
+    { date: '06/12', value: 71, zone: 'Rest' },
+    { date: '06/13', value: 73, zone: 'Rest' },
   ];
 
   const sleepData = [
-    { date: '06/08', hours: 7.5 },
-    { date: '06/09', hours: 8.2 },
-    { date: '06/10', hours: 6.8 },
-    { date: '06/11', hours: 7.9 },
-    { date: '06/12', hours: 8.1 },
-    { date: '06/13', hours: 7.6 },
+    { date: '06/08', hours: 7.5, deep: 2.1, rem: 1.8, light: 3.6 },
+    { date: '06/09', hours: 8.2, deep: 2.3, rem: 2.1, light: 3.8 },
+    { date: '06/10', hours: 6.8, deep: 1.8, rem: 1.5, light: 3.5 },
+    { date: '06/11', hours: 7.9, deep: 2.2, rem: 1.9, light: 3.8 },
+    { date: '06/12', hours: 8.1, deep: 2.4, rem: 2.0, light: 3.7 },
+    { date: '06/13', hours: 7.6, deep: 2.1, rem: 1.8, light: 3.7 },
   ];
 
   const stepsData = [
-    { date: '06/08', steps: 8420 },
-    { date: '06/09', steps: 9150 },
-    { date: '06/10', steps: 7890 },
-    { date: '06/11', steps: 10200 },
-    { date: '06/12', steps: 8950 },
-    { date: '06/13', steps: 8432 },
+    { date: '06/08', steps: 8420, calories: 342 },
+    { date: '06/09', steps: 9150, calories: 398 },
+    { date: '06/10', steps: 7890, calories: 321 },
+    { date: '06/11', steps: 10200, calories: 445 },
+    { date: '06/12', steps: 8950, calories: 378 },
+    { date: '06/13', steps: 8432, calories: 356 },
+  ];
+
+  const weeklyProgress = [
+    { day: 'Mon', water: 6, exercise: 45, sleep: 7.5 },
+    { day: 'Tue', water: 8, exercise: 30, sleep: 8.2 },
+    { day: 'Wed', water: 5, exercise: 60, sleep: 6.8 },
+    { day: 'Thu', water: 7, exercise: 45, sleep: 7.9 },
+    { day: 'Fri', water: 8, exercise: 0, sleep: 8.1 },
+    { day: 'Sat', water: 6, exercise: 90, sleep: 7.6 },
+    { day: 'Sun', water: 7, exercise: 30, sleep: 8.0 },
   ];
 
   const handleInputChange = (field: string, value: string) => {
@@ -108,20 +119,26 @@ const HealthMonitor = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="bg-purple-600 p-2 rounded-lg">
-              <Activity className="h-6 w-6 text-white" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="bg-purple-600 p-2 rounded-lg">
+                <Activity className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Health Monitor</h1>
+                <p className="text-sm text-purple-600">Track and monitor your health metrics</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Health Monitor</h1>
-              <p className="text-sm text-purple-600">Track and monitor your health metrics</p>
+            <div className="flex items-center space-x-2">
+              <Calendar className="h-5 w-5 text-gray-500" />
+              <span className="text-sm text-gray-600">{new Date().toLocaleDateString()}</span>
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Metrics Input */}
-          <div>
+          <div className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
@@ -217,13 +234,37 @@ const HealthMonitor = () => {
                 </form>
               </CardContent>
             </Card>
+
+            {/* Weekly Summary */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Target className="h-5 w-5 text-blue-600" />
+                  <span>Weekly Summary</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-48">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={weeklyProgress}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="day" />
+                      <YAxis />
+                      <Tooltip />
+                      <Area type="monotone" dataKey="water" stackId="1" stroke="#3b82f6" fill="#dbeafe" />
+                      <Area type="monotone" dataKey="sleep" stackId="2" stroke="#8b5cf6" fill="#ede9fe" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Charts and Analytics */}
           <div className="lg:col-span-2 space-y-6">
             {/* Current Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card>
+              <Card className="hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -241,7 +282,7 @@ const HealthMonitor = () => {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -259,7 +300,7 @@ const HealthMonitor = () => {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -278,17 +319,18 @@ const HealthMonitor = () => {
               </Card>
             </div>
 
-            {/* Charts */}
+            {/* Enhanced Charts */}
             <Card>
               <CardHeader>
                 <CardTitle>Health Trends</CardTitle>
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="heartRate" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
+                  <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="heartRate">Heart Rate</TabsTrigger>
                     <TabsTrigger value="sleep">Sleep</TabsTrigger>
                     <TabsTrigger value="steps">Steps</TabsTrigger>
+                    <TabsTrigger value="overview">Overview</TabsTrigger>
                   </TabsList>
                   
                   <TabsContent value="heartRate" className="mt-6">
@@ -299,7 +341,7 @@ const HealthMonitor = () => {
                           <XAxis dataKey="date" />
                           <YAxis />
                           <Tooltip />
-                          <Line type="monotone" dataKey="value" stroke="#ef4444" strokeWidth={2} />
+                          <Line type="monotone" dataKey="value" stroke="#ef4444" strokeWidth={3} dot={{ r: 6 }} />
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
@@ -308,13 +350,15 @@ const HealthMonitor = () => {
                   <TabsContent value="sleep" className="mt-6">
                     <div className="h-64">
                       <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={sleepData}>
+                        <AreaChart data={sleepData}>
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis dataKey="date" />
                           <YAxis />
                           <Tooltip />
-                          <Line type="monotone" dataKey="hours" stroke="#3b82f6" strokeWidth={2} />
-                        </LineChart>
+                          <Area type="monotone" dataKey="deep" stackId="1" stroke="#1e40af" fill="#3b82f6" />
+                          <Area type="monotone" dataKey="rem" stackId="1" stroke="#7c3aed" fill="#8b5cf6" />
+                          <Area type="monotone" dataKey="light" stackId="1" stroke="#06b6d4" fill="#0891b2" />
+                        </AreaChart>
                       </ResponsiveContainer>
                     </div>
                   </TabsContent>
@@ -327,16 +371,37 @@ const HealthMonitor = () => {
                           <XAxis dataKey="date" />
                           <YAxis />
                           <Tooltip />
-                          <Bar dataKey="steps" fill="#10b981" />
+                          <Bar dataKey="steps" fill="#10b981" radius={[4, 4, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="overview" className="mt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <Zap className="h-5 w-5 text-blue-600" />
+                          <h4 className="font-medium text-blue-900">Energy Level</h4>
+                        </div>
+                        <div className="text-2xl font-bold text-blue-700">High</div>
+                        <p className="text-sm text-blue-600">Based on activity and sleep</p>
+                      </div>
+                      <div className="p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-lg">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <Heart className="h-5 w-5 text-green-600" />
+                          <h4 className="font-medium text-green-900">Cardiovascular</h4>
+                        </div>
+                        <div className="text-2xl font-bold text-green-700">Excellent</div>
+                        <p className="text-sm text-green-600">Heart rate variability optimal</p>
+                      </div>
                     </div>
                   </TabsContent>
                 </Tabs>
               </CardContent>
             </Card>
 
-            {/* Goals */}
+            {/* Enhanced Goals */}
             <Card>
               <CardHeader>
                 <CardTitle>Today's Goals</CardTitle>
@@ -344,27 +409,49 @@ const HealthMonitor = () => {
               <CardContent className="space-y-4">
                 <div>
                   <div className="flex justify-between text-sm mb-1">
-                    <span>Water Intake</span>
+                    <span className="flex items-center space-x-2">
+                      <Droplets className="h-4 w-4 text-blue-500" />
+                      <span>Water Intake</span>
+                    </span>
                     <span>6/8 glasses</span>
                   </div>
-                  <Progress value={75} className="h-2" />
+                  <Progress value={75} className="h-3" />
                 </div>
                 <div>
                   <div className="flex justify-between text-sm mb-1">
-                    <span>Steps</span>
+                    <span className="flex items-center space-x-2">
+                      <Activity className="h-4 w-4 text-green-500" />
+                      <span>Steps</span>
+                    </span>
                     <span>8,432/10,000</span>
                   </div>
-                  <Progress value={84} className="h-2" />
+                  <Progress value={84} className="h-3" />
                 </div>
                 <div>
                   <div className="flex justify-between text-sm mb-1">
-                    <span>Sleep Goal</span>
+                    <span className="flex items-center space-x-2">
+                      <Moon className="h-4 w-4 text-purple-500" />
+                      <span>Sleep Goal</span>
+                    </span>
                     <span>7.6/8.0 hours</span>
                   </div>
-                  <Progress value={95} className="h-2" />
+                  <Progress value={95} className="h-3" />
+                </div>
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="flex items-center space-x-2">
+                      <Target className="h-4 w-4 text-orange-500" />
+                      <span>Active Minutes</span>
+                    </span>
+                    <span>45/60 minutes</span>
+                  </div>
+                  <Progress value={75} className="h-3" />
                 </div>
               </CardContent>
             </Card>
+
+            {/* Health Education */}
+            <HealthEducation />
           </div>
         </div>
       </main>
