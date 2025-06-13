@@ -174,20 +174,20 @@ const Index = () => {
               
               {/* Progress Steps */}
               <div className="flex justify-between text-sm">
-                <div className={`flex flex-col items-center ${currentStep === 'welcome' || currentStep === 'symptoms' ? 'text-blue-600' : 'text-gray-400'}`}>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-1 ${currentStep === 'welcome' || currentStep === 'symptoms' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>
+                <div className="flex flex-col items-center text-blue-600">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center mb-1 bg-blue-600 text-white">
                     1
                   </div>
                   <span>Symptoms</span>
                 </div>
-                <div className={`flex flex-col items-center ${currentStep === 'questions' ? 'text-blue-600' : 'text-gray-400'}`}>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-1 ${currentStep === 'questions' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>
+                <div className="flex flex-col items-center text-gray-400">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center mb-1 bg-gray-200">
                     2
                   </div>
                   <span>Questions</span>
                 </div>
-                <div className={`flex flex-col items-center ${currentStep === 'complete' ? 'text-blue-600' : 'text-gray-400'}`}>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-1 ${currentStep === 'complete' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>
+                <div className="flex flex-col items-center text-gray-400">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center mb-1 bg-gray-200">
                     3
                   </div>
                   <span>Results</span>
