@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -145,7 +144,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <Navbar />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -196,6 +195,42 @@ const Dashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Sidebar - Health Tips and AI Insights */}
+          <div className="space-y-6">
+            {/* AI Health Insights */}
+            <HealthInsights />
+
+            {/* Health Tips */}
+            <Card className="glass-card">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <TrendingUp className="h-5 w-5 text-green-600" />
+                  <span>Today's Health Tips</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm">💧</span>
+                    </div>
+                    <h4 className="font-medium text-blue-900 dark:text-blue-100">Stay Hydrated</h4>
+                  </div>
+                  <p className="text-sm text-blue-800 dark:text-blue-200">Drink water regularly throughout the day to maintain optimal health.</p>
+                </div>
+                <div className="p-4 bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-xl border border-green-200 dark:border-green-800">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm">🚶</span>
+                    </div>
+                    <h4 className="font-medium text-green-900 dark:text-green-100">Get Moving</h4>
+                  </div>
+                  <p className="text-sm text-green-800 dark:text-green-200">Take short walks during breaks to improve circulation and energy.</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Enhanced Stats Overview */}
@@ -341,7 +376,38 @@ const Dashboard = () => {
             <HealthGoals />
           </div>
 
-          {/* Enhanced Sidebar */}
+          {/* Right Sidebar */}
+          <div className="space-y-6 lg:hidden">
+            {/* Achievements Section */}
+            <Card className="glass-card">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Star className="h-5 w-5 text-yellow-500" />
+                  <span>Recent Achievements</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {achievements.map((achievement, index) => (
+                  <div key={index} className="flex items-center space-x-3 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                    <span className="text-2xl">{achievement.icon}</span>
+                    <div>
+                      <h4 className="font-medium text-gray-900 dark:text-gray-100">{achievement.name}</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{achievement.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Emergency Contacts */}
+            <EmergencyContacts />
+          </div>
+        </div>
+
+        {/* Bottom Section for larger screens */}
+        <div className="hidden lg:grid lg:grid-cols-3 gap-8 mt-8">
+          <div></div>
+          <div></div>
           <div className="space-y-6">
             {/* Achievements Section */}
             <Card className="glass-card">
@@ -353,11 +419,11 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent className="space-y-3">
                 {achievements.map((achievement, index) => (
-                  <div key={index} className="flex items-center space-x-3 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
+                  <div key={index} className="flex items-center space-x-3 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
                     <span className="text-2xl">{achievement.icon}</span>
                     <div>
-                      <h4 className="font-medium text-gray-900">{achievement.name}</h4>
-                      <p className="text-sm text-gray-600">{achievement.description}</p>
+                      <h4 className="font-medium text-gray-900 dark:text-gray-100">{achievement.name}</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{achievement.description}</p>
                     </div>
                   </div>
                 ))}
@@ -366,39 +432,6 @@ const Dashboard = () => {
 
             {/* Emergency Contacts */}
             <EmergencyContacts />
-
-            {/* AI Health Insights */}
-            <HealthInsights />
-
-            {/* Health Tips with Enhanced Design */}
-            <Card className="glass-card">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <TrendingUp className="h-5 w-5 text-green-600" />
-                  <span>Today's Health Tips</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm">💧</span>
-                    </div>
-                    <h4 className="font-medium text-blue-900">Stay Hydrated</h4>
-                  </div>
-                  <p className="text-sm text-blue-800">Drink water regularly throughout the day to maintain optimal health.</p>
-                </div>
-                <div className="p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm">🚶</span>
-                    </div>
-                    <h4 className="font-medium text-green-900">Get Moving</h4>
-                  </div>
-                  <p className="text-sm text-green-800">Take short walks during breaks to improve circulation and energy.</p>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </main>

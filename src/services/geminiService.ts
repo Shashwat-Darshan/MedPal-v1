@@ -43,7 +43,14 @@ export interface ChatMessage {
 }
 
 class GeminiService {
-  private model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  private model = genAI.getGenerativeModel({ 
+    model: 'gemini-1.5-flash',
+    generationConfig: {
+      temperature: 0.1, // Very low temperature for consistent responses
+      topP: 0.8,
+      topK: 40,
+    }
+  });
 
   private async tryGeminiPro2_5(prompt: string): Promise<string> {
     try {
@@ -56,7 +63,11 @@ class GeminiService {
 
       const response = await genAI2.models.generateContentStream({
         model: 'gemini-2.5-pro-preview-06-05',
-        config: { responseMimeType: 'text/plain' },
+        config: { 
+          responseMimeType: 'text/plain',
+          temperature: 0.1, // Low temperature
+          topP: 0.8,
+        },
         contents,
       });
 
@@ -76,9 +87,9 @@ class GeminiService {
       const chatCompletion = await groq.chat.completions.create({
         messages: [{ role: 'user', content: prompt }],
         model: 'meta-llama/llama-4-scout-17b-16e-instruct',
-        temperature: 0.7,
+        temperature: 0.1, // Very low temperature
         max_completion_tokens: 1024,
-        top_p: 1,
+        top_p: 0.8,
         stream: false,
       });
 
@@ -112,27 +123,33 @@ class GeminiService {
 
   async startDiagnosis(symptoms: string): Promise<DiagnosisResponse> {
     const prompt = `
-As a medical AI assistant, analyze these symptoms and provide exactly 5 possible diseases with confidence levels:
-Symptoms: "${symptoms}"
+You are a medical AI diagnostic assistant. A patient is describing symptoms and needs help identifying possible conditions.
 
-IMPORTANT: Respond ONLY with valid JSON in this exact format:
+Patient says: "${symptoms}"
+
+Your task:
+1. Generate exactly 5 possible diseases/conditions ranked by likelihood
+2. Assign realistic confidence levels (20-75% range for initial assessment)
+3. Ask ONE specific follow-up question to help differentiate between the top conditions
+
+Respond ONLY with valid JSON in this EXACT format:
 {
   "diseases": [
-    {"name": "Disease Name", "confidence": 75, "description": "Brief description", "symptoms": ["symptom1", "symptom2", "symptom3"]},
-    {"name": "Disease Name 2", "confidence": 65, "description": "Brief description", "symptoms": ["symptom1", "symptom2", "symptom3"]},
-    {"name": "Disease Name 3", "confidence": 55, "description": "Brief description", "symptoms": ["symptom1", "symptom2", "symptom3"]},
-    {"name": "Disease Name 4", "confidence": 45, "description": "Brief description", "symptoms": ["symptom1", "symptom2", "symptom3"]},
-    {"name": "Disease Name 5", "confidence": 35, "description": "Brief description", "symptoms": ["symptom1", "symptom2", "symptom3"]}
+    {"name": "Most Likely Condition", "confidence": 65, "description": "Brief medical description", "symptoms": ["symptom1", "symptom2", "symptom3"]},
+    {"name": "Second Likely Condition", "confidence": 55, "description": "Brief medical description", "symptoms": ["symptom1", "symptom2", "symptom3"]},
+    {"name": "Third Possibility", "confidence": 45, "description": "Brief medical description", "symptoms": ["symptom1", "symptom2", "symptom3"]},
+    {"name": "Fourth Possibility", "confidence": 35, "description": "Brief medical description", "symptoms": ["symptom1", "symptom2", "symptom3"]},
+    {"name": "Fifth Possibility", "confidence": 25, "description": "Brief medical description", "symptoms": ["symptom1", "symptom2", "symptom3"]}
   ],
-  "question": "A specific follow-up question to help narrow down the diagnosis"
+  "question": "One specific medical question to help narrow down the diagnosis"
 }
 
 Rules:
-- Confidence levels should be realistic (30-80% range initially)
 - Order diseases by confidence (highest first)
-- Ask ONE specific question that would help differentiate between the top conditions
-- Include 3-4 common symptoms for each disease
-- No additional text outside the JSON
+- Confidence should be realistic (20-75% initially, never start above 75%)
+- Ask specific questions about timing, severity, location, triggers, or associated symptoms
+- No text outside the JSON structure
+- Be medically accurate but avoid alarming language
 `;
 
     try {
@@ -141,7 +158,6 @@ Rules:
       
       console.log('Raw AI response:', text);
       
-      // Clean the response to extract JSON
       const cleanedText = text.replace(/```json\n?|\n?```/g, '').trim();
       const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
       
@@ -173,31 +189,42 @@ Rules:
     const diseasesText = currentDiseases.map(d => `${d.name}: ${d.confidence}%`).join(', ');
     
     const prompt = `
-Based on the patient's answer, update the confidence levels for these diseases and determine if diagnosis is complete:
+You are updating a medical diagnosis based on a patient's answer to a follow-up question.
 
-Current diseases: ${diseasesText}
+Current diseases and confidence levels: ${diseasesText}
 Question asked: "${question}"
 Patient's answer: "${answer}"
+Question count: ${questionCount}
 
-Update confidence levels based on the answer. Check completion criteria:
-- Any disease above 90% confidence, OR
-- Top 2 diseases have less than 20% difference AND both are above 60% confidence
+Your task:
+1. Update confidence levels based on the patient's answer
+2. Check if diagnosis is complete using these criteria:
+   - Any disease reaches 90%+ confidence, OR
+   - Top 2 diseases both above 60% with less than 20% difference, OR
+   - 10+ questions have been asked
 
-IMPORTANT: Respond ONLY with valid JSON in this exact format:
+Update rules:
+- Increase confidence for diseases that match the answer
+- Decrease confidence for diseases that don't match
+- Keep confidence realistic (never exceed 95%)
+- If complete, mark the top disease as final diagnosis
+
+Respond ONLY with valid JSON in this EXACT format:
 {
   "diseases": [
-    {"name": "Disease Name", "confidence": 85, "description": "Brief description", "symptoms": ["symptom1", "symptom2", "symptom3"]},
-    {"name": "Disease Name 2", "confidence": 70, "description": "Brief description", "symptoms": ["symptom1", "symptom2", "symptom3"]},
+    {"name": "Disease Name", "confidence": 75, "description": "Brief description", "symptoms": ["symptom1", "symptom2", "symptom3"]},
+    {"name": "Disease Name 2", "confidence": 65, "description": "Brief description", "symptoms": ["symptom1", "symptom2", "symptom3"]},
     {"name": "Disease Name 3", "confidence": 45, "description": "Brief description", "symptoms": ["symptom1", "symptom2", "symptom3"]},
     {"name": "Disease Name 4", "confidence": 35, "description": "Brief description", "symptoms": ["symptom1", "symptom2", "symptom3"]},
     {"name": "Disease Name 5", "confidence": 25, "description": "Brief description", "symptoms": ["symptom1", "symptom2", "symptom3"]}
   ],
-  "question": "Next follow-up question (if needed)",
-  "isComplete": true,
-  "finalDiagnosis": {"name": "Most Likely Disease", "confidence": 90, "description": "Description", "symptoms": ["symptom1", "symptom2", "symptom3"]}
+  "question": "Next specific follow-up question (only if not complete)",
+  "isComplete": false,
+  "finalDiagnosis": null
 }
 
-Order by confidence and ask relevant follow-up questions if not complete. No additional text outside the JSON.
+If complete, set "isComplete": true and "finalDiagnosis" to the top disease object.
+No text outside the JSON structure.
 `;
 
     try {
@@ -222,6 +249,7 @@ Order by confidence and ask relevant follow-up questions if not complete. No add
       const topDisease = diseases[0];
       const secondDisease = diseases[1];
       
+      // Check completion criteria
       const isComplete = 
         topDisease.confidence >= 90 || 
         (topDisease.confidence >= 60 && secondDisease.confidence >= 60 && 
@@ -231,8 +259,8 @@ Order by confidence and ask relevant follow-up questions if not complete. No add
       return {
         diseases,
         question: parsedResponse.question || "Do you have any other symptoms or concerns?",
-        isComplete,
-        finalDiagnosis: isComplete ? topDisease : parsedResponse.finalDiagnosis
+        isComplete: isComplete || parsedResponse.isComplete,
+        finalDiagnosis: (isComplete || parsedResponse.isComplete) ? topDisease : parsedResponse.finalDiagnosis
       };
     } catch (error) {
       console.error('AI update API error:', error);
