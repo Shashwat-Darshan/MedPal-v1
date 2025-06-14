@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -63,15 +62,47 @@ const Navbar = () => {
             {isMobile ? (
               // Mobile: Compact stacked text logo - no background, left aligned
               <div className="flex flex-col items-start justify-center">
-                <span className="text-white font-black text-lg leading-tight tracking-wide font-serif" style={{ fontFamily: 'Impact, "Franklin Gothic Bold", "Helvetica Neue", Arial, sans-serif' }}>MED</span>
-                <span className="text-blue-600 dark:text-blue-400 font-black text-lg leading-tight tracking-wide font-serif" style={{ fontFamily: 'Impact, "Franklin Gothic Bold", "Helvetica Neue", Arial, sans-serif' }}>PAL</span>
+                <span 
+                  className="text-white font-black text-lg leading-tight tracking-wide font-serif" 
+                  style={{ 
+                    fontFamily: 'Impact, "Franklin Gothic Bold", "Helvetica Neue", Arial, sans-serif',
+                    textShadow: '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 2px 2px 4px rgba(0,0,0,0.3)'
+                  }}
+                >
+                  MED
+                </span>
+                <span 
+                  className="text-blue-600 dark:text-blue-400 font-black text-lg leading-tight tracking-wide font-serif" 
+                  style={{ 
+                    fontFamily: 'Impact, "Franklin Gothic Bold", "Helvetica Neue", Arial, sans-serif',
+                    textShadow: '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 2px 2px 4px rgba(0,0,0,0.3)'
+                  }}
+                >
+                  PAL
+                </span>
               </div>
             ) : (
               // Desktop: Larger stacked text logo with tagline - no background, left aligned
               <div className="flex items-center space-x-4">
                 <div className="flex flex-col items-start justify-center">
-                  <span className="text-white font-black text-2xl leading-tight tracking-wide font-serif" style={{ fontFamily: 'Impact, "Franklin Gothic Bold", "Helvetica Neue", Arial, sans-serif' }}>MED</span>
-                  <span className="text-blue-600 dark:text-blue-400 font-black text-2xl leading-tight tracking-wide font-serif" style={{ fontFamily: 'Impact, "Franklin Gothic Bold", "Helvetica Neue", Arial, sans-serif' }}>PAL</span>
+                  <span 
+                    className="text-white font-black text-2xl leading-tight tracking-wide font-serif" 
+                    style={{ 
+                      fontFamily: 'Impact, "Franklin Gothic Bold", "Helvetica Neue", Arial, sans-serif',
+                      textShadow: '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 2px 2px 4px rgba(0,0,0,0.3)'
+                    }}
+                  >
+                    MED
+                  </span>
+                  <span 
+                    className="text-blue-600 dark:text-blue-400 font-black text-2xl leading-tight tracking-wide font-serif" 
+                    style={{ 
+                      fontFamily: 'Impact, "Franklin Gothic Bold", "Helvetica Neue", Arial, sans-serif',
+                      textShadow: '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 2px 2px 4px rgba(0,0,0,0.3)'
+                    }}
+                  >
+                    PAL
+                  </span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <Sparkles className="h-3 w-3 text-yellow-500" />
