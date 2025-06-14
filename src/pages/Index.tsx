@@ -86,6 +86,26 @@ const Index = () => {
     setSymptoms(prev => prev + ' ' + text);
   };
 
+  // Mock question data for QuestionCard
+  const mockQuestion = {
+    id: '1',
+    text: 'Have you experienced any fever in the last 24 hours?',
+    type: 'yes_no' as const
+  };
+
+  const handleQuestionAnswer = (answer: string) => {
+    console.log('Answer received:', answer);
+    // Handle the answer logic here
+  };
+
+  // Mock disease data for DiagnosisCard
+  const mockDisease = diagnosis ? {
+    name: diagnosis.diagnosis || 'Unknown condition',
+    confidence: diagnosis.confidence || 50,
+    description: diagnosis.possibleCauses?.[0] || 'No description available',
+    symptoms: diagnosis.recommendations || []
+  } : null;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
       <Navbar />
@@ -173,7 +193,7 @@ const Index = () => {
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <VoiceRecorder />
+                  <VoiceRecorder onTranscript={handleVoiceResult} />
                   <div className="flex space-x-3">
                     <Button variant="outline" onClick={handleReset} className="dark:border-gray-600 dark:text-gray-300">
                       Reset
@@ -201,7 +221,7 @@ const Index = () => {
             </Card>
 
             {/* Diagnosis Results */}
-            {diagnosis && (
+            {diagnosis && mockDisease && (
               <Card className="glass-light dark:glass-card dark:border-gray-700">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-gray-100">
@@ -213,7 +233,7 @@ const Index = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <DiagnosisCard />
+                  <DiagnosisCard disease={mockDisease} rank={1} />
                 </CardContent>
               </Card>
             )}
@@ -228,7 +248,7 @@ const Index = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <QuestionCard />
+                  <QuestionCard question={mockQuestion} onAnswer={handleQuestionAnswer} />
                 </CardContent>
               </Card>
             )}

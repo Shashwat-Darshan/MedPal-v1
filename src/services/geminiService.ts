@@ -3,6 +3,19 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
 
+export interface Disease {
+  name: string;
+  confidence: number;
+  description: string;
+  symptoms: string[];
+}
+
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+}
+
 export const analyzeSymptomsWithGemini = async (symptoms: string, age: string, gender: string) => {
   const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
   
@@ -74,4 +87,43 @@ export const getChatResponseFromGemini = async (message: string, context?: strin
     console.error('Error getting chat response:', error);
     throw new Error('Failed to get response');
   }
+};
+
+const chatAboutDiagnosis = async (
+  diagnosisContext: string, 
+  message: string, 
+  previousMessages: ChatMessage[]
+): Promise<string> => {
+  const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+  
+  const conversationHistory = previousMessages
+    .slice(-5) // Only include last 5 messages for context
+    .map(msg => `${msg.role}: ${msg.content}`)
+    .join('\n');
+  
+  const prompt = `
+    You are a helpful medical AI assistant discussing a patient's diagnosis. 
+    
+    Diagnosis Context: ${diagnosisContext}
+    
+    Previous conversation:
+    ${conversationHistory}
+    
+    Current user message: ${message}
+    
+    Please provide a helpful, empathetic response about their diagnosis while always reminding them to consult with healthcare professionals for medical decisions.
+  `;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
+  } catch (error) {
+    console.error('Error in diagnosis chat:', error);
+    throw new Error('Failed to get chat response');
+  }
+};
+
+export const geminiService = {
+  chatAboutDiagnosis
 };
