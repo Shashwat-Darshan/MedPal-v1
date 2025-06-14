@@ -1,8 +1,13 @@
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// API Keys fallback system
+// API Keys fallback system - Mixed Groq and Gemini keys
 const API_KEYS = [
+  // Your new Groq API keys
+  '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',
+  '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', 
+  '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',
+  // Gemini API keys
   'AIzaSyAGgztg1kQInnvAJuGTjVrb-OGdm5BR_l4',
   'AIzaSyAi4xSyRh17eC9DvM7NcCCxps-myI2QFQU',
   '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'
@@ -21,10 +26,38 @@ const getApiKeys = () => {
 
 const createGenAI = (apiKey: string) => {
   // Skip keys that are not valid Gemini API keys
-  if (apiKey.startsWith('sk-or-v1-')) {
+  if (apiKey.startsWith('sk-or-v1-') || apiKey.startsWith('gsk_')) {
     return null;
   }
   return new GoogleGenerativeAI(apiKey);
+};
+
+const callGroqAPI = async (prompt: string, apiKey: string) => {
+  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'llama-3.1-70b-versatile',
+      messages: [
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      max_tokens: 1000,
+      temperature: 0.7
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Groq API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.choices[0].message.content;
 };
 
 export interface Disease {
@@ -41,7 +74,7 @@ export interface ChatMessage {
 }
 
 const tryWithFallback = async <T>(
-  operation: (genAI: GoogleGenerativeAI) => Promise<T>
+  operation: (apiKey: string, isGroq: boolean) => Promise<T>
 ): Promise<T> => {
   const apiKeys = getApiKeys();
   console.log('Available API keys:', apiKeys.length);
@@ -52,31 +85,22 @@ const tryWithFallback = async <T>(
     const apiKey = apiKeys[i];
     console.log(`Trying API key ${i + 1}/${apiKeys.length}...`);
     
-    const genAI = createGenAI(apiKey);
-    if (!genAI) {
+    const isGroq = apiKey.startsWith('gsk_');
+    const isOpenRouter = apiKey.startsWith('sk-or-v1-');
+    const isGemini = apiKey.startsWith('AIza');
+    
+    if (!isGroq && !isOpenRouter && !isGemini) {
       console.log(`Skipping invalid API key format: ${apiKey.substring(0, 10)}...`);
       continue;
     }
     
     try {
-      const result = await operation(genAI);
+      const result = await operation(apiKey, isGroq || isOpenRouter);
       console.log(`Success with API key ${i + 1}`);
       return result;
     } catch (error) {
       console.log(`Failed with API key ${i + 1}:`, error);
       lastError = error as Error;
-      
-      // If it's a 403 or API key error, try next key
-      if (error.message?.includes('403') || error.message?.includes('API Key')) {
-        continue;
-      }
-      
-      // If it's a model error, try next key
-      if (error.message?.includes('not found') || error.message?.includes('models/')) {
-        continue;
-      }
-      
-      // For other errors, still try next key but log it
       continue;
     }
   }
@@ -84,11 +108,8 @@ const tryWithFallback = async <T>(
   throw lastError || new Error('All API keys failed. Please check your API key configuration.');
 };
 
-export const analyzeSymptomsWithGemini = async (symptoms: string, age: string, gender: string) => {
-  return tryWithFallback(async (genAI) => {
-    // Use the correct model name - gemini-1.5-flash is available and works
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-    
+export const analyzeSymptomsWithGemini = async (symptoms: string, age: string = '', gender: string = '') => {
+  return tryWithFallback(async (apiKey, isGroq) => {
     const prompt = `
       As a medical AI assistant, analyze these symptoms and provide a preliminary assessment:
       
@@ -114,13 +135,25 @@ export const analyzeSymptomsWithGemini = async (symptoms: string, age: string, g
       }
     `;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    let responseText: string;
+    
+    if (isGroq) {
+      responseText = await callGroqAPI(prompt, apiKey);
+    } else {
+      const genAI = createGenAI(apiKey);
+      if (!genAI) {
+        throw new Error('Invalid Gemini API key format');
+      }
+      
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      responseText = response.text();
+    }
     
     // Try to parse JSON, fallback to structured response
     try {
-      return JSON.parse(text);
+      return JSON.parse(responseText);
     } catch {
       return {
         diagnosis: "Unable to determine specific diagnosis",
@@ -134,9 +167,7 @@ export const analyzeSymptomsWithGemini = async (symptoms: string, age: string, g
 };
 
 export const getChatResponseFromGemini = async (message: string, context?: string) => {
-  return tryWithFallback(async (genAI) => {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-    
+  return tryWithFallback(async (apiKey, isGroq) => {
     const prompt = `
       You are a helpful medical AI assistant. Provide informative and supportive responses about health topics.
       ${context ? `Context: ${context}` : ''}
@@ -146,9 +177,19 @@ export const getChatResponseFromGemini = async (message: string, context?: strin
       Please provide a helpful, accurate response while reminding users to consult healthcare professionals for serious concerns.
     `;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return response.text();
+    if (isGroq) {
+      return await callGroqAPI(prompt, apiKey);
+    } else {
+      const genAI = createGenAI(apiKey);
+      if (!genAI) {
+        throw new Error('Invalid Gemini API key format');
+      }
+      
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      return response.text();
+    }
   });
 };
 
@@ -157,9 +198,7 @@ const chatAboutDiagnosis = async (
   message: string, 
   previousMessages: ChatMessage[]
 ): Promise<string> => {
-  return tryWithFallback(async (genAI) => {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-    
+  return tryWithFallback(async (apiKey, isGroq) => {
     const conversationHistory = previousMessages
       .slice(-5) // Only include last 5 messages for context
       .map(msg => `${msg.role}: ${msg.content}`)
@@ -178,9 +217,19 @@ const chatAboutDiagnosis = async (
       Please provide a helpful, empathetic response about their diagnosis while always reminding them to consult with healthcare professionals for medical decisions.
     `;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return response.text();
+    if (isGroq) {
+      return await callGroqAPI(prompt, apiKey);
+    } else {
+      const genAI = createGenAI(apiKey);
+      if (!genAI) {
+        throw new Error('Invalid Gemini API key format');
+      }
+      
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      return response.text();
+    }
   });
 };
 
