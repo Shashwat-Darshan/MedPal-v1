@@ -58,7 +58,7 @@ const Navbar = () => {
               </div> :
           // Desktop: Full text logo with tagline
           <div className="flex items-center space-x-3">
-                <div className="flex flex-col items-center justify-center bg-gradient-to-br from-blue-600 to-blue-800 dark:from-blue-500 dark:to-blue-700 rounded-xl px-3 py-2 shadow-lg group-hover:scale-105 transition-transform duration-300 bg-slate-50">
+                <div className="">
                   <span className="text-white leading-none font-extrabold text-base">MED</span>
                   <span className="leading-none text-blue-700 font-extrabold text-xl py-0 text-left">PAL</span>
                 </div>
