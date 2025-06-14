@@ -2,14 +2,21 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/hooks/useAuth';
-import { Heart, User, LogOut, Menu, Bell, Search, Settings, Sparkles } from 'lucide-react';
+import { useDarkMode } from '@/hooks/useDarkMode';
+import { useNotifications } from '@/hooks/useNotifications';
+import { Heart, User, LogOut, Menu, Bell, Search, Settings, Sparkles, Moon, Sun } from 'lucide-react';
+import NotificationDropdown from '@/components/NotificationDropdown';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { isDark, toggleTheme } = useDarkMode();
+  const { unreadCount } = useNotifications();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [notificationOpen, setNotificationOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -25,7 +32,7 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm sticky top-0 z-50">
+    <nav className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Enhanced Logo */}
@@ -58,7 +65,7 @@ const Navbar = () => {
                 className={`text-sm transition-all duration-200 ${
                   location.pathname === item.path 
                     ? 'medical-gradient text-white shadow-lg' 
-                    : 'hover:bg-blue-50 hover:text-blue-700'
+                    : 'hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-300'
                 }`}
               >
                 {item.label}
@@ -68,25 +75,53 @@ const Navbar = () => {
 
           {/* Enhanced User Menu */}
           <div className="flex items-center space-x-3">
+            {/* Dark Mode Toggle */}
+            <div className="flex items-center space-x-2">
+              <Sun className="h-4 w-4 text-yellow-500" />
+              <Switch
+                checked={isDark}
+                onCheckedChange={toggleTheme}
+                className="data-[state=checked]:bg-blue-600"
+              />
+              <Moon className="h-4 w-4 text-blue-500" />
+            </div>
+
             {/* Search Button */}
             <Button variant="ghost" size="sm" className="hidden sm:flex">
               <Search className="h-4 w-4" />
             </Button>
             
             {/* Notifications */}
-            <Button variant="ghost" size="sm" className="relative">
-              <Bell className="h-4 w-4" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-            </Button>
+            <div className="relative">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setNotificationOpen(!notificationOpen)}
+                className="relative"
+              >
+                <Bell className="h-4 w-4" />
+                {unreadCount > 0 && (
+                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                    <span className="text-xs text-white font-medium">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  </div>
+                )}
+              </Button>
+              <NotificationDropdown 
+                isOpen={notificationOpen}
+                onClose={() => setNotificationOpen(false)}
+              />
+            </div>
 
             {/* User Profile */}
-            <div className="hidden sm:flex items-center space-x-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-full px-4 py-2 border border-blue-200">
+            <div className="hidden sm:flex items-center space-x-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full px-4 py-2 border border-blue-200 dark:border-blue-700">
               <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
                 {user?.name?.charAt(0).toUpperCase() || 'U'}
               </div>
               <div className="text-sm">
-                <p className="font-medium text-gray-900">{user?.name || 'User'}</p>
-                <p className="text-xs text-gray-500">Premium Member</p>
+                <p className="font-medium text-gray-900 dark:text-gray-100">{user?.name || 'User'}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Premium Member</p>
               </div>
             </div>
 
@@ -100,7 +135,7 @@ const Navbar = () => {
               variant="outline" 
               size="sm" 
               onClick={handleLogout}
-              className="hover:bg-red-50 hover:border-red-300 hover:text-red-700"
+              className="hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-300 dark:hover:border-red-700 hover:text-red-700 dark:hover:text-red-300"
             >
               <LogOut className="h-4 w-4" />
             </Button>
@@ -119,7 +154,7 @@ const Navbar = () => {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200">
+          <div className="md:hidden py-4 border-t border-gray-200 dark:border-gray-700">
             <div className="space-y-2">
               {navItems.map((item) => (
                 <Button
