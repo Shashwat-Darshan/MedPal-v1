@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,11 +8,12 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { Stethoscope, Brain, Send, Sparkles, FileText, Activity, AlertCircle, CheckCircle } from 'lucide-react';
+import { Stethoscope, Brain, Send, Sparkles, FileText, Activity, AlertCircle, CheckCircle, Settings } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import DiagnosisCard from '@/components/DiagnosisCard';
 import QuestionCard from '@/components/QuestionCard';
 import VoiceRecorder from '@/components/VoiceRecorder';
+import ApiKeyInput from '@/components/ApiKeyInput';
 import { analyzeSymptomsWithGemini } from '@/services/geminiService';
 
 const Index = () => {
@@ -25,6 +25,7 @@ const Index = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [diagnosis, setDiagnosis] = useState<any>(null);
   const [showQuestions, setShowQuestions] = useState(false);
+  const [showApiKeyInput, setShowApiKeyInput] = useState(!localStorage.getItem('gemini_api_key'));
 
   const handleAnalyze = async () => {
     if (!symptoms.trim()) {
@@ -33,6 +34,16 @@ const Index = () => {
         description: "Please describe your symptoms",
         variant: "destructive",
       });
+      return;
+    }
+
+    if (!localStorage.getItem('gemini_api_key')) {
+      toast({
+        title: "API Key Required",
+        description: "Please enter your Gemini API key first",
+        variant: "destructive",
+      });
+      setShowApiKeyInput(true);
       return;
     }
 
@@ -66,7 +77,7 @@ const Index = () => {
     } catch (error) {
       toast({
         title: "Analysis Failed",
-        description: "Unable to analyze symptoms. Please try again.",
+        description: error.message || "Unable to analyze symptoms. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -113,22 +124,32 @@ const Index = () => {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Enhanced Header */}
         <div className="mb-8">
-          <div className="flex items-center space-x-4 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-              <Stethoscope className="h-6 w-6 text-white" />
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                <Stethoscope className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  AI Medical Diagnosis
+                </h1>
+                <p className="text-gray-600 dark:text-gray-300 mt-1">Get instant health assessment powered by advanced AI</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                AI Medical Diagnosis
-              </h1>
-              <p className="text-gray-600 dark:text-gray-300 mt-1">Get instant health assessment powered by advanced AI</p>
-            </div>
+            <Button
+              variant="outline"
+              onClick={() => setShowApiKeyInput(!showApiKeyInput)}
+              className="flex items-center space-x-2"
+            >
+              <Settings className="h-4 w-4" />
+              <span>API Settings</span>
+            </Button>
           </div>
           
           <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
             <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span>AI Assistant Online</span>
+              <div className={`w-2 h-2 ${localStorage.getItem('gemini_api_key') ? 'bg-green-500' : 'bg-red-500'} rounded-full animate-pulse`}></div>
+              <span>{localStorage.getItem('gemini_api_key') ? 'AI Assistant Online' : 'API Key Required'}</span>
             </div>
             <div className="flex items-center space-x-2">
               <Brain className="h-4 w-4 text-purple-500" />
@@ -140,6 +161,13 @@ const Index = () => {
             </div>
           </div>
         </div>
+
+        {/* API Key Input */}
+        {showApiKeyInput && (
+          <div className="mb-6">
+            <ApiKeyInput />
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Input Form */}

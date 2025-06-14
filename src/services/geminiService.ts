@@ -1,12 +1,19 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+const getApiKey = () => {
+  return import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem('gemini_api_key');
+};
+
+const apiKey = getApiKey();
 
 if (!apiKey) {
-  console.error('VITE_GEMINI_API_KEY is not set. Please add your Gemini API key to the environment variables.');
+  console.warn('VITE_GEMINI_API_KEY is not set. You can enter your API key in the app settings.');
 }
 
-const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
+const createGenAI = () => {
+  const key = getApiKey();
+  return key ? new GoogleGenerativeAI(key) : null;
+};
 
 export interface Disease {
   name: string;
@@ -22,8 +29,9 @@ export interface ChatMessage {
 }
 
 export const analyzeSymptomsWithGemini = async (symptoms: string, age: string, gender: string) => {
+  const genAI = createGenAI();
   if (!genAI) {
-    throw new Error('Gemini API key is not configured. Please set VITE_GEMINI_API_KEY in your environment variables.');
+    throw new Error('Gemini API key is not configured. Please set your API key in the app.');
   }
 
   const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
@@ -80,8 +88,9 @@ export const analyzeSymptomsWithGemini = async (symptoms: string, age: string, g
 };
 
 export const getChatResponseFromGemini = async (message: string, context?: string) => {
+  const genAI = createGenAI();
   if (!genAI) {
-    throw new Error('Gemini API key is not configured. Please set VITE_GEMINI_API_KEY in your environment variables.');
+    throw new Error('Gemini API key is not configured. Please set your API key in the app.');
   }
 
   const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
@@ -113,8 +122,9 @@ const chatAboutDiagnosis = async (
   message: string, 
   previousMessages: ChatMessage[]
 ): Promise<string> => {
+  const genAI = createGenAI();
   if (!genAI) {
-    throw new Error('Gemini API key is not configured. Please set VITE_GEMINI_API_KEY in your environment variables.');
+    throw new Error('Gemini API key is not configured. Please set your API key in the app.');
   }
 
   const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
