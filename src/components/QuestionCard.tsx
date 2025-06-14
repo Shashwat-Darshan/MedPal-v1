@@ -8,7 +8,7 @@ import { HelpCircle, MessageSquare, CheckCircle, Loader2 } from 'lucide-react';
 interface Question {
   id: string;
   text: string;
-  type: 'yes_no' | 'multiple_choice';
+  type: 'yes_no' | 'multiple_choice' | 'severity';
   options?: string[];
 }
 

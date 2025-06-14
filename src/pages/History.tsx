@@ -7,55 +7,25 @@ import { useNavigate } from 'react-router-dom';
 import { Calendar, Clock, FileText, Stethoscope, TrendingUp, Brain, Sparkles, Filter, Search } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import Navbar from '@/components/Navbar';
-
-interface HistoryItem {
-  id: string;
-  date: string;
-  symptoms: string;
-  diagnosis: string;
-  confidence: number;
-  status: 'completed' | 'pending';
-}
+import { getSessionHistory, DiagnosticSession } from '@/services/historyService';
 
 const History = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [history, setHistory] = useState<DiagnosticSession[]>([]);
 
-  // Get user-specific history from localStorage
-  const getUserHistory = (): HistoryItem[] => {
-    if (!user?.email) return [];
-    
-    const storageKey = `medpal_history_${user.email}`;
-    const storedHistory = localStorage.getItem(storageKey);
-    
-    if (storedHistory) {
-      try {
-        const parsed = JSON.parse(storedHistory);
-        return parsed.map((item: any) => ({
-          ...item,
-          date: item.date // Keep as string for consistent display
-        }));
-      } catch (error) {
-        console.error('Error parsing user history:', error);
-        return [];
-      }
-    }
-    
-    return [];
-  };
-
-  // Load history on component mount and when user changes
+  // Load history on component mount
   useEffect(() => {
-    const userHistory = getUserHistory();
-    setHistory(userHistory);
-  }, [user?.email]);
+    const sessions = getSessionHistory();
+    console.log('Loaded diagnostic sessions:', sessions);
+    setHistory(sessions);
+  }, []);
 
   // Listen for storage changes (when new history is added)
   useEffect(() => {
     const handleStorageChange = () => {
-      const userHistory = getUserHistory();
-      setHistory(userHistory);
+      const sessions = getSessionHistory();
+      setHistory(sessions);
     };
 
     // Listen for storage changes
@@ -68,7 +38,7 @@ const History = () => {
       window.removeEventListener('storage', handleStorageChange);
       clearInterval(interval);
     };
-  }, [user?.email]);
+  }, []);
 
   const getConfidenceBadgeColor = (confidence: number) => {
     if (confidence >= 80) return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
@@ -89,6 +59,12 @@ const History = () => {
         time: 'Invalid Time'
       };
     }
+  };
+
+  const getTopDiagnosis = (session: DiagnosticSession) => {
+    const results = session.finalResults || session.diseases;
+    const topResult = results.sort((a, b) => b.confidence - a.confidence)[0];
+    return topResult || { name: 'No diagnosis', confidence: 0, description: 'Assessment incomplete' };
   };
 
   return (
@@ -173,7 +149,12 @@ const History = () => {
                     <div>
                       <p className="text-green-100 text-sm">Avg Confidence</p>
                       <p className="text-2xl font-bold">
-                        {history.length > 0 ? Math.round(history.reduce((acc, item) => acc + item.confidence, 0) / history.length) : 0}%
+                        {history.length > 0 ? Math.round(
+                          history.reduce((acc, session) => {
+                            const topDiagnosis = getTopDiagnosis(session);
+                            return acc + topDiagnosis.confidence;
+                          }, 0) / history.length
+                        ) : 0}%
                       </p>
                       <p className="text-green-200 text-xs">High accuracy</p>
                     </div>
@@ -188,10 +169,10 @@ const History = () => {
                     <div>
                       <p className="text-purple-100 text-sm">This Month</p>
                       <p className="text-2xl font-bold">
-                        {history.filter(item => {
-                          const itemDate = new Date(item.date);
+                        {history.filter(session => {
+                          const sessionDate = new Date(session.timestamp);
                           const now = new Date();
-                          return itemDate.getMonth() === now.getMonth() && itemDate.getFullYear() === now.getFullYear();
+                          return sessionDate.getMonth() === now.getMonth() && sessionDate.getFullYear() === now.getFullYear();
                         }).length}
                       </p>
                       <p className="text-purple-200 text-xs">Recent activity</p>
@@ -232,10 +213,13 @@ const History = () => {
 
             {/* History List */}
             <div className="space-y-4">
-              {history.map((item) => {
-                const { date, time } = formatDate(item.date);
+              {history.map((session) => {
+                const { date, time } = formatDate(session.timestamp);
+                const topDiagnosis = getTopDiagnosis(session);
+                const status = session.completedAt ? 'completed' : 'pending';
+                
                 return (
-                  <Card key={item.id} className="glass-light dark:glass-card dark:border-gray-700 hover:shadow-lg transition-all duration-300 floating-card">
+                  <Card key={session.id} className="glass-light dark:glass-card dark:border-gray-700 hover:shadow-lg transition-all duration-300 floating-card">
                     <CardHeader className="pb-4">
                       <div className="flex justify-between items-start">
                         <div className="flex items-start space-x-3">
@@ -243,7 +227,7 @@ const History = () => {
                             <Stethoscope className="h-5 w-5 text-white" />
                           </div>
                           <div>
-                            <CardTitle className="text-lg text-gray-900 dark:text-gray-100">{item.diagnosis}</CardTitle>
+                            <CardTitle className="text-lg text-gray-900 dark:text-gray-100">{topDiagnosis.name}</CardTitle>
                             <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400 mt-2">
                               <div className="flex items-center space-x-1">
                                 <Calendar className="h-4 w-4" />
@@ -253,11 +237,12 @@ const History = () => {
                                 <Clock className="h-4 w-4" />
                                 <span>{time}</span>
                               </div>
+                              <span>{session.questionAnswerPairs.length} Q&A pairs</span>
                             </div>
                           </div>
                         </div>
-                        <Badge className={getConfidenceBadgeColor(item.confidence)}>
-                          {item.confidence}% confidence
+                        <Badge className={getConfidenceBadgeColor(topDiagnosis.confidence)}>
+                          {Math.round(topDiagnosis.confidence)}% confidence
                         </Badge>
                       </div>
                     </CardHeader>
@@ -265,13 +250,27 @@ const History = () => {
                       <div className="space-y-4">
                         <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                           <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Symptoms Reported:</h4>
-                          <p className="text-gray-700 dark:text-gray-300 text-sm break-words">{item.symptoms}</p>
+                          <p className="text-gray-700 dark:text-gray-300 text-sm break-words">{session.symptoms || 'No symptoms recorded'}</p>
                         </div>
+                        
+                        {session.questionAnswerPairs.length > 0 && (
+                          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Recent Q&A:</h4>
+                            <div className="space-y-2">
+                              {session.questionAnswerPairs.slice(-2).map((qa, index) => (
+                                <div key={index} className="text-xs">
+                                  <p className="text-gray-700 dark:text-gray-300 font-medium">Q: {qa.question}</p>
+                                  <p className="text-gray-600 dark:text-gray-400">A: {qa.answer}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                         
                         <div className="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700">
                           <div className="flex items-center space-x-2">
-                            <Badge variant={item.status === 'completed' ? 'default' : 'outline'} className="dark:bg-gray-700 dark:text-gray-300">
-                              {item.status}
+                            <Badge variant={status === 'completed' ? 'default' : 'outline'} className="dark:bg-gray-700 dark:text-gray-300">
+                              {status}
                             </Badge>
                             <div className="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400">
                               <Sparkles className="h-3 w-3" />
