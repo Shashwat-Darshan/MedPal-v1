@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { useNavigate } from 'react-router-dom';
-import { Heart, Shield, Activity, Clock, Mic, MessageSquare, HelpCircle, CheckCircle, History, Phone, RotateCcw, Brain, Sparkles, Zap, Target } from 'lucide-react';
+import { Heart, Shield, Activity, Clock, Mic, MessageSquare, HelpCircle, CheckCircle, History, Phone, RotateCcw, Brain, Sparkles, Zap, Target, Plus } from 'lucide-react';
 import { geminiService, Disease, DiagnosisResponse } from '@/services/geminiService';
 import QuestionCard from '@/components/QuestionCard';
 import DiagnosisChat from '@/components/DiagnosisChat';
