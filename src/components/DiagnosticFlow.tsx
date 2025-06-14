@@ -291,36 +291,9 @@ const DiagnosticFlow = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Possible Conditions
-          </h3>
-          <div className="space-y-3">
-            {diseases.sort((a, b) => b.confidence - a.confidence).map((disease, index) => (
-              <div key={disease.id} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium text-gray-900 dark:text-gray-100">
-                    {index + 1}. {disease.name}
-                  </span>
-                  <Badge 
-                    className={
-                      disease.confidence >= 80 ? 'bg-green-100 text-green-800' :
-                      disease.confidence >= 60 ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-red-100 text-red-800'
-                    }
-                  >
-                    {Math.round(disease.confidence)}%
-                  </Badge>
-                </div>
-                <Progress value={disease.confidence} className="h-2 mb-2" />
-                <p className="text-sm text-gray-600 dark:text-gray-400">{disease.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Left side - Questions (takes 2/5 of space) */}
+        <div className="lg:col-span-2 space-y-4">
           {currentQuestion && (
             <>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
@@ -352,6 +325,35 @@ const DiagnosticFlow = () => {
               </Card>
             </>
           )}
+        </div>
+
+        {/* Right side - Conditions (takes 3/5 of space) */}
+        <div className="lg:col-span-3 space-y-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            Possible Conditions
+          </h3>
+          <div className="space-y-3">
+            {diseases.sort((a, b) => b.confidence - a.confidence).map((disease, index) => (
+              <div key={disease.id} className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-gray-900 dark:text-gray-100">
+                    {index + 1}. {disease.name}
+                  </span>
+                  <Badge 
+                    className={
+                      disease.confidence >= 80 ? 'bg-green-100 text-green-800' :
+                      disease.confidence >= 60 ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-red-100 text-red-800'
+                    }
+                  >
+                    {Math.round(disease.confidence)}%
+                  </Badge>
+                </div>
+                <Progress value={disease.confidence} className="h-2 mb-2" />
+                <p className="text-sm text-gray-600 dark:text-gray-400">{disease.description}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -426,7 +428,7 @@ const DiagnosticFlow = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-[90%] mx-auto">
       {/* Progress Header */}
       <Card className="glass-light dark:glass-card">
         <CardContent className="pt-6">
