@@ -1,5 +1,3 @@
-
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -149,133 +147,127 @@ const DiagnosticFlow = () => {
   };
 
   const renderInitialStep = () => (
-    <div className="min-h-[35vh] flex items-center justify-center">
-      <div className="text-center space-y-8 max-w-2xl mx-auto">
-        <div className="relative">
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 via-purple-600 to-teal-500 rounded-full flex items-center justify-center mx-auto shadow-xl">
-            <Brain className="h-10 w-10 text-white" />
-          </div>
-          <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full animate-pulse flex items-center justify-center">
-            <div className="w-3 h-3 bg-white rounded-full"></div>
-          </div>
+    <div className="text-center space-y-8 py-12">
+      <div className="relative inline-flex items-center justify-center">
+        <div className="absolute inset-0 w-32 h-32 bg-gradient-to-r from-blue-400 to-purple-600 rounded-full opacity-20 animate-pulse"></div>
+        <div className="relative w-24 h-24 bg-gradient-to-br from-blue-500 via-purple-600 to-teal-500 rounded-full flex items-center justify-center shadow-2xl">
+          <Brain className="h-12 w-12 text-white" />
         </div>
-        
-        <div className="space-y-4">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 bg-clip-text text-transparent">
-            AI Health Assistant
-          </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
-            Get personalized health insights powered by advanced AI technology
-          </p>
-          <p className="text-base text-gray-500 dark:text-gray-400 max-w-xl mx-auto">
-            Describe your symptoms and I'll help assess your condition with intelligent follow-up questions
-          </p>
-        </div>
-        
-        <Button 
-          onClick={handleStartDiagnosis}
-          className="medical-gradient text-white px-12 py-4 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-          size="lg"
-        >
-          <Stethoscope className="h-5 w-5 mr-3" />
-          Start Health Assessment
-        </Button>
       </div>
+      
+      <div className="space-y-4 max-w-2xl mx-auto">
+        <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 bg-clip-text text-transparent">
+          AI Health Assistant
+        </h1>
+        <p className="text-xl text-gray-600 dark:text-gray-300 leading-relaxed">
+          Get personalized health insights powered by advanced AI technology
+        </p>
+        <p className="text-lg text-gray-500 dark:text-gray-400">
+          Describe your symptoms and I'll help assess your condition with intelligent follow-up questions
+        </p>
+      </div>
+      
+      <Button 
+        onClick={handleStartDiagnosis}
+        className="medical-gradient text-white px-8 py-4 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+        size="lg"
+      >
+        <Stethoscope className="h-5 w-5 mr-3" />
+        Start Health Assessment
+      </Button>
     </div>
   );
 
   const renderSymptomsStep = () => (
-    <div className="max-w-7xl mx-auto space-y-10">
+    <div className="space-y-8">
       <div className="text-center space-y-6">
-        <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto shadow-xl">
+        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl shadow-xl">
           <Activity className="h-10 w-10 text-white" />
         </div>
         <h2 className="text-4xl font-bold text-gray-900 dark:text-gray-100">
           Tell Me About Your Symptoms
         </h2>
-        <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+        <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
           The more detailed you are, the better I can help assess your condition
         </p>
       </div>
 
-      <Card className="glass-light dark:glass-card border-2 border-blue-100 dark:border-blue-800 shadow-xl">
-        <CardContent className="p-10 space-y-8">
-          <div>
-            <label className="block text-xl font-semibold text-gray-700 dark:text-gray-300 mb-6">
-              Describe your symptoms in detail
-            </label>
-            <Textarea
-              value={symptoms}
-              onChange={(e) => setSymptoms(e.target.value)}
-              placeholder="Example: I've been having a persistent headache for 2 days, feeling tired, and have a slight fever. The headache is worse in the morning and I feel nauseous..."
-              className="min-h-[180px] text-lg p-6 glass-light-subtle dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400"
-              rows={8}
-            />
-          </div>
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="space-y-4">
+          <label className="block text-xl font-semibold text-gray-700 dark:text-gray-300">
+            Describe your symptoms in detail
+          </label>
+          <Textarea
+            value={symptoms}
+            onChange={(e) => setSymptoms(e.target.value)}
+            placeholder="Example: I've been having a persistent headache for 2 days, feeling tired, and have a slight fever. The headache is worse in the morning and I feel nauseous..."
+            className="min-h-[150px] text-lg p-6 rounded-2xl border-2 border-gray-200 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
+            rows={6}
+          />
+        </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <label className="block text-lg font-semibold text-gray-700 dark:text-gray-300">
-                How long have you had these symptoms?
-              </label>
-              <select className="w-full p-4 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white/90 dark:bg-gray-800 text-lg focus:border-blue-500 dark:focus:border-blue-400">
-                <option>Select duration</option>
-                <option>Less than 1 day</option>
-                <option>1-3 days</option>
-                <option>1 week</option>
-                <option>More than 1 week</option>
-                <option>Several weeks</option>
-                <option>Months</option>
-              </select>
-            </div>
-            
-            <div className="space-y-4">
-              <label className="block text-lg font-semibold text-gray-700 dark:text-gray-300">
-                Pain/Discomfort Level: {severityValue[0]}/10
-              </label>
-              <div className="px-4 py-8">
-                <Slider
-                  value={severityValue}
-                  onValueChange={setSeverityValue}
-                  max={10}
-                  min={1}
-                  step={1}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-sm text-gray-500 mt-3">
-                  <span>1 - Mild</span>
-                  <span>5 - Moderate</span>
-                  <span>10 - Severe</span>
-                </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <label className="block text-lg font-semibold text-gray-700 dark:text-gray-300">
+              Duration
+            </label>
+            <select className="w-full p-4 rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-white/80 dark:bg-gray-800/80 text-lg focus:border-blue-500 dark:focus:border-blue-400">
+              <option>Select duration</option>
+              <option>Less than 1 day</option>
+              <option>1-3 days</option>
+              <option>1 week</option>
+              <option>More than 1 week</option>
+              <option>Several weeks</option>
+              <option>Months</option>
+            </select>
+          </div>
+          
+          <div className="space-y-4">
+            <label className="block text-lg font-semibold text-gray-700 dark:text-gray-300">
+              Pain/Discomfort Level: {severityValue[0]}/10
+            </label>
+            <div className="px-2 py-6">
+              <Slider
+                value={severityValue}
+                onValueChange={setSeverityValue}
+                max={10}
+                min={1}
+                step={1}
+                className="w-full"
+              />
+              <div className="flex justify-between text-sm text-gray-500 mt-2">
+                <span>1 - Mild</span>
+                <span>5 - Moderate</span>
+                <span>10 - Severe</span>
               </div>
             </div>
           </div>
+        </div>
 
-          <Button 
-            onClick={handleSymptomsSubmit}
-            disabled={!symptoms.trim() || isAnalyzing}
-            className="w-full medical-gradient text-white py-6 text-xl font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
-            size="lg"
-          >
-            <Send className="h-6 w-6 mr-4" />
-            {isAnalyzing ? 'Analyzing Symptoms...' : 'Begin Diagnosis'}
-          </Button>
-        </CardContent>
-      </Card>
+        <Button 
+          onClick={handleSymptomsSubmit}
+          disabled={!symptoms.trim() || isAnalyzing}
+          className="w-full medical-gradient text-white py-6 text-xl font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300"
+          size="lg"
+        >
+          <Send className="h-6 w-6 mr-4" />
+          {isAnalyzing ? 'Analyzing Symptoms...' : 'Begin Diagnosis'}
+        </Button>
+      </div>
     </div>
   );
 
   const renderAnalysisStep = () => (
-    <div className="min-h-[60vh] flex items-center justify-center">
-      <div className="text-center space-y-10">
+    <div className="flex items-center justify-center py-20">
+      <div className="text-center space-y-8">
         <div className="relative">
-          <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto animate-pulse shadow-2xl">
-            <Activity className="h-12 w-12 text-white" />
+          <div className="w-32 h-32 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto animate-pulse shadow-2xl">
+            <Activity className="h-16 w-16 text-white" />
           </div>
-          <div className="absolute inset-0 w-24 h-24 border-4 border-blue-200 rounded-full animate-ping mx-auto"></div>
+          <div className="absolute inset-0 w-32 h-32 border-4 border-blue-200 rounded-full animate-ping mx-auto"></div>
         </div>
         
-        <div className="space-y-6">
+        <div className="space-y-4">
           <h2 className="text-4xl font-bold text-gray-900 dark:text-gray-100">
             Analyzing Your Symptoms
           </h2>
@@ -284,8 +276,8 @@ const DiagnosticFlow = () => {
           </p>
         </div>
         
-        <div className="w-full max-w-lg mx-auto space-y-4">
-          <Progress value={progress} className="h-4 rounded-full" />
+        <div className="w-full max-w-md mx-auto space-y-4">
+          <Progress value={progress} className="h-3 rounded-full" />
           <p className="text-lg text-gray-500">Processing medical data...</p>
         </div>
       </div>
@@ -293,11 +285,10 @@ const DiagnosticFlow = () => {
   );
 
   const renderQuestionsStep = () => (
-    <div className="min-h-[80vh] space-y-8">
-      {/* Header with Progress and Restart */}
-      <div className="flex items-center justify-between bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 p-6 rounded-2xl border border-blue-200 dark:border-blue-800">
-        <div className="flex items-center space-x-6">
-          <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+    <div className="space-y-8">
+      <div className="flex items-center justify-between bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 p-6 rounded-2xl">
+        <div className="flex items-center space-x-4">
+          <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
             <Target className="h-8 w-8 text-white" />
           </div>
           <div>
@@ -305,7 +296,7 @@ const DiagnosticFlow = () => {
               Refining Diagnosis
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-400">
-              Answer these questions to improve accuracy • {Math.round(progress)}% complete
+              {Math.round(progress)}% complete • Question {questionHistory.length + 1}
             </p>
           </div>
         </div>
@@ -313,136 +304,98 @@ const DiagnosticFlow = () => {
           onClick={restartDiagnosis}
           variant="outline"
           size="lg"
-          className="flex items-center space-x-3 hover:bg-gray-50 dark:hover:bg-gray-800 px-6 py-3"
+          className="rounded-xl px-6 py-3"
         >
-          <RotateCcw className="h-5 w-5" />
-          <span className="text-lg">Start Over</span>
+          <RotateCcw className="h-5 w-5 mr-2" />
+          Start Over
         </Button>
       </div>
 
-      {/* Main Content - Full Width Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 min-h-[60vh]">
-        {/* Questions Section - Takes 2/3 of the space */}
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        <div className="lg:col-span-3 space-y-6">
           {currentQuestion && (
-            <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50/80 to-indigo-50/80 dark:from-blue-900/30 dark:to-indigo-900/30 shadow-xl backdrop-blur-sm">
-              <CardHeader className="pb-6">
-                <CardTitle className="flex items-center space-x-4 text-blue-900 dark:text-blue-100">
-                  <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center shadow-lg">
-                    <span className="text-white text-xl font-bold">?</span>
-                  </div>
-                  <div>
-                    <span className="text-2xl">Follow-up Question</span>
-                    <p className="text-sm text-blue-700 dark:text-blue-300 font-normal mt-1">
-                      Question {questionHistory.length + 1} • This helps refine your diagnosis
+            <div className="bg-gradient-to-br from-blue-50/80 to-indigo-50/80 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-3xl p-8 border-2 border-blue-200 dark:border-blue-700 shadow-xl backdrop-blur-sm">
+              <div className="text-center space-y-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl shadow-lg">
+                  <span className="text-white text-2xl font-bold">?</span>
+                </div>
+                
+                <div className="space-y-4">
+                  <h3 className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                    Follow-up Question
+                  </h3>
+                  <div className="bg-white/60 dark:bg-gray-800/60 p-6 rounded-2xl">
+                    <p className="text-xl text-blue-900 dark:text-blue-100 leading-relaxed">
+                      {currentQuestion.text}
                     </p>
                   </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-8">
-                <div className="bg-white/60 dark:bg-gray-800/60 p-8 rounded-xl border border-blue-100 dark:border-blue-700">
-                  <p className="text-3xl font-medium text-blue-900 dark:text-blue-100 leading-relaxed text-center">
-                    {currentQuestion.text}
-                  </p>
                 </div>
                 
                 {currentQuestion.type === 'yes_no' && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="grid grid-cols-2 gap-6">
                     <Button 
                       onClick={() => handleAnswerQuestion('yes')}
-                      className="bg-green-600 hover:bg-green-700 text-white py-8 text-2xl font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                      className="bg-green-600 hover:bg-green-700 text-white py-6 text-xl font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                     >
-                      <CheckCircle className="h-8 w-8 mr-4" />
+                      <CheckCircle className="h-6 w-6 mr-3" />
                       Yes
                     </Button>
                     <Button 
                       onClick={() => handleAnswerQuestion('no')}
-                      className="bg-red-600 hover:bg-red-700 text-white py-8 text-2xl font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                      className="bg-red-600 hover:bg-red-700 text-white py-6 text-xl font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                     >
-                      <AlertTriangle className="h-8 w-8 mr-4" />
+                      <AlertTriangle className="h-6 w-6 mr-3" />
                       No
                     </Button>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
         </div>
 
-        {/* Conditions Section - Takes 1/3 of the space */}
-        <div className="lg:col-span-1 space-y-6">
-          <div className="sticky top-6">
-            <div className="flex items-center space-x-4 mb-6 bg-white/80 dark:bg-gray-800/80 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
-              <Stethoscope className="h-8 w-8 text-purple-600" />
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-                  Possible Conditions
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Ranked by confidence
-                </p>
-              </div>
-              <Badge variant="outline" className="text-lg px-3 py-1">
+        <div className="lg:col-span-2">
+          <div className="sticky top-6 space-y-6">
+            <div className="flex items-center space-x-3 bg-white/80 dark:bg-gray-800/80 p-4 rounded-xl">
+              <Stethoscope className="h-6 w-6 text-purple-600" />
+              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                Possible Conditions
+              </h3>
+              <Badge variant="outline" className="ml-auto">
                 {diseases.length}
               </Badge>
             </div>
             
-            <div className="space-y-4 max-h-[70vh] overflow-y-auto">
+            <div className="space-y-4 max-h-[60vh] overflow-y-auto">
               {diseases.sort((a, b) => b.confidence - a.confidence).map((disease, index) => (
-                <Card key={disease.id} className={`transition-all duration-500 hover:shadow-lg ${
-                  index === 0 ? 'ring-2 ring-green-200 dark:ring-green-700 bg-green-50/70 dark:bg-green-900/20 shadow-lg' : 
-                  index === 1 ? 'ring-1 ring-yellow-200 dark:ring-yellow-700 bg-yellow-50/50 dark:bg-yellow-900/10' :
-                  'hover:shadow-md bg-white/80 dark:bg-gray-800/80'
+                <div key={disease.id} className={`p-4 rounded-xl transition-all duration-300 ${
+                  index === 0 ? 'bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-700' : 
+                  index === 1 ? 'bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-200 dark:border-yellow-700' :
+                  'bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700'
                 }`}>
-                  <CardContent className="p-5">
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="flex items-center space-x-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg ${
-                          index === 0 ? 'bg-green-500' :
-                          index === 1 ? 'bg-yellow-500' :
-                          'bg-gray-500'
-                        }`}>
-                          {index + 1}
-                        </div>
-                        <div>
-                          <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                            {disease.name}
-                          </h4>
-                        </div>
+                  <div className="flex justify-between items-center mb-3">
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+                        index === 0 ? 'bg-green-500' :
+                        index === 1 ? 'bg-yellow-500' :
+                        'bg-gray-500'
+                      }`}>
+                        {index + 1}
                       </div>
+                      <h4 className="font-semibold text-gray-900 dark:text-gray-100">
+                        {disease.name}
+                      </h4>
                     </div>
-                    
-                    <div className="space-y-3">
-                      <div>
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                            Confidence Level
-                          </span>
-                          <span className={`text-lg font-bold ${
-                            disease.confidence >= 80 ? 'text-green-600' :
-                            disease.confidence >= 60 ? 'text-yellow-600' :
-                            'text-gray-600'
-                          }`}>
-                            {Math.round(disease.confidence)}%
-                          </span>
-                        </div>
-                        <Progress 
-                          value={disease.confidence} 
-                          className="h-3 rounded-full"
-                        />
-                      </div>
-                    </div>
-                    
-                    {index === 0 && disease.confidence >= 80 && (
-                      <div className="mt-4 bg-green-100 dark:bg-green-900/40 border border-green-200 dark:border-green-700 rounded-lg p-3">
-                        <p className="text-sm text-green-800 dark:text-green-200 font-medium flex items-center">
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                          High confidence match
-                        </p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                    <span className={`text-lg font-bold ${
+                      disease.confidence >= 80 ? 'text-green-600' :
+                      disease.confidence >= 60 ? 'text-yellow-600' :
+                      'text-gray-600'
+                    }`}>
+                      {Math.round(disease.confidence)}%
+                    </span>
+                  </div>
+                  <Progress value={disease.confidence} className="h-2" />
+                </div>
               ))}
             </div>
           </div>
@@ -456,134 +409,121 @@ const DiagnosticFlow = () => {
     const topDisease = sortedDiseases[0];
     
     return (
-      <div className="max-w-5xl mx-auto space-y-10">
-        <div className="text-center space-y-8">
-          <div className="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center mx-auto shadow-2xl">
+      <div className="space-y-8">
+        <div className="text-center space-y-6">
+          <div className="inline-flex items-center justify-center w-24 h-24 bg-green-500 rounded-2xl shadow-2xl">
             <CheckCircle className="h-12 w-12 text-white" />
           </div>
           <div>
-            <h2 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3">
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-gray-100">
               Assessment Complete
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-400">
-              Based on your symptoms and responses, here are the results:
+              Based on your symptoms and responses
             </p>
           </div>
         </div>
 
-        <Card className="border-2 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 shadow-xl">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between text-2xl">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-200 dark:border-green-700 rounded-3xl p-8 shadow-xl">
+            <div className="flex items-center justify-between mb-6">
               <div className="flex items-center space-x-4">
                 <Target className="h-10 w-10 text-green-600" />
-                <span className="text-green-900 dark:text-green-100">
+                <h3 className="text-2xl font-bold text-green-900 dark:text-green-100">
                   Most Likely: {topDisease?.name}
-                </span>
+                </h3>
               </div>
-              <Badge className="bg-green-600 text-white text-xl px-6 py-3">
+              <Badge className="bg-green-600 text-white text-lg px-4 py-2">
                 {Math.round(topDisease?.confidence || 0)}% Confidence
               </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-8">
-            <p className="text-xl text-green-800 dark:text-green-200 leading-relaxed">
+            </div>
+            
+            <p className="text-lg text-green-800 dark:text-green-200 mb-6">
               {topDisease?.description}
             </p>
             
-            <div className="space-y-6">
-              <h4 className="text-xl font-semibold text-green-900 dark:text-green-100">
+            <div className="space-y-4">
+              <h4 className="text-lg font-semibold text-green-900 dark:text-green-100">
                 All Assessment Results:
               </h4>
-              <div className="grid gap-4">
+              <div className="space-y-3">
                 {sortedDiseases.map((disease, index) => (
-                  <div key={disease.id} className="flex justify-between items-center p-6 bg-white/70 dark:bg-gray-800/50 rounded-xl border border-green-200 dark:border-green-700">
-                    <div className="flex items-center space-x-4">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${
+                  <div key={disease.id} className="flex justify-between items-center p-4 bg-white/70 dark:bg-gray-800/50 rounded-xl">
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
                         index === 0 ? 'bg-green-500' :
                         index === 1 ? 'bg-yellow-500' :
                         'bg-gray-500'
                       }`}>
                         {index + 1}
                       </div>
-                      <span className="font-medium text-gray-900 dark:text-gray-100 text-lg">
+                      <span className="font-medium text-gray-900 dark:text-gray-100">
                         {disease.name}
                       </span>
                     </div>
-                    <Badge variant="outline" className="text-xl px-4 py-2">
+                    <Badge variant="outline" className="text-lg px-3 py-1">
                       {Math.round(disease.confidence)}%
                     </Badge>
                   </div>
                 ))}
               </div>
             </div>
+          </div>
 
-            <div className="bg-orange-50 dark:bg-orange-900/20 border-2 border-orange-200 dark:border-orange-700 rounded-xl p-8">
-              <div className="flex items-start space-x-4">
-                <AlertTriangle className="h-8 w-8 text-orange-600 flex-shrink-0 mt-1" />
-                <div className="space-y-3">
-                  <h5 className="font-semibold text-orange-800 dark:text-orange-200 text-xl">
-                    Important Medical Disclaimer
-                  </h5>
-                  <p className="text-orange-700 dark:text-orange-300 leading-relaxed text-lg">
-                    This AI assessment is for informational purposes only and should not replace professional medical advice. 
-                    Always consult with a qualified healthcare professional for proper diagnosis, treatment, and medical decisions.
-                  </p>
-                </div>
+          <div className="bg-orange-50 dark:bg-orange-900/20 border-2 border-orange-200 dark:border-orange-700 rounded-2xl p-6">
+            <div className="flex items-start space-x-4">
+              <AlertTriangle className="h-6 w-6 text-orange-600 flex-shrink-0 mt-1" />
+              <div>
+                <h5 className="font-semibold text-orange-800 dark:text-orange-200 text-lg mb-2">
+                  Important Medical Disclaimer
+                </h5>
+                <p className="text-orange-700 dark:text-orange-300">
+                  This AI assessment is for informational purposes only and should not replace professional medical advice. 
+                  Always consult with a qualified healthcare professional for proper diagnosis and treatment.
+                </p>
               </div>
             </div>
+          </div>
 
-            <div className="flex justify-center">
-              <Button
-                onClick={restartDiagnosis}
-                className="medical-gradient text-white px-12 py-4 text-xl font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-              >
-                <RotateCcw className="h-6 w-6 mr-4" />
-                Start New Assessment
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          <div className="text-center">
+            <Button
+              onClick={restartDiagnosis}
+              className="medical-gradient text-white px-8 py-4 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+            >
+              <RotateCcw className="h-5 w-5 mr-3" />
+              Start New Assessment
+            </Button>
+          </div>
+        </div>
       </div>
     );
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 p-6">
-      {/* Progress Header */}
-      <div className="max-w-7xl mx-auto mb-8">
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Diagnostic Progress
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-100 dark:from-gray-950 dark:via-blue-950 dark:to-purple-950">
+      {/* Floating Progress Bar */}
+      <div className="fixed top-0 left-0 right-0 z-50 p-4">
+        <div className="max-w-4xl mx-auto bg-white/90 dark:bg-gray-900/90 backdrop-blur-md rounded-2xl p-4 shadow-xl border border-white/20">
+          <div className="flex items-center justify-between mb-3">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Health Assessment
             </h1>
-            <div className="flex items-center space-x-3">
-              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-lg text-gray-600 dark:text-gray-400 font-medium">
-                {Math.round(progress)}% Complete
-              </span>
-            </div>
+            <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+              {Math.round(progress)}% Complete
+            </span>
           </div>
-          <Progress value={progress} className="h-4 mb-6 rounded-full" />
-          <div className="flex justify-between text-lg font-medium">
-            <div className={`flex items-center space-x-3 ${currentStep === 'symptoms' ? 'text-blue-600' : 'text-gray-500'}`}>
-              <div className={`w-4 h-4 rounded-full ${currentStep === 'symptoms' ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
-              <span>Symptoms</span>
-            </div>
-            <div className={`flex items-center space-x-3 ${currentStep === 'questions' ? 'text-blue-600' : 'text-gray-500'}`}>
-              <div className={`w-4 h-4 rounded-full ${currentStep === 'questions' ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
-              <span>Questions</span>
-            </div>
-            <div className={`flex items-center space-x-3 ${currentStep === 'results' ? 'text-blue-600' : 'text-gray-500'}`}>
-              <div className={`w-4 h-4 rounded-full ${currentStep === 'results' ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
-              <span>Results</span>
-            </div>
+          <Progress value={progress} className="h-2 rounded-full" />
+          <div className="flex justify-between mt-3 text-sm font-medium">
+            <span className={currentStep === 'symptoms' ? 'text-blue-600' : 'text-gray-400'}>Symptoms</span>
+            <span className={currentStep === 'questions' ? 'text-blue-600' : 'text-gray-400'}>Questions</span>
+            <span className={currentStep === 'results' ? 'text-blue-600' : 'text-gray-400'}>Results</span>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-8">
+      <div className="pt-32 pb-12 px-6">
+        <div className="max-w-6xl mx-auto">
           {currentStep === 'initial' && renderInitialStep()}
           {currentStep === 'symptoms' && renderSymptomsStep()}
           {currentStep === 'analysis' && renderAnalysisStep()}
@@ -596,4 +536,3 @@ const DiagnosticFlow = () => {
 };
 
 export default DiagnosticFlow;
-
