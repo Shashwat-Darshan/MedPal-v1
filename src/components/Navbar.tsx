@@ -1,7 +1,15 @@
+
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
 import { useDarkMode } from '@/hooks/useDarkMode';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -96,17 +104,6 @@ const Navbar = () => {
           <div className="flex items-center space-x-2">
             {!isMobile && (
               <>
-                {/* Dark Mode Toggle - Desktop Only */}
-                <div className="flex items-center space-x-2">
-                  <Sun className="h-4 w-4 text-yellow-500" />
-                  <Switch
-                    checked={isDark}
-                    onCheckedChange={toggleTheme}
-                    className="data-[state=checked]:bg-blue-600"
-                  />
-                  <Moon className="h-4 w-4 text-blue-500" />
-                </div>
-
                 {/* Search Button - Desktop Only */}
                 <Button variant="ghost" size="sm">
                   <Search className="h-4 w-4" />
@@ -157,22 +154,49 @@ const Navbar = () => {
               </Button>
             )}
 
-            {/* Settings - Desktop Only */}
+            {/* Settings Dropdown - Desktop Only */}
             {!isMobile && (
-              <Button variant="ghost" size="sm">
-                <Settings className="h-4 w-4" />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      {isDark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+                      <span>Dark Mode</span>
+                    </div>
+                    <Switch
+                      checked={isDark}
+                      onCheckedChange={toggleTheme}
+                      className="data-[state=checked]:bg-blue-600"
+                    />
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onClick={handleLogout}
+                    className="text-red-600 dark:text-red-400 focus:text-red-700 dark:focus:text-red-300"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
 
-            {/* Logout */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLogout}
-              className="hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-300 dark:hover:border-red-700 hover:text-red-700 dark:hover:text-red-300"
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
+            {/* Mobile: Logout Button */}
+            {isMobile && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLogout}
+                className="hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-300 dark:hover:border-red-700 hover:text-red-700 dark:hover:text-red-300"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            )}
 
             {/* Mobile Menu Button */}
             <Button
