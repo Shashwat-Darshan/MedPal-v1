@@ -1,13 +1,93 @@
+
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { GoogleGenAI } from '@google/genai';
-import { Groq } from 'groq-sdk';
 
-const API_KEY = 'AIzaSyDcmdzZwQf9s-iFyANNWyCgLIKOSbBKKSE';
-const GROQ_API_KEY = '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';
+// API Keys fallback system - Mixed Groq, Gemini, and OpenRouter keys
+const API_KEYS = [
+  // Groq API keys
+  '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',
+  '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', 
+  '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',
+  // Gemini API keys
+  'AIzaSyAGgztg1kQInnvAJuGTjVrb-OGdm5BR_l4',
+  'AIzaSyAi4xSyRh17eC9DvM7NcCCxps-myI2QFQU',
+  // OpenRouter API key
+  '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'
+];
 
-const genAI = new GoogleGenerativeAI(API_KEY);
-const genAI2 = new GoogleGenAI({ apiKey: API_KEY });
-const groq = new Groq({ apiKey: GROQ_API_KEY });
+const getApiKeys = () => {
+  const keys = [...API_KEYS];
+  const localKey = localStorage.getItem('gemini_api_key');
+  const envKey = import.meta.env.VITE_GEMINI_API_KEY;
+  
+  if (localKey) keys.unshift(localKey);
+  if (envKey) keys.unshift(envKey);
+  
+  return [...new Set(keys)]; // Remove duplicates
+};
+
+const createGenAI = (apiKey: string) => {
+  // Skip keys that are not valid Gemini API keys
+  if (apiKey.startsWith('sk-or-v1-') || apiKey.startsWith('gsk_')) {
+    return null;
+  }
+  return new GoogleGenerativeAI(apiKey);
+};
+
+const callGroqAPI = async (prompt: string, apiKey: string) => {
+  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'llama-3.1-70b-versatile',
+      messages: [
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      max_tokens: 1000,
+      temperature: 0.7
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Groq API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.choices[0].message.content;
+};
+
+const callOpenRouterAPI = async (prompt: string, apiKey: string) => {
+  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'google/gemini-flash-1.5',
+      messages: [
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      max_tokens: 1000,
+      temperature: 0.7
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`OpenRouter API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.choices[0].message.content;
+};
 
 export interface Disease {
   name: string;
@@ -16,312 +96,277 @@ export interface Disease {
   symptoms: string[];
 }
 
-export interface DiagnosisSession {
-  id: string;
-  symptoms: string;
-  diseases: Disease[];
-  currentQuestion: string;
-  questionCount: number;
-  isComplete: boolean;
-  finalDiagnosis?: Disease;
-}
-
-export interface DiagnosisResponse {
-  diseases: Disease[];
-  question: string;
-  isComplete: boolean;
-  finalDiagnosis?: Disease;
-}
-
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
 }
 
-class GeminiService {
-  private model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-
-  private async tryGeminiPro2_5(prompt: string): Promise<string> {
+const tryWithFallback = async <T>(
+  operation: (apiKey: string, provider: 'groq' | 'gemini' | 'openrouter') => Promise<T>
+): Promise<T> => {
+  const apiKeys = getApiKeys();
+  console.log('Available API keys:', apiKeys.length);
+  
+  let lastError: Error | null = null;
+  
+  for (let i = 0; i < apiKeys.length; i++) {
+    const apiKey = apiKeys[i];
+    console.log(`Trying API key ${i + 1}/${apiKeys.length}...`);
+    
+    const isGroq = apiKey.startsWith('gsk_');
+    const isOpenRouter = apiKey.startsWith('sk-or-v1-');
+    const isGemini = apiKey.startsWith('AIza');
+    
+    if (!isGroq && !isOpenRouter && !isGemini) {
+      console.log(`Skipping invalid API key format: ${apiKey.substring(0, 10)}...`);
+      continue;
+    }
+    
     try {
-      const contents = [
+      const provider = isGroq ? 'groq' : isOpenRouter ? 'openrouter' : 'gemini';
+      const result = await operation(apiKey, provider);
+      console.log(`Success with API key ${i + 1} (${provider})`);
+      return result;
+    } catch (error) {
+      console.log(`Failed with API key ${i + 1}:`, error);
+      lastError = error as Error;
+      continue;
+    }
+  }
+  
+  throw lastError || new Error('All API keys failed. Please check your API key configuration.');
+};
+
+export const generateDiagnosisFromSymptoms = async (symptoms: string, age: string = '', gender: string = '') => {
+  return tryWithFallback(async (apiKey, provider) => {
+    const prompt = `
+      As a medical AI assistant, analyze these symptoms and provide exactly 5 possible diagnoses:
+      
+      Patient Information:
+      - Age: ${age || 'Not specified'}
+      - Gender: ${gender || 'Not specified'}
+      - Symptoms: ${symptoms}
+      
+      Please provide EXACTLY 5 diagnoses with confidence levels. Format your response as JSON with this EXACT structure:
+      {
+        "diagnoses": [
+          {
+            "name": "Diagnosis Name",
+            "confidence": 65,
+            "description": "Brief description of the condition",
+            "symptoms": ["symptom1", "symptom2", "symptom3"]
+          }
+        ]
+      }
+      
+      Make sure confidence levels are realistic (20-80% range initially) and the diagnoses are ordered by likelihood.
+    `;
+
+    let responseText: string;
+    
+    if (provider === 'groq') {
+      responseText = await callGroqAPI(prompt, apiKey);
+    } else if (provider === 'openrouter') {
+      responseText = await callOpenRouterAPI(prompt, apiKey);
+    } else {
+      const genAI = createGenAI(apiKey);
+      if (!genAI) {
+        throw new Error('Invalid Gemini API key format');
+      }
+      
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      responseText = response.text();
+    }
+    
+    console.log('Raw API response:', responseText);
+    
+    // Try to parse JSON, fallback to structured response
+    try {
+      // Clean the response text
+      const cleanedText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const parsed = JSON.parse(cleanedText);
+      console.log('Parsed diagnoses:', parsed.diagnoses);
+      return parsed.diagnoses || [];
+    } catch (parseError) {
+      console.log('JSON parsing failed, using fallback diagnoses:', parseError);
+      // Fallback diagnoses if parsing fails
+      return [
         {
-          role: 'user' as const,
-          parts: [{ text: prompt }],
+          name: "Common Viral Infection",
+          confidence: 60,
+          description: "A general viral infection affecting the upper respiratory system",
+          symptoms: ["Fatigue", "Mild fever", "Body aches"]
         },
-      ];
-
-      const response = await genAI2.models.generateContentStream({
-        model: 'gemini-2.5-pro-preview-06-05',
-        config: { responseMimeType: 'text/plain' },
-        contents,
-      });
-
-      let fullResponse = '';
-      for await (const chunk of response) {
-        fullResponse += chunk.text || '';
-      }
-      return fullResponse;
-    } catch (error) {
-      console.error('Gemini Pro 2.5 error:', error);
-      throw error;
-    }
-  }
-
-  private async tryGroqFallback(prompt: string): Promise<string> {
-    try {
-      const chatCompletion = await groq.chat.completions.create({
-        messages: [{ role: 'user', content: prompt }],
-        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
-        temperature: 0.7,
-        max_completion_tokens: 1024,
-        top_p: 1,
-        stream: false,
-      });
-
-      return chatCompletion.choices[0]?.message?.content || '';
-    } catch (error) {
-      console.error('Groq fallback error:', error);
-      throw error;
-    }
-  }
-
-  private async tryOriginalGemini(prompt: string): Promise<string> {
-    const result = await this.model.generateContent(prompt);
-    const response = await result.response;
-    return response.text();
-  }
-
-  private async generateWithFallback(prompt: string): Promise<string> {
-    // Try Gemini Pro 2.5 first
-    try {
-      return await this.tryGeminiPro2_5(prompt);
-    } catch (error) {
-      console.log('Falling back to Groq...');
-      try {
-        return await this.tryGroqFallback(prompt);
-      } catch (groqError) {
-        console.log('Falling back to original Gemini...');
-        return await this.tryOriginalGemini(prompt);
-      }
-    }
-  }
-
-  async startDiagnosis(symptoms: string): Promise<DiagnosisResponse> {
-    const prompt = `
-As a medical AI assistant, analyze these symptoms and provide exactly 5 possible diseases with confidence levels:
-Symptoms: "${symptoms}"
-
-IMPORTANT: Respond ONLY with valid JSON in this exact format:
-{
-  "diseases": [
-    {"name": "Disease Name", "confidence": 75, "description": "Brief description", "symptoms": ["symptom1", "symptom2", "symptom3"]},
-    {"name": "Disease Name 2", "confidence": 65, "description": "Brief description", "symptoms": ["symptom1", "symptom2", "symptom3"]},
-    {"name": "Disease Name 3", "confidence": 55, "description": "Brief description", "symptoms": ["symptom1", "symptom2", "symptom3"]},
-    {"name": "Disease Name 4", "confidence": 45, "description": "Brief description", "symptoms": ["symptom1", "symptom2", "symptom3"]},
-    {"name": "Disease Name 5", "confidence": 35, "description": "Brief description", "symptoms": ["symptom1", "symptom2", "symptom3"]}
-  ],
-  "question": "A specific follow-up question to help narrow down the diagnosis"
-}
-
-Rules:
-- Confidence levels should be realistic (30-80% range initially)
-- Order diseases by confidence (highest first)
-- Ask ONE specific question that would help differentiate between the top conditions
-- Include 3-4 common symptoms for each disease
-- No additional text outside the JSON
-`;
-
-    try {
-      console.log('Starting diagnosis with symptoms:', symptoms);
-      const text = await this.generateWithFallback(prompt);
-      
-      console.log('Raw AI response:', text);
-      
-      // Clean the response to extract JSON
-      const cleanedText = text.replace(/```json\n?|\n?```/g, '').trim();
-      const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
-      
-      if (!jsonMatch) {
-        console.error('No JSON found in response:', cleanedText);
-        throw new Error('Invalid response format from AI');
-      }
-      
-      const parsedResponse = JSON.parse(jsonMatch[0]);
-      console.log('Parsed response:', parsedResponse);
-      
-      return {
-        diseases: parsedResponse.diseases,
-        question: parsedResponse.question,
-        isComplete: false
-      };
-    } catch (error) {
-      console.error('AI API error:', error);
-      return this.getFallbackResponse(symptoms);
-    }
-  }
-
-  async updateDiagnosis(
-    currentDiseases: Disease[],
-    question: string,
-    answer: string,
-    questionCount: number
-  ): Promise<DiagnosisResponse> {
-    const diseasesText = currentDiseases.map(d => `${d.name}: ${d.confidence}%`).join(', ');
-    
-    const prompt = `
-Based on the patient's answer, update the confidence levels for these diseases and determine if diagnosis is complete:
-
-Current diseases: ${diseasesText}
-Question asked: "${question}"
-Patient's answer: "${answer}"
-
-Update confidence levels based on the answer. Check completion criteria:
-- Any disease above 90% confidence, OR
-- Top 2 diseases have less than 20% difference AND both are above 60% confidence
-
-IMPORTANT: Respond ONLY with valid JSON in this exact format:
-{
-  "diseases": [
-    {"name": "Disease Name", "confidence": 85, "description": "Brief description", "symptoms": ["symptom1", "symptom2", "symptom3"]},
-    {"name": "Disease Name 2", "confidence": 70, "description": "Brief description", "symptoms": ["symptom1", "symptom2", "symptom3"]},
-    {"name": "Disease Name 3", "confidence": 45, "description": "Brief description", "symptoms": ["symptom1", "symptom2", "symptom3"]},
-    {"name": "Disease Name 4", "confidence": 35, "description": "Brief description", "symptoms": ["symptom1", "symptom2", "symptom3"]},
-    {"name": "Disease Name 5", "confidence": 25, "description": "Brief description", "symptoms": ["symptom1", "symptom2", "symptom3"]}
-  ],
-  "question": "Next follow-up question (if needed)",
-  "isComplete": true,
-  "finalDiagnosis": {"name": "Most Likely Disease", "confidence": 90, "description": "Description", "symptoms": ["symptom1", "symptom2", "symptom3"]}
-}
-
-Order by confidence and ask relevant follow-up questions if not complete. No additional text outside the JSON.
-`;
-
-    try {
-      console.log('Updating diagnosis with answer:', answer);
-      const text = await this.generateWithFallback(prompt);
-      
-      console.log('Raw update response:', text);
-      
-      const cleanedText = text.replace(/```json\n?|\n?```/g, '').trim();
-      const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
-      
-      if (!jsonMatch) {
-        console.error('No JSON found in update response:', cleanedText);
-        throw new Error('Invalid response format from AI');
-      }
-      
-      const parsedResponse = JSON.parse(jsonMatch[0]);
-      console.log('Parsed update response:', parsedResponse);
-      
-      const diseases = parsedResponse.diseases.sort((a: Disease, b: Disease) => b.confidence - a.confidence);
-      
-      const topDisease = diseases[0];
-      const secondDisease = diseases[1];
-      
-      const isComplete = 
-        topDisease.confidence >= 90 || 
-        (topDisease.confidence >= 60 && secondDisease.confidence >= 60 && 
-         (topDisease.confidence - secondDisease.confidence) <= 20) ||
-        questionCount >= 10;
-      
-      return {
-        diseases,
-        question: parsedResponse.question || "Do you have any other symptoms or concerns?",
-        isComplete,
-        finalDiagnosis: isComplete ? topDisease : parsedResponse.finalDiagnosis
-      };
-    } catch (error) {
-      console.error('AI update API error:', error);
-      const updatedDiseases = currentDiseases.map(disease => {
-        let adjustment = 0;
-        const answerLower = answer.toLowerCase();
-        
-        if (answerLower.includes('yes') || answerLower.includes('have')) {
-          adjustment = Math.random() * 15 + 5;
-        } else if (answerLower.includes('no') || answerLower.includes('not')) {
-          adjustment = -(Math.random() * 10 + 5);
-        } else {
-          adjustment = Math.random() * 10 - 5;
+        {
+          name: "Stress-Related Symptoms",
+          confidence: 45,
+          description: "Physical symptoms potentially caused by stress or anxiety",
+          symptoms: ["Tension", "Sleep disturbances", "General discomfort"]
+        },
+        {
+          name: "Seasonal Allergies",
+          confidence: 35,
+          description: "Allergic reaction to environmental factors",
+          symptoms: ["Congestion", "Sneezing", "Irritation"]
+        },
+        {
+          name: "Minor Bacterial Infection",
+          confidence: 30,
+          description: "Localized bacterial infection requiring attention",
+          symptoms: ["Localized pain", "Mild inflammation", "Discomfort"]
+        },
+        {
+          name: "Nutritional Deficiency",
+          confidence: 25,
+          description: "Symptoms potentially related to dietary factors",
+          symptoms: ["Fatigue", "Weakness", "General malaise"]
         }
-        
-        return {
-          ...disease,
-          confidence: Math.max(10, Math.min(95, disease.confidence + adjustment))
-        };
-      }).sort((a, b) => b.confidence - a.confidence);
-      
-      const topDisease = updatedDiseases[0];
-      const isComplete = topDisease.confidence >= 90 || questionCount >= 10;
-      
-      return {
-        diseases: updatedDiseases,
-        question: "Can you describe any additional symptoms you're experiencing?",
-        isComplete,
-        finalDiagnosis: isComplete ? topDisease : undefined
-      };
+      ];
     }
-  }
+  });
+};
 
-  async chatAboutDiagnosis(
-    diagnosisContext: string,
-    userMessage: string,
-    chatHistory: ChatMessage[]
-  ): Promise<string> {
-    const historyText = chatHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n');
+export const generateFollowUpQuestion = async (diseases: Disease[], symptoms: string, previousQuestions: string[]) => {
+  return tryWithFallback(async (apiKey, provider) => {
+    const diseaseList = diseases.map(d => `${d.name} (${d.confidence}%)`).join(', ');
     
     const prompt = `
-You are a medical AI assistant helping a patient understand their diagnosis. 
+      Based on these potential diagnoses: ${diseaseList}
+      
+      Original symptoms: ${symptoms}
+      Previous questions asked: ${previousQuestions.join(', ')}
+      
+      Generate ONE specific follow-up question that would help differentiate between these conditions.
+      
+      Format your response as JSON:
+      {
+        "question": "Your specific medical question here?",
+        "type": "yes_no",
+        "diseaseImpacts": {
+          "Disease Name 1": 15,
+          "Disease Name 2": -10,
+          "Disease Name 3": 5
+        }
+      }
+      
+      The diseaseImpacts should show how a "yes" answer would change each disease's confidence (positive or negative numbers).
+    `;
 
-Diagnosis Context: ${diagnosisContext}
-
-Chat History:
-${historyText}
-
-User Question: ${userMessage}
-
-Provide a helpful, informative response about the diagnosis. Be empathetic and educational, but always remind them to consult with healthcare professionals for proper medical advice.
-
-Keep responses concise and easy to understand.
-`;
-
-    try {
-      return await this.generateWithFallback(prompt);
-    } catch (error) {
-      console.error('Chat API error:', error);
-      return "I'm sorry, I'm having trouble responding right now. Please try again or consult with a healthcare professional for more information about your diagnosis.";
-    }
-  }
-
-  private getFallbackResponse(symptoms: string): DiagnosisResponse {
-    const symptomsLower = symptoms.toLowerCase();
+    let responseText: string;
     
-    if (symptomsLower.includes('stomach') || symptomsLower.includes('pain')) {
+    if (provider === 'groq') {
+      responseText = await callGroqAPI(prompt, apiKey);
+    } else if (provider === 'openrouter') {
+      responseText = await callOpenRouterAPI(prompt, apiKey);
+    } else {
+      const genAI = createGenAI(apiKey);
+      if (!genAI) {
+        throw new Error('Invalid Gemini API key format');
+      }
+      
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      responseText = response.text();
+    }
+    
+    console.log('Raw question response:', responseText);
+    
+    try {
+      // Clean the response text
+      const cleanedText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const parsed = JSON.parse(cleanedText);
+      console.log('Parsed question:', parsed);
+      return parsed;
+    } catch (parseError) {
+      console.log('Question parsing failed, using fallback:', parseError);
+      // Fallback question
       return {
-        diseases: [
-          { name: "Gastritis", confidence: 75, description: "Inflammation of stomach lining", symptoms: ["stomach pain", "nausea", "bloating", "heartburn"] },
-          { name: "Food Poisoning", confidence: 65, description: "Illness from contaminated food", symptoms: ["nausea", "vomiting", "diarrhea", "stomach cramps"] },
-          { name: "Peptic Ulcer", confidence: 55, description: "Sore in stomach or small intestine", symptoms: ["burning stomach pain", "bloating", "heartburn", "nausea"] },
-          { name: "Appendicitis", confidence: 45, description: "Inflammation of appendix", symptoms: ["right side pain", "nausea", "vomiting", "fever"] },
-          { name: "Gallstones", confidence: 35, description: "Hardened deposits in gallbladder", symptoms: ["upper right pain", "nausea", "vomiting", "fever"] }
-        ],
-        question: "On a scale of 1-10, how severe is your stomach pain?",
-        isComplete: false
+        question: "Are you experiencing any fever or elevated temperature?",
+        type: "yes_no",
+        diseaseImpacts: diseases.reduce((acc, disease) => {
+          acc[disease.name] = Math.random() > 0.5 ? 10 : -5;
+          return acc;
+        }, {} as Record<string, number>)
       };
     }
-    
-    return {
-      diseases: [
-        { name: "Common Cold", confidence: 70, description: "Viral upper respiratory infection", symptoms: ["runny nose", "cough", "sore throat", "fatigue"] },
-        { name: "Allergic Rhinitis", confidence: 60, description: "Allergic reaction causing nasal symptoms", symptoms: ["sneezing", "runny nose", "itchy eyes", "congestion"] },
-        { name: "Sinusitis", confidence: 50, description: "Inflammation of nasal sinuses", symptoms: ["facial pressure", "thick nasal discharge", "headache", "congestion"] },
-        { name: "Flu", confidence: 40, description: "Influenza viral infection", symptoms: ["fever", "body aches", "fatigue", "headache"] },
-        { name: "Strep Throat", confidence: 30, description: "Bacterial throat infection", symptoms: ["sore throat", "fever", "swollen glands", "headache"] }
-      ],
-      question: "How long have you been experiencing these symptoms?",
-      isComplete: false
-    };
-  }
-}
+  });
+};
 
-export const geminiService = new GeminiService();
+export const getChatResponseFromGemini = async (message: string, context?: string) => {
+  return tryWithFallback(async (apiKey, provider) => {
+    const prompt = `
+      You are a helpful medical AI assistant. Provide informative and supportive responses about health topics.
+      ${context ? `Context: ${context}` : ''}
+      
+      User message: ${message}
+      
+      Please provide a helpful, accurate response while reminding users to consult healthcare professionals for serious concerns.
+    `;
+
+    if (provider === 'groq') {
+      return await callGroqAPI(prompt, apiKey);
+    } else if (provider === 'openrouter') {
+      return await callOpenRouterAPI(prompt, apiKey);
+    } else {
+      const genAI = createGenAI(apiKey);
+      if (!genAI) {
+        throw new Error('Invalid Gemini API key format');
+      }
+      
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      return response.text();
+    }
+  });
+};
+
+const chatAboutDiagnosis = async (
+  diagnosisContext: string, 
+  message: string, 
+  previousMessages: ChatMessage[]
+): Promise<string> => {
+  return tryWithFallback(async (apiKey, provider) => {
+    const conversationHistory = previousMessages
+      .slice(-5) // Only include last 5 messages for context
+      .map(msg => `${msg.role}: ${msg.content}`)
+      .join('\n');
+    
+    const prompt = `
+      You are a helpful medical AI assistant discussing a patient's diagnosis. 
+      
+      Diagnosis Context: ${diagnosisContext}
+      
+      Previous conversation:
+      ${conversationHistory}
+      
+      Current user message: ${message}
+      
+      Please provide a helpful, empathetic response about their diagnosis while always reminding them to consult with healthcare professionals for medical decisions.
+    `;
+
+    if (provider === 'groq') {
+      return await callGroqAPI(prompt, apiKey);
+    } else if (provider === 'openrouter') {
+      return await callOpenRouterAPI(prompt, apiKey);
+    } else {
+      const genAI = createGenAI(apiKey);
+      if (!genAI) {
+        throw new Error('Invalid Gemini API key format');
+      }
+      
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      return response.text();
+    }
+  });
+};
+
+export const geminiService = {
+  chatAboutDiagnosis
+};

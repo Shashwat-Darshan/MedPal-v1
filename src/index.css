@@ -3,95 +3,87 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
+/* Enhanced Medical Theme Design System - RGB Colors */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 210 15% 20%;
+    --background: 248 251 255;
+    --foreground: 15 23 42;
 
-    --card: 0 0% 100%;
-    --card-foreground: 210 15% 20%;
+    --card: 255 255 255;
+    --card-foreground: 15 23 42;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 210 15% 20%;
+    --popover: 255 255 255;
+    --popover-foreground: 15 23 42;
 
-    --primary: 170 60% 45%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 59 130 246;
+    --primary-foreground: 248 250 252;
 
-    --secondary: 170 15% 95%;
-    --secondary-foreground: 170 60% 25%;
+    --secondary: 241 245 249;
+    --secondary-foreground: 51 65 85;
 
-    --muted: 170 10% 96%;
-    --muted-foreground: 210 10% 45%;
+    --muted: 248 250 252;
+    --muted-foreground: 100 116 139;
 
-    --accent: 170 30% 85%;
-    --accent-foreground: 170 60% 25%;
+    --accent: 219 234 254;
+    --accent-foreground: 30 64 175;
 
-    --destructive: 0 85% 60%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 239 68 68;
+    --destructive-foreground: 248 250 252;
 
-    --border: 170 20% 88%;
-    --input: 170 20% 88%;
-    --ring: 170 60% 45%;
+    --border: 226 232 240;
+    --input: 226 232 240;
+    --ring: 59 130 246;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --sidebar-background: 170 10% 98%;
-    --sidebar-foreground: 210 15% 30%;
-    --sidebar-primary: 170 60% 45%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 170 15% 92%;
-    --sidebar-accent-foreground: 170 60% 25%;
-    --sidebar-border: 170 20% 85%;
-    --sidebar-ring: 170 60% 45%;
-
-    /* Medical theme colors */
-    --medical-primary: 170 60% 45%;
-    --medical-secondary: 195 70% 50%;
-    --medical-accent: 200 80% 85%;
-    --medical-success: 145 60% 50%;
-    --medical-warning: 45 90% 60%;
-    --medical-error: 0 85% 60%;
+    /* Medical theme specific RGB colors */
+    --medical-primary: 59 130 246;          /* Medical Blue */
+    --medical-secondary: 16 185 129;        /* Medical Green */
+    --medical-accent: 139 92 246;           /* Medical Purple */
+    --medical-success: 34 197 94;           /* Success Green */
+    --medical-warning: 245 158 11;          /* Warning Orange */
+    --medical-error: 239 68 68;             /* Error Red */
+    --medical-info: 14 165 233;             /* Info Blue */
+    --medical-teal: 20 184 166;             /* Medical Teal */
+    --medical-pink: 236 72 153;             /* Medical Pink */
+    
+    /* Medical gradients using RGB */
+    --gradient-primary: linear-gradient(135deg, rgb(59 130 246) 0%, rgb(139 92 246) 100%);
+    --gradient-success: linear-gradient(135deg, rgb(34 197 94) 0%, rgb(16 185 129) 100%);
+    --gradient-warning: linear-gradient(135deg, rgb(245 158 11) 0%, rgb(249 115 22) 100%);
+    --gradient-medical: linear-gradient(135deg, rgb(59 130 246) 0%, rgb(20 184 166) 100%);
+    --gradient-healthcare: linear-gradient(135deg, rgb(16 185 129) 0%, rgb(34 197 94) 100%);
   }
 
   .dark {
-    --background: 210 15% 8%;
-    --foreground: 0 0% 95%;
+    --background: 0 0 0;
+    --foreground: 255 255 255;
 
-    --card: 210 15% 10%;
-    --card-foreground: 0 0% 95%;
+    --card: 15 15 15;
+    --card-foreground: 255 255 255;
 
-    --popover: 210 15% 10%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 10 10 10;
+    --popover-foreground: 255 255 255;
 
-    --primary: 170 60% 55%;
-    --primary-foreground: 210 15% 8%;
+    --primary: 59 130 246;
+    --primary-foreground: 0 0 0;
 
-    --secondary: 210 15% 15%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 25 25 25;
+    --secondary-foreground: 255 255 255;
 
-    --muted: 210 15% 15%;
-    --muted-foreground: 210 10% 65%;
+    --muted: 20 20 20;
+    --muted-foreground: 200 200 200;
 
-    --accent: 210 15% 15%;
-    --accent-foreground: 0 0% 95%;
+    --accent: 30 30 30;
+    --accent-foreground: 255 255 255;
 
-    --destructive: 0 85% 55%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 239 68 68;
+    --destructive-foreground: 255 255 255;
 
-    --border: 210 15% 15%;
-    --input: 210 15% 15%;
-    --ring: 170 60% 55%;
-
-    --sidebar-background: 210 15% 5%;
-    --sidebar-foreground: 0 0% 90%;
-    --sidebar-primary: 170 60% 55%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 15% 12%;
-    --sidebar-accent-foreground: 0 0% 90%;
-    --sidebar-border: 210 15% 12%;
-    --sidebar-ring: 170 60% 55%;
+    --border: 50 50 50;
+    --input: 25 25 25;
+    --ring: 59 130 246;
   }
 }
 
@@ -101,6 +93,389 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    background: rgb(248 251 255);
   }
+
+  .dark body {
+    background: rgb(0 0 0);
+  }
+}
+
+@layer components {
+  /* Medical Theme Components with RGB colors */
+  .medical-gradient {
+    background: linear-gradient(135deg, rgb(59 130 246) 0%, rgb(139 92 246) 100%);
+  }
+  
+  .medical-gradient-success {
+    background: linear-gradient(135deg, rgb(34 197 94) 0%, rgb(16 185 129) 100%);
+  }
+  
+  .medical-gradient-warning {
+    background: linear-gradient(135deg, rgb(245 158 11) 0%, rgb(249 115 22) 100%);
+  }
+  
+  .medical-gradient-teal {
+    background: linear-gradient(135deg, rgb(20 184 166) 0%, rgb(59 130 246) 100%);
+  }
+  
+  .glass-card {
+    @apply backdrop-blur-md border shadow-lg;
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  .dark .glass-card {
+    background: rgba(15, 15, 15, 0.8);
+    border-color: rgba(70, 70, 70, 0.3);
+  }
+
+  /* Enhanced glass effects for light mode */
+  .glass-light {
+    @apply backdrop-blur-lg border shadow-xl;
+    background: rgba(255, 255, 255, 0.8);
+    border-color: rgba(226, 232, 240, 0.6);
+  }
+
+  .glass-light-subtle {
+    @apply backdrop-blur-sm border shadow-md;
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(226, 232, 240, 0.4);
+  }
+
+  .glass-stats {
+    @apply backdrop-blur-md border shadow-lg;
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .dark .glass-stats {
+    background: rgba(15, 15, 15, 0.85);
+    border-color: rgba(70, 70, 70, 0.4);
+  }
+  
+  .floating-card {
+    @apply transform transition-all duration-300 hover:scale-105 hover:shadow-xl;
+  }
+  
+  .pulse-animation {
+    animation: pulse-glow 2s ease-in-out infinite alternate;
+  }
+  
+  .feature-card {
+    @apply rounded-2xl p-6 transition-all duration-300 hover:shadow-lg backdrop-blur-sm;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(219, 234, 254, 0.6);
+  }
+  
+  .dark .feature-card {
+    background: rgba(15, 15, 15, 0.8);
+    border: 1px solid rgba(70, 70, 70, 0.4);
+  }
+  
+  .feature-card:hover {
+    border-color: rgba(147, 197, 253, 0.8);
+    background: rgba(255, 255, 255, 0.95);
+  }
+  
+  .dark .feature-card:hover {
+    border-color: rgba(100, 150, 255, 0.6);
+    background: rgba(15, 15, 15, 0.9);
+  }
+  
+  .stat-card {
+    @apply text-white rounded-xl p-4 shadow-lg backdrop-blur-md;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.95) 0%, rgba(139, 92, 246, 0.95) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .medical-card {
+    @apply rounded-xl p-6 shadow-lg transition-all duration-300 backdrop-blur-sm;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(226, 232, 240, 0.6);
+  }
+  
+  .dark .medical-card {
+    background: rgba(15, 15, 15, 0.9);
+    border: 1px solid rgba(70, 70, 70, 0.4);
+  }
+  
+  .medical-card:hover {
+    box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.1), 0 10px 10px -5px rgba(59, 130, 246, 0.04);
+    background: rgba(255, 255, 255, 0.95);
+  }
+  
+  .dark .medical-card:hover {
+    box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.3), 0 10px 10px -5px rgba(59, 130, 246, 0.2);
+    background: rgba(15, 15, 15, 0.95);
+  }
+  
+  .health-metric {
+    @apply p-4 rounded-lg transition-all duration-300 backdrop-blur-sm;
+    background: rgba(249, 250, 251, 0.9);
+    border: 1px solid rgba(229, 231, 235, 0.6);
+  }
+  
+  .dark .health-metric {
+    background: rgba(15, 15, 15, 0.8);
+    border: 1px solid rgba(60, 60, 60, 0.5);
+  }
+  
+  .health-metric:hover {
+    background: rgba(239, 246, 255, 0.95);
+    border-color: rgba(147, 197, 253, 0.7);
+  }
+  
+  .dark .health-metric:hover {
+    background: rgba(20, 30, 50, 0.9);
+    border-color: rgba(100, 150, 255, 0.6);
+  }
+
+  /* Enhanced glass activity cards */
+  .activity-card {
+    @apply backdrop-blur-sm border shadow-md transition-all duration-300;
+    background: rgba(249, 250, 251, 0.9);
+    border-color: rgba(229, 231, 235, 0.6);
+  }
+
+  .dark .activity-card {
+    background: rgba(15, 15, 15, 0.8);
+    border-color: rgba(60, 60, 60, 0.5);
+  }
+
+  .activity-card:hover {
+    background: rgba(239, 246, 255, 0.95);
+    border-color: rgba(147, 197, 253, 0.7);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.08);
+  }
+
+  .dark .activity-card:hover {
+    background: rgba(20, 30, 50, 0.9);
+    border-color: rgba(100, 150, 255, 0.6);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.2);
+  }
+
+  /* Glass tips cards */
+  .tip-card {
+    @apply backdrop-blur-sm border transition-all duration-300;
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(226, 232, 240, 0.5);
+  }
+
+  .dark .tip-card {
+    background: rgba(15, 15, 15, 0.85);
+    border-color: rgba(70, 70, 70, 0.4);
+  }
+
+  /* Hover Effects for Images and Cards */
+  .hover-darken {
+    @apply transition-all duration-300;
+  }
+  
+  .hover-darken:hover {
+    filter: brightness(0.85) saturate(1.1);
+  }
+
+  .image-hover {
+    @apply transition-all duration-300 overflow-hidden;
+  }
+
+  .image-hover img {
+    @apply transition-all duration-300;
+  }
+
+  .image-hover:hover img {
+    filter: brightness(0.7) contrast(1.1);
+    transform: scale(1.05);
+  }
+
+  .emergency-card {
+    @apply transition-all duration-300 cursor-pointer;
+  }
+
+  .emergency-card:hover {
+    filter: brightness(0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  .dark .emergency-card:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
+  }
+
+  /* Animated Gradient Background */
+  .animated-gradient {
+    background: linear-gradient(270deg, 
+      rgba(59, 130, 246, 0.1), 
+      rgba(139, 92, 246, 0.1), 
+      rgba(16, 185, 129, 0.1), 
+      rgba(236, 72, 153, 0.1)
+    );
+    background-size: 800% 800%;
+    animation: gradientShift 20s ease infinite;
+  }
+
+  .dark .animated-gradient {
+    background: linear-gradient(270deg, 
+      rgba(59, 130, 246, 0.05), 
+      rgba(139, 92, 246, 0.05), 
+      rgba(16, 185, 129, 0.05), 
+      rgba(236, 72, 153, 0.05)
+    );
+    background-size: 800% 800%;
+    animation: gradientShift 20s ease infinite;
+  }
+
+  .floating-elements {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .floating-element {
+    position: absolute;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+    border-radius: 50%;
+    animation: float 15s infinite linear;
+  }
+
+  .dark .floating-element {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05));
+  }
+
+  .floating-element:nth-child(1) {
+    width: 80px;
+    height: 80px;
+    left: 10%;
+    animation-duration: 20s;
+    animation-delay: 0s;
+  }
+
+  .floating-element:nth-child(2) {
+    width: 60px;
+    height: 60px;
+    left: 70%;
+    animation-duration: 25s;
+    animation-delay: 5s;
+  }
+
+  .floating-element:nth-child(3) {
+    width: 100px;
+    height: 100px;
+    left: 40%;
+    animation-duration: 30s;
+    animation-delay: 10s;
+  }
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes pulse-glow {
+  from {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+  }
+  to {
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.6);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-30px) rotate(120deg);
+  }
+  66% {
+    transform: translateY(-60px) rotate(240deg);
+  }
+}
+
+.float-animation {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0%, 50%, 100% {
+    transform: scale(1);
+  }
+  25%, 75% {
+    transform: scale(1.1);
+  }
+}
+
+.heartbeat-animation {
+  animation: heartbeat 2s ease-in-out infinite;
+}
+
+/* Medical themed scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(241 245 249);
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: rgb(20 20 20);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(59 130 246);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(37 99 235);
+}
+
+/* Medical specific utility classes */
+.text-medical-primary {
+  color: rgb(59 130 246);
+}
+
+.text-medical-secondary {
+  color: rgb(16 185 129);
+}
+
+.text-medical-accent {
+  color: rgb(139 92 246);
+}
+
+.bg-medical-primary {
+  background-color: rgb(59 130 246);
+}
+
+.bg-medical-secondary {
+  background-color: rgb(16 185 129);
+}
+
+.bg-medical-accent {
+  background-color: rgb(139 92 246);
+}
+
+.border-medical-primary {
+  border-color: rgb(59 130 246);
+}
+
+.border-medical-secondary {
+  border-color: rgb(16 185 129);
+}
+
+.border-medical-accent {
+  border-color: rgb(139 92 246);
 }
