@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -50,11 +51,11 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 px-[3px] mx-0 my-0 py-[34px]">
           {/* Logo */}
-          <div className="flex items-center cursor-pointer group" onClick={() => navigate('/dashboard')}>
+          <div className="flex items-center cursor-pointer group mr-8" onClick={() => navigate('/dashboard')}>
             {isMobile ?
           // Mobile: Compact row flex logo with curved box
           <div className="bg-white/20 dark:bg-gray-800/30 backdrop-blur-sm border border-gray-200/30 dark:border-gray-600/30 rounded-2xl px-3 py-2 shadow-lg">
-                <div className="flex flex-row flex-wrap items-center justify-center gap-0">
+                <div className="flex flex-row items-center gap-0">
                   <span className="text-white font-black text-lg tracking-wide font-serif" style={{
                 fontFamily: 'Impact, "Franklin Gothic Bold", "Helvetica Neue", Arial, sans-serif',
                 textShadow: '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 2px 2px 4px rgba(0,0,0,0.3)'
@@ -70,9 +71,9 @@ const Navbar = () => {
                 </div>
               </div> :
           // Desktop: Larger row flex logo with tagline and curved box
-          <div className="flex items-center space-x-4 flex-col ">
+          <div className="flex items-start space-x-4">
                 <div className="bg-white/20 dark:bg-gray-800/30 backdrop-blur-sm border border-gray-200/20 dark:border-gray-600/20 shadow-lg px-[18px] py-2 rounded-2xl">
-                  <div className="flex flex-row flex-wrap items-center justify-center gap-0">
+                  <div className="flex flex-row items-center gap-0">
                     <span className="text-white font-black text-2xl tracking-wide font-serif" style={{
                   fontFamily: 'Impact, "Franklin Gothic Bold", "Helvetica Neue", Arial, sans-serif',
                   textShadow: '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 2px 2px 4px rgba(0,0,0,0.3)'
@@ -87,7 +88,7 @@ const Navbar = () => {
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center space-x-1">
+                <div className="flex items-center space-x-1 mt-1">
                   <Sparkles className="h-3 w-3 text-yellow-500" />
                   <span className="text-xs text-primary font-medium">AI Healthcare Assistant</span>
                 </div>
