@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Key, Save, Eye, EyeOff } from 'lucide-react';
+import { Key, Save, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const ApiKeyInput = () => {
@@ -38,6 +38,9 @@ const ApiKeyInput = () => {
     });
   };
 
+  const hasLocalKey = localStorage.getItem('gemini_api_key');
+  const hasBuiltinKeys = true; // We have fallback keys
+
   return (
     <Card className="glass-light dark:glass-card dark:border-gray-700">
       <CardHeader>
@@ -47,9 +50,31 @@ const ApiKeyInput = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+          <div className="flex items-center space-x-2 text-sm">
+            <CheckCircle className="h-4 w-4 text-green-500" />
+            <span className="text-gray-700 dark:text-gray-300">
+              Fallback system active with {hasBuiltinKeys ? '3' : '0'} backup keys
+            </span>
+          </div>
+          <div className="flex items-center space-x-2 text-sm mt-1">
+            {hasLocalKey ? (
+              <>
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                <span className="text-gray-700 dark:text-gray-300">Custom API key configured</span>
+              </>
+            ) : (
+              <>
+                <AlertCircle className="h-4 w-4 text-yellow-500" />
+                <span className="text-gray-700 dark:text-gray-300">Using built-in fallback keys</span>
+              </>
+            )}
+          </div>
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="apiKey" className="text-gray-700 dark:text-gray-300">
-            Enter your Gemini API Key
+            Enter your Gemini API Key (Optional)
           </Label>
           <div className="relative">
             <Input
@@ -82,9 +107,10 @@ const ApiKeyInput = () => {
           </Button>
         </div>
         
-        <p className="text-xs text-gray-500 dark:text-gray-400">
-          Your API key is stored locally in your browser and never sent to our servers.
-        </p>
+        <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+          <p>Your API key is stored locally and takes priority over built-in keys.</p>
+          <p>The system will automatically try fallback keys if your key fails.</p>
+        </div>
       </CardContent>
     </Card>
   );
