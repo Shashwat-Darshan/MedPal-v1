@@ -6,7 +6,7 @@ import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/hooks/useAuth';
 import { useDarkMode } from '@/hooks/useDarkMode';
 import { useNotifications } from '@/hooks/useNotifications';
-import { Heart, User, LogOut, Menu, Bell, Search, Settings, Sparkles, Moon, Sun } from 'lucide-react';
+import { User, LogOut, Menu, Bell, Search, Settings, Sparkles, Moon, Sun } from 'lucide-react';
 import NotificationDropdown from '@/components/NotificationDropdown';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -37,35 +37,28 @@ const Navbar = () => {
     <nav className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Simplified Logo for Mobile */}
+          {/* Logo */}
           <div className="flex items-center cursor-pointer group" onClick={() => navigate('/dashboard')}>
             {isMobile ? (
               // Mobile: Compact logo
               <div className="flex items-center space-x-2">
-                <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-2 rounded-xl group-hover:shadow-lg transition-all duration-300">
-                  <Heart className="h-5 w-5 text-white" />
-                </div>
-                <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  MedPal
-                </h1>
+                <img 
+                  src="https://i.ibb.co/FkJx6sMy/medpal-high-resolution-logo-1.png" 
+                  alt="MedPal" 
+                  className="h-8 w-auto object-contain"
+                />
               </div>
             ) : (
-              // Desktop: Full logo with description
+              // Desktop: Full logo
               <div className="flex items-center space-x-3">
-                <div className="relative">
-                  <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-2 rounded-xl group-hover:shadow-lg transition-all duration-300">
-                    <Heart className="h-6 w-6 text-white" />
-                  </div>
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    MedPal
-                  </h1>
-                  <div className="flex items-center space-x-1">
-                    <Sparkles className="h-3 w-3 text-yellow-500" />
-                    <span className="text-xs text-primary font-medium">AI Healthcare Assistant</span>
-                  </div>
+                <img 
+                  src="https://i.ibb.co/FkJx6sMy/medpal-high-resolution-logo-1.png" 
+                  alt="MedPal" 
+                  className="h-10 w-auto object-contain group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="flex items-center space-x-1">
+                  <Sparkles className="h-3 w-3 text-yellow-500" />
+                  <span className="text-xs text-primary font-medium">AI Healthcare Assistant</span>
                 </div>
               </div>
             )}
@@ -90,7 +83,7 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* User Menu - Mobile Optimized */}
+          {/* User Menu */}
           <div className="flex items-center space-x-2">
             {!isMobile && (
               <>
