@@ -9,7 +9,6 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { User, LogOut, Menu, Bell, Search, Settings, Sparkles, Moon, Sun } from 'lucide-react';
 import NotificationDropdown from '@/components/NotificationDropdown';
 import { useIsMobile } from '@/hooks/use-mobile';
-
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -71,7 +70,7 @@ const Navbar = () => {
                 </div>
               </div> :
           // Desktop: Larger row flex logo with tagline and curved box
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 flex-col ">
                 <div className="bg-white/20 dark:bg-gray-800/30 backdrop-blur-sm border border-gray-200/20 dark:border-gray-600/20 shadow-lg px-[18px] py-2 rounded-2xl">
                   <div className="flex flex-row flex-wrap items-center justify-center gap-0">
                     <span className="text-white font-black text-2xl tracking-wide font-serif" style={{
@@ -206,5 +205,4 @@ const Navbar = () => {
       </div>
     </nav>;
 };
-
 export default Navbar;
