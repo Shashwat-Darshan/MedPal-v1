@@ -181,7 +181,7 @@ const DiagnosticFlow = () => {
   );
 
   const renderSymptomsStep = () => (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-6xl mx-auto space-y-8">
       <div className="text-center space-y-4">
         <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto">
           <Activity className="h-8 w-8 text-white" />
@@ -315,10 +315,10 @@ const DiagnosticFlow = () => {
         </Button>
       </div>
 
-      {/* Main Content Grid */}
+      {/* Main Content Grid - Double the question window length */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-        {/* Questions Section - Left Side */}
-        <div className="xl:col-span-5 space-y-6">
+        {/* Questions Section - Left Side - Doubled from 5 to 10 columns */}
+        <div className="xl:col-span-10 space-y-6">
           {currentQuestion && (
             <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 shadow-lg">
               <CardHeader className="pb-4">
@@ -330,30 +330,30 @@ const DiagnosticFlow = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <p className="text-xl font-medium text-blue-900 dark:text-blue-100 leading-relaxed">
+                <p className="text-2xl font-medium text-blue-900 dark:text-blue-100 leading-relaxed">
                   {currentQuestion.text}
                 </p>
                 
                 {currentQuestion.type === 'yes_no' && (
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-6">
                     <Button 
                       onClick={() => handleAnswerQuestion('yes')}
-                      className="bg-green-600 hover:bg-green-700 text-white py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                      className="bg-green-600 hover:bg-green-700 text-white py-6 text-xl font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                     >
-                      <CheckCircle className="h-5 w-5 mr-2" />
+                      <CheckCircle className="h-6 w-6 mr-3" />
                       Yes
                     </Button>
                     <Button 
                       onClick={() => handleAnswerQuestion('no')}
-                      className="bg-red-600 hover:bg-red-700 text-white py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                      className="bg-red-600 hover:bg-red-700 text-white py-6 text-xl font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                     >
-                      <AlertTriangle className="h-5 w-5 mr-2" />
+                      <AlertTriangle className="h-6 w-6 mr-3" />
                       No
                     </Button>
                   </div>
                 )}
                 
-                <p className="text-sm text-blue-700 dark:text-blue-300 text-center font-medium">
+                <p className="text-base text-blue-700 dark:text-blue-300 text-center font-medium">
                   This helps refine your diagnosis accuracy
                 </p>
               </CardContent>
@@ -361,75 +361,62 @@ const DiagnosticFlow = () => {
           )}
         </div>
 
-        {/* Conditions Section - Right Side */}
-        <div className="xl:col-span-7 space-y-6">
+        {/* Conditions Section - Right Side - Reduced from 7 to 2 columns */}
+        <div className="xl:col-span-2 space-y-6">
           <div className="flex items-center space-x-3 mb-6">
             <Stethoscope className="h-6 w-6 text-purple-600" />
-            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-              Possible Conditions
+            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+              Conditions
             </h3>
-            <Badge variant="outline" className="text-sm">
-              {diseases.length} identified
+            <Badge variant="outline" className="text-xs">
+              {diseases.length}
             </Badge>
           </div>
           
-          <div className="space-y-4">
+          <div className="space-y-3">
             {diseases.sort((a, b) => b.confidence - a.confidence).map((disease, index) => (
               <Card key={disease.id} className={`transition-all duration-300 hover:shadow-lg ${
                 index === 0 ? 'ring-2 ring-green-200 dark:ring-green-700 bg-green-50/50 dark:bg-green-900/10' : 
                 'hover:shadow-md'
               }`}>
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex items-center space-x-2">
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white font-bold text-xs ${
                         index === 0 ? 'bg-green-500' :
                         index === 1 ? 'bg-yellow-500' :
                         'bg-gray-500'
                       }`}>
                         {index + 1}
                       </div>
-                      <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                         {disease.name}
                       </h4>
                     </div>
-                    <Badge 
-                      className={`text-sm font-semibold px-3 py-1 ${
-                        disease.confidence >= 80 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                        disease.confidence >= 60 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
-                        'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                      }`}
-                    >
-                      {Math.round(disease.confidence)}% match
-                    </Badge>
                   </div>
                   
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                          Confidence Level
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                          Confidence
                         </span>
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                        <span className="text-xs text-gray-600 dark:text-gray-400">
                           {disease.confidence}%
                         </span>
                       </div>
                       <Progress 
                         value={disease.confidence} 
-                        className="h-3 rounded-full"
+                        className="h-2 rounded-full"
                       />
                     </div>
-                    
-                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                      {disease.description}
-                    </p>
                   </div>
                   
                   {index === 0 && disease.confidence >= 80 && (
-                    <div className="mt-4 bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-700 rounded-lg p-3">
-                      <p className="text-sm text-green-800 dark:text-green-200 font-medium flex items-center">
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        High confidence match - Consider consulting with a healthcare provider
+                    <div className="mt-3 bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-700 rounded-lg p-2">
+                      <p className="text-xs text-green-800 dark:text-green-200 font-medium flex items-center">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        High confidence
                       </p>
                     </div>
                   )}
@@ -539,7 +526,7 @@ const DiagnosticFlow = () => {
   };
 
   return (
-    <div className="space-y-8 w-full max-w-7xl mx-auto px-4">
+    <div className="space-y-8 w-full max-w-full mx-auto px-4">
       {/* Progress Header */}
       <Card className="glass-light dark:glass-card shadow-lg">
         <CardContent className="pt-6">
