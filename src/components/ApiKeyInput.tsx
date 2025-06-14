@@ -25,7 +25,7 @@ const ApiKeyInput = () => {
     localStorage.setItem('gemini_api_key', apiKey.trim());
     toast({
       title: "API Key Saved",
-      description: "Your Gemini API key has been saved successfully",
+      description: "Your API key has been saved successfully",
     });
   };
 
@@ -46,7 +46,7 @@ const ApiKeyInput = () => {
       <CardHeader>
         <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-gray-100">
           <Key className="h-5 w-5 text-blue-600" />
-          <span>Gemini API Key</span>
+          <span>AI API Configuration</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -54,7 +54,13 @@ const ApiKeyInput = () => {
           <div className="flex items-center space-x-2 text-sm">
             <CheckCircle className="h-4 w-4 text-green-500" />
             <span className="text-gray-700 dark:text-gray-300">
-              Fallback system active with {hasBuiltinKeys ? '3' : '0'} backup keys
+              Multi-provider system active with {hasBuiltinKeys ? '6' : '0'} backup keys
+            </span>
+          </div>
+          <div className="flex items-center space-x-2 text-sm mt-1">
+            <CheckCircle className="h-4 w-4 text-green-500" />
+            <span className="text-gray-700 dark:text-gray-300">
+              Supports: Groq, Gemini, and OpenRouter APIs
             </span>
           </div>
           <div className="flex items-center space-x-2 text-sm mt-1">
@@ -74,13 +80,13 @@ const ApiKeyInput = () => {
 
         <div className="space-y-2">
           <Label htmlFor="apiKey" className="text-gray-700 dark:text-gray-300">
-            Enter your Gemini API Key (Optional)
+            Enter your API Key (Optional)
           </Label>
           <div className="relative">
             <Input
               id="apiKey"
               type={showKey ? "text" : "password"}
-              placeholder="Enter your API key here..."
+              placeholder="Supports Groq (gsk_...), Gemini (AIza...), or OpenRouter (sk-or-v1-...)"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               className="glass-light-subtle dark:bg-gray-800 dark:border-gray-600 pr-12"
@@ -109,7 +115,8 @@ const ApiKeyInput = () => {
         
         <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
           <p>Your API key is stored locally and takes priority over built-in keys.</p>
-          <p>The system will automatically try fallback keys if your key fails.</p>
+          <p>The system automatically tries multiple providers until one works.</p>
+          <p>Currently configured with 3 Groq + 3 Gemini/OpenRouter backup keys.</p>
         </div>
       </CardContent>
     </Card>

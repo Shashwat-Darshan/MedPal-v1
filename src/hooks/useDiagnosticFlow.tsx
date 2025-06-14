@@ -24,7 +24,7 @@ export const useDiagnosticFlow = () => {
   const [symptoms, setSymptoms] = useState('');
   const [diseases, setDiseases] = useState<Disease[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<DiagnosticQuestion | null>(null);
-  const [progress, setProgress] = useState(0);
+  const [questionHistory, setQuestionHistory] = useState<string[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const shouldEndDiagnosis = useCallback(() => {
@@ -73,6 +73,15 @@ export const useDiagnosticFlow = () => {
     return 0;
   }, [currentStep, diseases]);
 
+  const restartDiagnosis = useCallback(() => {
+    setCurrentStep('initial');
+    setSymptoms('');
+    setDiseases([]);
+    setCurrentQuestion(null);
+    setQuestionHistory([]);
+    setIsAnalyzing(false);
+  }, []);
+
   return {
     currentStep,
     setCurrentStep,
@@ -82,10 +91,13 @@ export const useDiagnosticFlow = () => {
     setDiseases,
     currentQuestion,
     setCurrentQuestion,
+    questionHistory,
+    setQuestionHistory,
     progress: calculateProgress(),
     isAnalyzing,
     setIsAnalyzing,
     shouldEndDiagnosis,
-    updateConfidence
+    updateConfidence,
+    restartDiagnosis
   };
 };
