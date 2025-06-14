@@ -40,22 +40,18 @@ const Navbar = () => {
           {/* Logo */}
           <div className="flex items-center cursor-pointer group" onClick={() => navigate('/dashboard')}>
             {isMobile ? (
-              // Mobile: Compact logo
-              <div className="flex items-center space-x-2">
-                <img 
-                  src="https://i.ibb.co/FkJx6sMy/medpal-high-resolution-logo-1.png" 
-                  alt="MedPal" 
-                  className="h-8 w-auto object-contain rounded-lg"
-                />
+              // Mobile: Compact text logo
+              <div className="flex flex-col items-center justify-center bg-gradient-to-br from-blue-600 to-blue-800 dark:from-blue-500 dark:to-blue-700 rounded-lg px-2 py-1 shadow-md">
+                <span className="text-white font-bold text-xs leading-none">MED</span>
+                <span className="text-blue-100 font-semibold text-xs leading-none">PAL</span>
               </div>
             ) : (
-              // Desktop: Full logo
+              // Desktop: Full text logo with tagline
               <div className="flex items-center space-x-3">
-                <img 
-                  src="https://i.ibb.co/FkJx6sMy/medpal-high-resolution-logo-1.png" 
-                  alt="MedPal" 
-                  className="h-10 w-auto object-contain group-hover:scale-105 transition-transform duration-300 rounded-xl"
-                />
+                <div className="flex flex-col items-center justify-center bg-gradient-to-br from-blue-600 to-blue-800 dark:from-blue-500 dark:to-blue-700 rounded-xl px-3 py-2 shadow-lg group-hover:scale-105 transition-transform duration-300">
+                  <span className="text-white font-bold text-sm leading-none">MED</span>
+                  <span className="text-blue-100 font-semibold text-sm leading-none">PAL</span>
+                </div>
                 <div className="flex items-center space-x-1">
                   <Sparkles className="h-3 w-3 text-yellow-500" />
                   <span className="text-xs text-primary font-medium">AI Healthcare Assistant</span>
