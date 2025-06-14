@@ -134,46 +134,46 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
       <Navbar />
       
-      <main className="max-w-7xl mx-auto px-3 sm:px-4 py-4 lg:px-6">
-        {/* Enhanced Welcome Section with reduced margins */}
-        <div className="mb-6">
+      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 py-6 lg:px-8">
+        {/* Enhanced Welcome Section */}
+        <div className="mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-            <div className="space-y-2">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                  <Heart className="h-5 w-5 text-white" />
+            <div className="space-y-3">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                  <Heart className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                     {greeting}!
                   </h1>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">Here's your personalized health dashboard</p>
+                  <p className="text-base text-gray-600 dark:text-gray-300">Here's your personalized health dashboard</p>
                 </div>
               </div>
               
-              {/* Live Stats with reduced spacing */}
-              <div className="flex items-center space-x-4 text-xs text-gray-600 dark:text-gray-400 mt-3">
+              {/* Live Stats */}
+              <div className="flex items-center space-x-6 text-sm text-gray-600 dark:text-gray-400 mt-4">
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                   <span>Live: {currentTime.toLocaleTimeString()}</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Sparkles className="h-3 w-3 text-yellow-500" />
+                  <Sparkles className="h-4 w-4 text-yellow-500" />
                   <span>{userStats.streakDays} day streak</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Star className="h-3 w-3 text-purple-500" />
+                  <Star className="h-4 w-4 text-purple-500" />
                   <span>{userStats.achievementsUnlocked} achievements</span>
                 </div>
               </div>
             </div>
             
-            <div className="mt-4 lg:mt-0 flex flex-col sm:flex-row gap-2">
-              <Button variant="outline" size="sm" className="flex items-center space-x-2 glass-light dark:glass-card dark:border-gray-700 dark:text-gray-200">
+            <div className="mt-6 lg:mt-0 flex flex-col sm:flex-row gap-3">
+              <Button variant="outline" size="default" className="flex items-center space-x-2 glass-light dark:glass-card dark:border-gray-700 dark:text-gray-200">
                 <Brain className="h-4 w-4" />
                 <span>AI Health Insights</span>
               </Button>
-              <Button onClick={() => navigate('/diagnosis')} size="sm" className="medical-gradient text-white hover:opacity-90 flex items-center space-x-2">
+              <Button onClick={() => navigate('/diagnosis')} size="default" className="medical-gradient text-white hover:opacity-90 flex items-center space-x-2">
                 <Plus className="h-4 w-4" />
                 <span>New Diagnosis</span>
               </Button>
@@ -181,47 +181,47 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
-          {/* Left Sidebar - Health Tips and AI Insights */}
-          <div className="lg:col-span-2 space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+          {/* Left Sidebar */}
+          <div className="lg:col-span-3 space-y-6">
             {/* AI Health Insights */}
             <HealthInsights />
 
-            {/* Health Tips with reduced padding */}
+            {/* Health Tips */}
             <Card className="glass-light dark:glass-card dark:border-gray-700">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center space-x-2 text-sm text-gray-900 dark:text-gray-100">
-                  <TrendingUp className="h-4 w-4 text-green-600" />
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center space-x-2 text-base text-gray-900 dark:text-gray-100">
+                  <TrendingUp className="h-5 w-5 text-green-600" />
                   <span>Health Tips</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3 pt-0">
-                <div className="p-3 tip-card rounded-xl">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-xs">💧</span>
+              <CardContent className="space-y-4 pt-0">
+                <div className="p-4 tip-card rounded-xl">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm">💧</span>
                     </div>
-                    <h4 className="font-medium text-xs text-blue-900 dark:text-blue-100">Stay Hydrated</h4>
+                    <h4 className="font-medium text-sm text-blue-900 dark:text-blue-100">Stay Hydrated</h4>
                   </div>
-                  <p className="text-xs text-blue-800 dark:text-blue-200">Drink water regularly throughout the day.</p>
+                  <p className="text-sm text-blue-800 dark:text-blue-200">Drink water regularly throughout the day.</p>
                 </div>
-                <div className="p-3 tip-card rounded-xl">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-xs">🚶</span>
+                <div className="p-4 tip-card rounded-xl">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm">🚶</span>
                     </div>
-                    <h4 className="font-medium text-xs text-green-900 dark:text-green-100">Get Moving</h4>
+                    <h4 className="font-medium text-sm text-green-900 dark:text-green-100">Get Moving</h4>
                   </div>
-                  <p className="text-xs text-green-800 dark:text-green-200">Take short walks during breaks.</p>
+                  <p className="text-sm text-green-800 dark:text-green-200">Take short walks during breaks.</p>
                 </div>
               </CardContent>
             </Card>
           </div>
 
           {/* Main Content */}
-          <div className="lg:col-span-7 space-y-4">
-            {/* Enhanced Stats Overview with reduced gap */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="lg:col-span-6 space-y-6">
+            {/* Enhanced Stats Overview */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <Card className="stat-card floating-card">
                 <CardContent className="p-3">
                   <div className="flex items-center justify-between">
@@ -279,34 +279,34 @@ const Dashboard = () => {
               </Card>
             </div>
 
-            {/* Quick Actions with reduced spacing */}
+            {/* Quick Actions */}
             <Card className="glass-light dark:glass-card dark:border-gray-700">
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-4">
                 <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-gray-100">
                   <Sparkles className="h-5 w-5 text-blue-600" />
                   <span>Quick Actions</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {quickActions.map((action, index) => (
-                    <div key={index} onClick={action.action} className="feature-card cursor-pointer group p-4">
+                    <div key={index} onClick={action.action} className="feature-card cursor-pointer group p-5">
                       <div className="flex items-center justify-between">
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                           <div className="flex items-center space-x-3">
-                            <div className={`p-2 rounded-xl bg-gradient-to-r ${action.gradient} text-white`}>
+                            <div className={`p-3 rounded-xl bg-gradient-to-r ${action.gradient} text-white`}>
                               <action.icon className="h-5 w-5" />
                             </div>
                             <div>
-                              <h3 className="font-semibold text-sm text-gray-900 dark:text-gray-100">{action.title}</h3>
-                              <p className="text-xs text-gray-600 dark:text-gray-400">{action.description}</p>
+                              <h3 className="font-semibold text-base text-gray-900 dark:text-gray-100">{action.title}</h3>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">{action.description}</p>
                             </div>
                           </div>
                           <Badge variant="secondary" className="text-xs dark:bg-gray-700 dark:text-gray-300">
                             {action.feature}
                           </Badge>
                         </div>
-                        <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                        <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
                       </div>
                     </div>
                   ))}
@@ -314,9 +314,9 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Recent Activity with reduced spacing */}
+            {/* Recent Activity */}
             <Card className="glass-light dark:glass-card dark:border-gray-700">
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-4">
                 <CardTitle className="flex items-center justify-between text-gray-900 dark:text-gray-100">
                   <span>Recent Activity</span>
                   <Button variant="ghost" size="sm" onClick={() => navigate('/history')} className="dark:text-gray-300 dark:hover:text-white">
@@ -326,21 +326,21 @@ const Dashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {recentActivity.map(activity => (
-                    <div key={activity.id} className="activity-card flex items-start space-x-3 p-3 rounded-xl">
+                    <div key={activity.id} className="activity-card flex items-start space-x-4 p-4 rounded-xl">
                       <div className="flex-shrink-0">
                         {getStatusIcon(activity.status)}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <h4 className="font-medium text-sm text-gray-900 dark:text-gray-100">{activity.title}</h4>
+                          <h4 className="font-medium text-base text-gray-900 dark:text-gray-100">{activity.title}</h4>
                           <Badge variant={activity.status === 'success' ? 'default' : 'secondary'} className="dark:bg-gray-700 dark:text-gray-300 text-xs">
                             {activity.status}
                           </Badge>
                         </div>
-                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{activity.description}</p>
-                        <div className="flex items-center justify-between mt-2">
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">{activity.description}</p>
+                        <div className="flex items-center justify-between mt-3">
                           <p className="text-xs text-gray-500 dark:text-gray-500">{activity.time}</p>
                           {activity.confidence && (
                             <span className="text-xs text-blue-600 font-medium">
@@ -360,22 +360,22 @@ const Dashboard = () => {
           </div>
 
           {/* Right Sidebar */}
-          <div className="lg:col-span-3 space-y-4">
-            {/* Achievements Section with reduced padding */}
+          <div className="lg:col-span-3 space-y-6">
+            {/* Achievements Section */}
             <Card className="glass-light dark:glass-card dark:border-gray-700">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center space-x-2 text-sm text-gray-900 dark:text-gray-100">
-                  <Star className="h-4 w-4 text-yellow-500" />
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center space-x-2 text-base text-gray-900 dark:text-gray-100">
+                  <Star className="h-5 w-5 text-yellow-500" />
                   <span>Recent Achievements</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3 pt-0">
+              <CardContent className="space-y-4 pt-0">
                 {achievements.map((achievement, index) => (
-                  <div key={index} className="flex items-center space-x-3 p-3 tip-card rounded-lg">
-                    <span className="text-xl">{achievement.icon}</span>
+                  <div key={index} className="flex items-center space-x-4 p-4 tip-card rounded-lg">
+                    <span className="text-2xl">{achievement.icon}</span>
                     <div>
-                      <h4 className="font-medium text-xs text-gray-900 dark:text-gray-100">{achievement.name}</h4>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">{achievement.description}</p>
+                      <h4 className="font-medium text-sm text-gray-900 dark:text-gray-100">{achievement.name}</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{achievement.description}</p>
                     </div>
                   </div>
                 ))}
