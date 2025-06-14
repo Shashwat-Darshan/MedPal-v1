@@ -88,21 +88,21 @@ const Index = () => {
   const followUpQuestions = [
     {
       id: 'onset',
-      question: 'When did these symptoms first appear?',
-      type: 'radio' as const,
+      text: 'When did these symptoms first appear?',
+      type: 'multiple_choice' as const,
       options: ['Less than 24 hours', '1-3 days ago', '4-7 days ago', 'More than a week ago']
     },
     {
       id: 'progression',
-      question: 'How have your symptoms changed over time?',
-      type: 'radio' as const,
+      text: 'How have your symptoms changed over time?',
+      type: 'multiple_choice' as const,
       options: ['Getting worse', 'Staying the same', 'Getting better', 'Coming and going']
     },
     {
       id: 'triggers',
-      question: 'What makes your symptoms worse?',
-      type: 'text' as const,
-      placeholder: 'Describe any triggers or activities that worsen symptoms...'
+      text: 'What makes your symptoms worse?',
+      type: 'yes_no' as const,
+      options: ['Physical activity', 'Stress', 'Weather changes', 'Food/drink', 'Time of day', 'Nothing specific']
     }
   ];
 
@@ -373,8 +373,8 @@ const Index = () => {
             <CardContent className="space-y-6">
               <QuestionCard
                 question={followUpQuestions[currentQuestionIndex]}
-                answer={answers[followUpQuestions[currentQuestionIndex].id] || ''}
-                onAnswerChange={(answer) => handleAnswerChange(followUpQuestions[currentQuestionIndex].id, answer)}
+                onAnswer={(answer) => handleAnswerChange(followUpQuestions[currentQuestionIndex].id, answer)}
+                isLoading={isLoading}
               />
 
               <div className="flex justify-between">
@@ -411,7 +411,15 @@ const Index = () => {
         {/* Results Step */}
         {currentStep === 'complete' && diagnosisResult && (
           <div className="space-y-6">
-            <DiagnosisCard diagnosis={diagnosisResult} />
+            <DiagnosisCard 
+              disease={{
+                name: diagnosisResult.condition,
+                confidence: diagnosisResult.confidence,
+                description: diagnosisResult.description,
+                symptoms: selectedSymptoms
+              }}
+              rank={1}
+            />
             
             <div className="flex flex-col sm:flex-row gap-4">
               <Button variant="outline" onClick={handlePrevious} className="flex-1">
