@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -71,7 +72,7 @@ const DiagnosticFlow = () => {
       setDiseases(formattedDiseases);
       setCurrentStep('questions');
       
-      await generateNextQuestion(formattedDiseases, []);
+      await generateNextQuestion(formattedDiseases, [], []);
     } catch (error) {
       console.error('Analysis error:', error);
       toast({
@@ -196,13 +197,13 @@ const DiagnosticFlow = () => {
           {/* Main Content */}
           <div className="space-y-6">
             <div className="space-y-3">
-              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
                 AI Health Assistant
               </h1>
-              <p className="text-lg text-gray-600 dark:text-gray-300 font-light max-w-2xl mx-auto leading-relaxed">
+              <p className="text-base text-gray-600 dark:text-gray-300 font-light max-w-2xl mx-auto leading-relaxed">
                 Advanced medical analysis powered by artificial intelligence
               </p>
-              <p className="text-base text-gray-500 dark:text-gray-400 max-w-xl mx-auto">
+              <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xl mx-auto">
                 Describe your symptoms and receive personalized health insights
               </p>
             </div>
@@ -230,7 +231,7 @@ const DiagnosticFlow = () => {
             <Button 
               onClick={handleStartDiagnosis}
               size="lg"
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 text-base font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 text-base font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
             >
               <Heart className="h-5 w-5 mr-2" />
               Begin Health Assessment
@@ -261,17 +262,17 @@ const DiagnosticFlow = () => {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg mb-4">
               <Activity className="h-8 w-8 text-white" />
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3">
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3">
               Describe Your Symptoms
             </h1>
-            <p className="text-base text-gray-600 dark:text-gray-400 max-w-xl mx-auto">
+            <p className="text-sm text-gray-600 dark:text-gray-400 max-w-xl mx-auto">
               The more detailed you are, the better our AI can assess your condition
             </p>
           </div>
 
           <div className="space-y-6">
             <div className="space-y-3">
-              <label className="block text-base font-semibold text-gray-700 dark:text-gray-300">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                 Tell us about your symptoms
               </label>
               <Textarea
@@ -325,7 +326,7 @@ const DiagnosticFlow = () => {
               onClick={handleSymptomsSubmit}
               disabled={!symptoms.trim() || isAnalyzing}
               size="lg"
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-4 text-base font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300"
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 text-sm font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300"
             >
               <Send className="h-5 w-5 mr-3" />
               {isAnalyzing ? 'Analyzing Your Symptoms...' : 'Start Analysis'}
@@ -351,10 +352,10 @@ const DiagnosticFlow = () => {
           
           {/* Content */}
           <div className="space-y-4">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               Analyzing Your Health
             </h1>
-            <p className="text-base text-gray-600 dark:text-gray-400 max-w-md mx-auto leading-relaxed">
+            <p className="text-sm text-gray-600 dark:text-gray-400 max-w-md mx-auto leading-relaxed">
               Our AI is processing your symptoms and medical knowledge to provide accurate insights
             </p>
           </div>
@@ -370,10 +371,10 @@ const DiagnosticFlow = () => {
   );
 
   const renderQuestionsStep = () => (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 py-8">
-      <div className="max-w-7xl mx-auto px-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 py-4">
+      <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6">
           <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-white/20">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -381,7 +382,7 @@ const DiagnosticFlow = () => {
                   <Target className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                  <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">
                     Refining Your Diagnosis
                   </h1>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -393,7 +394,7 @@ const DiagnosticFlow = () => {
                 onClick={restartDiagnosis}
                 variant="outline"
                 size="sm"
-                className="rounded-lg px-4 py-2 border-2"
+                className="rounded-lg px-4 py-2 border-2 text-sm"
               >
                 <RotateCcw className="h-4 w-4 mr-2" />
                 Start Over
@@ -407,19 +408,19 @@ const DiagnosticFlow = () => {
           {/* Question Section - Takes 8 columns */}
           <div className="lg:col-span-8">
             {currentQuestion && (
-              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20">
+              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20">
                 <div className="space-y-6">
                   <div className="text-center">
                     <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg mb-4">
                       <span className="text-white text-xl font-bold">?</span>
                     </div>
                     
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
                       Follow-up Question
                     </h2>
                     
                     <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 rounded-xl border-2 border-blue-200 dark:border-blue-700">
-                      <p className="text-lg text-gray-900 dark:text-gray-100 leading-relaxed font-medium">
+                      <p className="text-base text-gray-900 dark:text-gray-100 leading-relaxed font-medium">
                         {currentQuestion.text}
                       </p>
                     </div>
@@ -433,17 +434,17 @@ const DiagnosticFlow = () => {
                           <Button 
                             onClick={() => handleAnswerQuestion('yes')}
                             size="lg"
-                            className="bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-6 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                            className="bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 text-base font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                           >
-                            <CheckCircle className="h-6 w-6 mr-3" />
+                            <CheckCircle className="h-5 w-5 mr-2" />
                             Yes
                           </Button>
                           <Button 
                             onClick={() => handleAnswerQuestion('no')}
                             size="lg"
-                            className="bg-gradient-to-br from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white py-6 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                            className="bg-gradient-to-br from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white py-4 text-base font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                           >
-                            <AlertTriangle className="h-6 w-6 mr-3" />
+                            <AlertTriangle className="h-5 w-5 mr-2" />
                             No
                           </Button>
                         </div>
@@ -455,9 +456,9 @@ const DiagnosticFlow = () => {
                           onClick={() => setShowCustomAnswer(true)}
                           variant="outline"
                           size="lg"
-                          className="w-full py-4 text-base rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
+                          className="w-full py-3 text-sm rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
                         >
-                          <MessageSquare className="h-5 w-5 mr-3" />
+                          <MessageSquare className="h-4 w-4 mr-2" />
                           Write your own detailed answer
                         </Button>
                       </div>
@@ -465,14 +466,14 @@ const DiagnosticFlow = () => {
                   ) : (
                     <div className="space-y-4">
                       <div className="space-y-3">
-                        <label className="block text-base font-semibold text-gray-700 dark:text-gray-300">
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                           Describe your specific situation:
                         </label>
                         <Textarea
                           value={customAnswer}
                           onChange={(e) => setCustomAnswer(e.target.value)}
                           placeholder="Please provide more details about your condition, symptoms, or any relevant information..."
-                          className="min-h-[120px] p-4 rounded-xl border-2 border-gray-200 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 bg-white/70 dark:bg-gray-700/70 backdrop-blur-sm resize-none text-base"
+                          className="min-h-[120px] p-4 rounded-xl border-2 border-gray-200 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 bg-white/70 dark:bg-gray-700/70 backdrop-blur-sm resize-none text-sm"
                           rows={5}
                         />
                       </div>
@@ -481,9 +482,9 @@ const DiagnosticFlow = () => {
                           onClick={handleCustomAnswerSubmit}
                           disabled={!customAnswer.trim()}
                           size="lg"
-                          className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-4 text-base font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                          className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 text-sm font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                         >
-                          <Send className="h-5 w-5 mr-2" />
+                          <Send className="h-4 w-4 mr-2" />
                           Submit Answer
                         </Button>
                         <Button
@@ -493,7 +494,7 @@ const DiagnosticFlow = () => {
                           }}
                           variant="outline"
                           size="lg"
-                          className="px-8 py-4 rounded-xl border-2"
+                          className="px-6 py-3 rounded-xl border-2 text-sm"
                         >
                           Back
                         </Button>
@@ -502,7 +503,7 @@ const DiagnosticFlow = () => {
                   )}
                   
                   <div className="text-center">
-                    <p className="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
+                    <p className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
                       💡 Your detailed responses help improve diagnostic accuracy
                     </p>
                   </div>
@@ -515,11 +516,11 @@ const DiagnosticFlow = () => {
           <div className="lg:col-span-4">
             <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20 sticky top-6">
               <div className="flex items-center space-x-3 mb-6">
-                <Stethoscope className="h-6 w-6 text-indigo-600" />
-                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                <Stethoscope className="h-5 w-5 text-indigo-600" />
+                <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">
                   Possible Conditions
                 </h3>
-                <Badge variant="outline" className="ml-auto">
+                <Badge variant="outline" className="ml-auto text-xs">
                   {diseases.length}
                 </Badge>
               </div>
@@ -533,7 +534,7 @@ const DiagnosticFlow = () => {
                   }`}>
                     <div className="flex justify-between items-center mb-3">
                       <div className="flex items-center space-x-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs ${
                           index === 0 ? 'bg-green-500' :
                           index === 1 ? 'bg-yellow-500' :
                           'bg-gray-500'
@@ -544,7 +545,7 @@ const DiagnosticFlow = () => {
                           {disease.name}
                         </h4>
                       </div>
-                      <span className={`text-base font-bold ${
+                      <span className={`text-sm font-bold ${
                         disease.confidence >= 80 ? 'text-green-600' :
                         disease.confidence >= 60 ? 'text-yellow-600' :
                         'text-gray-600'
@@ -578,10 +579,10 @@ const DiagnosticFlow = () => {
             <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-2xl mb-4">
               <CheckCircle className="h-10 w-10 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3">
               Assessment Complete
             </h1>
-            <p className="text-base text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               Based on your symptoms and responses, here are our findings
             </p>
           </div>
@@ -592,7 +593,7 @@ const DiagnosticFlow = () => {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
                   <Target className="h-8 w-8 text-green-600" />
-                  <h2 className="text-xl font-bold text-green-900 dark:text-green-100">
+                  <h2 className="text-lg font-bold text-green-900 dark:text-green-100">
                     Most Likely: {topDisease?.name}
                   </h2>
                 </div>
@@ -607,14 +608,14 @@ const DiagnosticFlow = () => {
               
               {/* All Results */}
               <div className="space-y-3">
-                <h3 className="text-base font-semibold text-green-900 dark:text-green-100">
+                <h3 className="text-sm font-semibold text-green-900 dark:text-green-100">
                   Complete Assessment Results:
                 </h3>
                 <div className="grid gap-3">
                   {sortedDiseases.map((disease, index) => (
                     <div key={disease.id} className="flex justify-between items-center p-3 bg-white/70 dark:bg-gray-700/50 rounded-lg">
                       <div className="flex items-center space-x-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs ${
                           index === 0 ? 'bg-green-500' :
                           index === 1 ? 'bg-yellow-500' :
                           'bg-gray-500'
@@ -625,7 +626,7 @@ const DiagnosticFlow = () => {
                           {disease.name}
                         </span>
                       </div>
-                      <Badge variant="outline" className="text-sm px-3 py-1">
+                      <Badge variant="outline" className="text-xs px-3 py-1">
                         {Math.round(disease.confidence)}%
                       </Badge>
                     </div>
@@ -655,9 +656,9 @@ const DiagnosticFlow = () => {
               <Button
                 onClick={restartDiagnosis}
                 size="lg"
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 text-base font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 text-sm font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
               >
-                <RotateCcw className="h-5 w-5 mr-2" />
+                <RotateCcw className="h-4 w-4 mr-2" />
                 Start New Assessment
               </Button>
             </div>
