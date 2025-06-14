@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -112,149 +111,163 @@ const HealthChat = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50">
-      <Navbar />
-      
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="bg-green-600 p-2 rounded-lg">
-              <Heart className="h-6 w-6 text-white" />
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Soothing Live Wallpaper Background */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-green-50 to-purple-50 dark:from-slate-900 dark:via-blue-900 dark:to-indigo-900"></div>
+        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/30 to-transparent dark:via-white/10 animate-pulse"></div>
+        <div className="absolute top-0 left-0 w-full h-full">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-200/20 dark:bg-blue-400/10 rounded-full filter blur-3xl animate-float"></div>
+          <div className="absolute top-3/4 right-1/4 w-80 h-80 bg-green-200/20 dark:bg-green-400/10 rounded-full filter blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-purple-200/20 dark:bg-purple-400/10 rounded-full filter blur-3xl animate-float" style={{ animationDelay: '4s' }}></div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10">
+        <Navbar />
+        
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Header */}
+          <div className="mb-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="bg-green-600 p-2 rounded-lg">
+                <Heart className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Health Chat</h1>
+                <p className="text-sm text-green-600 dark:text-green-400">Get answers to your health questions</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Health Chat</h1>
-              <p className="text-sm text-green-600">Get answers to your health questions</p>
-            </div>
+
+            {/* Medical Disclaimer */}
+            <Alert className="bg-orange-50/80 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800 mb-6 backdrop-blur-sm">
+              <AlertCircle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+              <AlertDescription className="text-orange-800 dark:text-orange-200">
+                <strong>Important:</strong> This chat provides general health information only and is not a substitute for professional medical advice, diagnosis, or treatment.
+              </AlertDescription>
+            </Alert>
           </div>
 
-          {/* Medical Disclaimer */}
-          <Alert className="bg-orange-50 border-orange-200 mb-6">
-            <AlertCircle className="h-4 w-4 text-orange-600" />
-            <AlertDescription className="text-orange-800">
-              <strong>Important:</strong> This chat provides general health information only and is not a substitute for professional medical advice, diagnosis, or treatment.
-            </AlertDescription>
-          </Alert>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Chat Interface */}
-          <div className="lg:col-span-3">
-            <Card className="h-[600px] flex flex-col">
-              <CardHeader className="border-b">
-                <CardTitle className="flex items-center space-x-2">
-                  <Bot className="h-5 w-5 text-green-600" />
-                  <span>AI Health Assistant</span>
-                </CardTitle>
-              </CardHeader>
-              
-              {/* Messages */}
-              <ScrollArea className="flex-1 p-4">
-                <div className="space-y-4">
-                  {messages.map((message) => (
-                    <div key={message.id} className={`flex ${message.isBot ? 'justify-start' : 'justify-end'}`}>
-                      <div className={`flex space-x-3 max-w-[80%] ${message.isBot ? 'flex-row' : 'flex-row-reverse space-x-reverse'}`}>
-                        <Avatar className="w-8 h-8">
-                          <AvatarFallback className={message.isBot ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}>
-                            {message.isBot ? <Bot className="h-4 w-4" /> : <User className="h-4 w-4" />}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className={`p-3 rounded-lg ${
-                          message.isBot 
-                            ? 'bg-gray-100 text-gray-900' 
-                            : 'bg-blue-600 text-white'
-                        }`}>
-                          <p className="text-sm">{message.content}</p>
-                          <p className={`text-xs mt-1 ${message.isBot ? 'text-gray-500' : 'text-blue-100'}`}>
-                            {message.timestamp.toLocaleTimeString()}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {isLoading && (
-                    <div className="flex justify-start">
-                      <div className="flex space-x-3 max-w-[80%]">
-                        <Avatar className="w-8 h-8">
-                          <AvatarFallback className="bg-green-100 text-green-600">
-                            <Bot className="h-4 w-4" />
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="p-3 rounded-lg bg-gray-100">
-                          <div className="flex space-x-1">
-                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Chat Interface */}
+            <div className="lg:col-span-3">
+              <Card className="h-[600px] flex flex-col backdrop-blur-md bg-white/80 dark:bg-slate-800/80 border-white/20 dark:border-slate-700/50">
+                <CardHeader className="border-b border-gray-200/50 dark:border-slate-700/50">
+                  <CardTitle className="flex items-center space-x-2">
+                    <Bot className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    <span className="dark:text-white">AI Health Assistant</span>
+                  </CardTitle>
+                </CardHeader>
+                
+                {/* Messages */}
+                <ScrollArea className="flex-1 p-4">
+                  <div className="space-y-4">
+                    {messages.map((message) => (
+                      <div key={message.id} className={`flex ${message.isBot ? 'justify-start' : 'justify-end'}`}>
+                        <div className={`flex space-x-3 max-w-[80%] ${message.isBot ? 'flex-row' : 'flex-row-reverse space-x-reverse'}`}>
+                          <Avatar className="w-8 h-8">
+                            <AvatarFallback className={message.isBot ? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400' : 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400'}>
+                              {message.isBot ? <Bot className="h-4 w-4" /> : <User className="h-4 w-4" />}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className={`p-3 rounded-lg ${
+                            message.isBot 
+                              ? 'bg-gray-100/80 text-gray-900 dark:bg-slate-700/80 dark:text-white' 
+                              : 'bg-blue-600 text-white dark:bg-blue-500'
+                          }`}>
+                            <p className="text-sm">{message.content}</p>
+                            <p className={`text-xs mt-1 ${message.isBot ? 'text-gray-500 dark:text-gray-400' : 'text-blue-100'}`}>
+                              {message.timestamp.toLocaleTimeString()}
+                            </p>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
+                    ))}
+                    
+                    {isLoading && (
+                      <div className="flex justify-start">
+                        <div className="flex space-x-3 max-w-[80%]">
+                          <Avatar className="w-8 h-8">
+                            <AvatarFallback className="bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400">
+                              <Bot className="h-4 w-4" />
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="p-3 rounded-lg bg-gray-100/80 dark:bg-slate-700/80">
+                            <div className="flex space-x-1">
+                              <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce"></div>
+                              <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                              <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
 
-              {/* Input */}
-              <CardContent className="border-t p-4">
-                <div className="flex space-x-2">
-                  <Input
-                    placeholder="Type your health question..."
-                    value={inputMessage}
-                    onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    disabled={isLoading}
-                    className="flex-1"
-                  />
-                  <Button 
-                    onClick={handleSendMessage}
-                    disabled={!inputMessage.trim() || isLoading}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                {/* Input */}
+                <CardContent className="border-t border-gray-200/50 dark:border-slate-700/50 p-4">
+                  <div className="flex space-x-2">
+                    <Input
+                      placeholder="Type your health question..."
+                      value={inputMessage}
+                      onChange={(e) => setInputMessage(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      disabled={isLoading}
+                      className="flex-1 bg-white/50 dark:bg-slate-800/50 border-white/30 dark:border-slate-600/30"
+                    />
+                    <Button 
+                      onClick={handleSendMessage}
+                      disabled={!inputMessage.trim() || isLoading}
+                      className="bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Quick Questions Sidebar */}
+            <div className="space-y-6">
+              <Card className="backdrop-blur-md bg-white/80 dark:bg-slate-800/80 border-white/20 dark:border-slate-700/50">
+                <CardHeader>
+                  <CardTitle className="text-lg dark:text-white">Quick Questions</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {quickQuestions.map((question, index) => (
+                    <Button
+                      key={index}
+                      variant="ghost"
+                      className="w-full text-left justify-start h-auto p-3 text-sm hover:bg-white/50 dark:hover:bg-slate-700/50 dark:text-gray-200"
+                      onClick={() => setInputMessage(question)}
+                    >
+                      {question}
+                    </Button>
+                  ))}
+                </CardContent>
+              </Card>
+
+              <Card className="backdrop-blur-md bg-white/80 dark:bg-slate-800/80 border-white/20 dark:border-slate-700/50">
+                <CardHeader>
+                  <CardTitle className="text-lg dark:text-white">Emergency</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                      If you're experiencing a medical emergency, please call emergency services immediately.
+                    </p>
+                    <Button variant="destructive" className="w-full">
+                      Emergency: 102
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
-
-          {/* Quick Questions Sidebar */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Quick Questions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {quickQuestions.map((question, index) => (
-                  <Button
-                    key={index}
-                    variant="ghost"
-                    className="w-full text-left justify-start h-auto p-3 text-sm"
-                    onClick={() => setInputMessage(question)}
-                  >
-                    {question}
-                  </Button>
-                ))}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Emergency</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center">
-                  <p className="text-sm text-gray-600 mb-4">
-                    If you're experiencing a medical emergency, please call emergency services immediately.
-                  </p>
-                  <Button variant="destructive" className="w-full">
-                    Emergency: 911
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 };
