@@ -8,6 +8,7 @@ import { useDarkMode } from '@/hooks/useDarkMode';
 import { useNotifications } from '@/hooks/useNotifications';
 import { Heart, User, LogOut, Menu, Bell, Search, Settings, Sparkles, Moon, Sun } from 'lucide-react';
 import NotificationDropdown from '@/components/NotificationDropdown';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ const Navbar = () => {
   const { unreadCount } = useNotifications();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleLogout = () => {
     logout();
@@ -35,23 +37,38 @@ const Navbar = () => {
     <nav className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Enhanced Logo */}
-          <div className="flex items-center space-x-3 cursor-pointer group" onClick={() => navigate('/dashboard')}>
-            <div className="relative">
-              <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-2 rounded-xl group-hover:shadow-lg transition-all duration-300">
-                <Heart className="h-6 w-6 text-white" />
+          {/* Simplified Logo for Mobile */}
+          <div className="flex items-center cursor-pointer group" onClick={() => navigate('/dashboard')}>
+            {isMobile ? (
+              // Mobile: Compact logo
+              <div className="flex items-center space-x-2">
+                <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-2 rounded-xl group-hover:shadow-lg transition-all duration-300">
+                  <Heart className="h-5 w-5 text-white" />
+                </div>
+                <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  MedPal
+                </h1>
               </div>
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
-            </div>
-            <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                MedPal
-              </h1>
-              <div className="flex items-center space-x-1">
-                <Sparkles className="h-3 w-3 text-yellow-500" />
-                <span className="text-xs text-primary font-medium">AI Healthcare Assistant</span>
+            ) : (
+              // Desktop: Full logo with description
+              <div className="flex items-center space-x-3">
+                <div className="relative">
+                  <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-2 rounded-xl group-hover:shadow-lg transition-all duration-300">
+                    <Heart className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    MedPal
+                  </h1>
+                  <div className="flex items-center space-x-1">
+                    <Sparkles className="h-3 w-3 text-yellow-500" />
+                    <span className="text-xs text-primary font-medium">AI Healthcare Assistant</span>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Navigation Links - Desktop */}
@@ -73,23 +90,27 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Enhanced User Menu */}
-          <div className="flex items-center space-x-3">
-            {/* Dark Mode Toggle */}
-            <div className="flex items-center space-x-2">
-              <Sun className="h-4 w-4 text-yellow-500" />
-              <Switch
-                checked={isDark}
-                onCheckedChange={toggleTheme}
-                className="data-[state=checked]:bg-blue-600"
-              />
-              <Moon className="h-4 w-4 text-blue-500" />
-            </div>
+          {/* User Menu - Mobile Optimized */}
+          <div className="flex items-center space-x-2">
+            {!isMobile && (
+              <>
+                {/* Dark Mode Toggle - Desktop Only */}
+                <div className="flex items-center space-x-2">
+                  <Sun className="h-4 w-4 text-yellow-500" />
+                  <Switch
+                    checked={isDark}
+                    onCheckedChange={toggleTheme}
+                    className="data-[state=checked]:bg-blue-600"
+                  />
+                  <Moon className="h-4 w-4 text-blue-500" />
+                </div>
 
-            {/* Search Button */}
-            <Button variant="ghost" size="sm" className="hidden sm:flex">
-              <Search className="h-4 w-4" />
-            </Button>
+                {/* Search Button - Desktop Only */}
+                <Button variant="ghost" size="sm">
+                  <Search className="h-4 w-4" />
+                </Button>
+              </>
+            )}
             
             {/* Notifications */}
             <div className="relative">
@@ -114,21 +135,37 @@ const Navbar = () => {
               />
             </div>
 
-            {/* User Profile */}
-            <div className="hidden sm:flex items-center space-x-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full px-4 py-2 border border-blue-200 dark:border-blue-700">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                {user?.name?.charAt(0).toUpperCase() || 'U'}
+            {/* User Profile - Desktop Only */}
+            {!isMobile && (
+              <div className="flex items-center space-x-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full px-4 py-2 border border-blue-200 dark:border-blue-700">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                  {user?.name?.charAt(0).toUpperCase() || 'U'}
+                </div>
+                <div className="text-sm">
+                  <p className="font-medium text-gray-900 dark:text-gray-100">{user?.name || 'User'}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Premium Member</p>
+                </div>
               </div>
-              <div className="text-sm">
-                <p className="font-medium text-gray-900 dark:text-gray-100">{user?.name || 'User'}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Premium Member</p>
-              </div>
-            </div>
+            )}
 
-            {/* Settings */}
-            <Button variant="ghost" size="sm">
-              <Settings className="h-4 w-4" />
-            </Button>
+            {/* Mobile: Dark Mode Toggle */}
+            {isMobile && (
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={toggleTheme}
+                className="p-2"
+              >
+                {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
+            )}
+
+            {/* Settings - Desktop Only */}
+            {!isMobile && (
+              <Button variant="ghost" size="sm">
+                <Settings className="h-4 w-4" />
+              </Button>
+            )}
 
             {/* Logout */}
             <Button 
@@ -169,6 +206,23 @@ const Navbar = () => {
                   {item.label}
                 </Button>
               ))}
+              
+              {/* Mobile Menu Footer */}
+              <div className="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex items-center space-x-3 px-2 py-2">
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                    {user?.name?.charAt(0).toUpperCase() || 'U'}
+                  </div>
+                  <div className="text-sm">
+                    <p className="font-medium text-gray-900 dark:text-gray-100">{user?.name || 'User'}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Premium Member</p>
+                  </div>
+                </div>
+                <Button variant="ghost" className="w-full justify-start mt-2">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Settings
+                </Button>
+              </div>
             </div>
           </div>
         )}
