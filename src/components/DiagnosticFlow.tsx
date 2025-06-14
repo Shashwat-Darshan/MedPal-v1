@@ -32,7 +32,11 @@ const DiagnosticFlow = () => {
     updateConfidence,
     restartDiagnosis,
     saveSessionData,
-    getViableDiseases
+    getViableDiseases,
+    validateSymptoms,
+    inputValidation,
+    sessionId,
+    initializeSession
   } = useDiagnosticFlow();
 
   const [severityValue, setSeverityValue] = useState([3]);
@@ -40,6 +44,7 @@ const DiagnosticFlow = () => {
   const [customAnswer, setCustomAnswer] = useState('');
 
   const handleStartDiagnosis = () => {
+    initializeSession();
     setCurrentStep('symptoms');
   };
 
@@ -53,12 +58,37 @@ const DiagnosticFlow = () => {
       return;
     }
 
+    // Phase 4: Response Validation
+    const validation = validateSymptoms(symptoms);
+    
+    if (!validation.isValid) {
+      // Show guidance based on validation issues
+      const issueMessage = validation.classification.issues.join('. ');
+      const suggestionMessage = validation.classification.suggestions.join('. ');
+      
+      toast({
+        title: "Input Guidance Needed",
+        description: `${issueMessage}. ${suggestionMessage}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setCurrentStep('analysis');
     setIsAnalyzing(true);
 
     try {
-      console.log('Generating diagnosis from symptoms:', symptoms);
-      const diagnosisResults = await generateDiagnosisFromSymptoms(symptoms);
+      console.log('Generating diagnosis with enhanced context:', {
+        symptoms: validation.sanitizedInput,
+        validation: validation.classification
+      });
+      
+      const diagnosisResults = await generateDiagnosisFromSymptoms(
+        validation.sanitizedInput, 
+        '', 
+        '', 
+        validation.classification
+      );
       
       const formattedDiseases: Disease[] = diagnosisResults.map((result: any, index: number) => ({
         id: (index + 1).toString(),
@@ -68,16 +98,16 @@ const DiagnosticFlow = () => {
         symptoms: result.symptoms || []
       }));
 
-      console.log('Generated diseases:', formattedDiseases);
+      console.log('Generated diseases with enhanced prompting:', formattedDiseases);
       setDiseases(formattedDiseases);
       setCurrentStep('questions');
       
       await generateNextQuestion(formattedDiseases, [], []);
     } catch (error) {
-      console.error('Analysis error:', error);
+      console.error('Enhanced analysis error:', error);
       toast({
         title: "Analysis Failed",
-        description: "Unable to analyze symptoms. Please try again.",
+        description: "Unable to analyze symptoms. Please try again with clearer symptom descriptions.",
         variant: "destructive",
       });
       setCurrentStep('symptoms');
@@ -654,6 +684,25 @@ const DiagnosticFlow = () => {
       {currentStep === 'analysis' && renderAnalysisStep()}
       {currentStep === 'questions' && renderQuestionsStep()}
       {currentStep === 'results' && renderResultsStep()}
+      
+      {/* Input validation feedback */}
+      {inputValidation && !inputValidation.isValid && currentStep === 'symptoms' && (
+        <div className="fixed bottom-4 right-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4 max-w-md shadow-lg">
+          <div className="flex items-start space-x-2">
+            <AlertTriangle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <h4 className="font-medium text-yellow-800 dark:text-yellow-200 text-sm mb-2">
+                Input Guidance
+              </h4>
+              <div className="text-yellow-700 dark:text-yellow-300 text-xs space-y-1">
+                {inputValidation.classification.suggestions.map((suggestion, index) => (
+                  <p key={index}>• {suggestion}</p>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

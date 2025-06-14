@@ -137,41 +137,56 @@ const tryWithFallback = async <T>(
   throw lastError || new Error('All API keys failed. Please check your API key configuration.');
 };
 
-export const generateDiagnosisFromSymptoms = async (symptoms: string, age: string = '', gender: string = '') => {
+export const generateDiagnosisFromSymptoms = async (symptoms: string, age: string = '', gender: string = '', validationContext?: any) => {
   return tryWithFallback(async (apiKey, provider) => {
-    const prompt = `
-      As a medical AI assistant, analyze these symptoms and provide exactly 5 possible diagnoses:
-      
+    const enhancedPrompt = `
+      You are a medical AI assistant performing symptom analysis. Follow these strict guidelines:
+
+      MEDICAL CONTEXT ENFORCEMENT:
+      - ONLY respond to genuine symptom descriptions
+      - REFUSE to engage with casual conversation, non-medical topics, or assumptions
+      - If input contains medical assumptions (like "I have cancer"), redirect to symptom focus
+      - Always include medical disclaimers
+
+      SYMPTOM ANALYSIS TASK:
       Patient Information:
       - Age: ${age || 'Not specified'}
       - Gender: ${gender || 'Not specified'}
       - Symptoms: ${symptoms}
-      
-      Please provide EXACTLY 5 diagnoses with realistic confidence levels. Format your response as JSON with this EXACT structure:
+      ${validationContext ? `- Input validation: ${JSON.stringify(validationContext)}` : ''}
+
+      RESPONSE REQUIREMENTS:
+      - Provide EXACTLY 5 possible medical conditions
+      - Base analysis ONLY on symptoms provided, not assumptions
+      - Use conservative confidence levels (20-60% range initially)
+      - Focus on common conditions first, rare conditions last
+      - Include clear descriptions of each condition
+
+      FORMAT (strict JSON):
       {
         "diagnoses": [
           {
-            "name": "Diagnosis Name",
+            "name": "Medical Condition Name",
             "confidence": 45,
-            "description": "Brief description of the condition",
+            "description": "Brief medical description focusing on symptoms",
             "symptoms": ["symptom1", "symptom2", "symptom3"]
           }
         ]
       }
-      
-      Important guidelines:
-      - Start with moderate confidence levels (25-65% range initially)
-      - Ensure diagnoses are medically realistic for the given symptoms
-      - Order by likelihood but keep confidence levels reasonable for initial assessment
-      - Each diagnosis should have distinct symptom patterns
+
+      MEDICAL SAFETY:
+      - Never provide definitive diagnoses
+      - Always recommend professional medical consultation
+      - Use appropriate medical terminology
+      - Focus on symptom patterns, not specific diseases
     `;
 
     let responseText: string;
     
     if (provider === 'groq') {
-      responseText = await callGroqAPI(prompt, apiKey);
+      responseText = await callGroqAPI(enhancedPrompt, apiKey);
     } else if (provider === 'openrouter') {
-      responseText = await callOpenRouterAPI(prompt, apiKey);
+      responseText = await callOpenRouterAPI(enhancedPrompt, apiKey);
     } else {
       const genAI = createGenAI(apiKey);
       if (!genAI) {
@@ -179,50 +194,49 @@ export const generateDiagnosisFromSymptoms = async (symptoms: string, age: strin
       }
       
       const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-      const result = await model.generateContent(prompt);
+      const result = await model.generateContent(enhancedPrompt);
       const response = await result.response;
       responseText = response.text();
     }
     
-    console.log('Raw API response:', responseText);
+    console.log('Enhanced AI response:', responseText);
     
     try {
       const cleanedText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       const parsed = JSON.parse(cleanedText);
-      console.log('Parsed diagnoses:', parsed.diagnoses);
       return parsed.diagnoses || [];
     } catch (parseError) {
-      console.log('JSON parsing failed, using fallback diagnoses:', parseError);
+      console.log('JSON parsing failed, using enhanced fallback:', parseError);
       return [
         {
-          name: "Viral Upper Respiratory Infection",
-          confidence: 55,
-          description: "Common viral infection affecting the upper respiratory tract",
-          symptoms: ["Congestion", "Mild fever", "Fatigue", "Throat irritation"]
+          name: "Upper Respiratory Symptoms",
+          confidence: 45,
+          description: "Common viral infection affecting nose, throat, and upper airways",
+          symptoms: ["Nasal congestion", "Throat irritation", "Mild cough", "Fatigue"]
         },
         {
-          name: "Stress-Related Symptoms",
-          confidence: 40,
-          description: "Physical symptoms potentially caused by psychological stress",
-          symptoms: ["Tension headaches", "Sleep disturbances", "Muscle tension"]
-        },
-        {
-          name: "Seasonal Allergies",
+          name: "Stress-Related Physical Symptoms",
           confidence: 35,
-          description: "Allergic reaction to environmental allergens",
-          symptoms: ["Nasal congestion", "Sneezing", "Watery eyes"]
+          description: "Physical manifestations potentially related to psychological stress",
+          symptoms: ["Tension", "Sleep changes", "Appetite changes", "Muscle tension"]
         },
         {
-          name: "Mild Bacterial Infection",
+          name: "Environmental Reaction",
           confidence: 30,
-          description: "Localized bacterial infection requiring medical attention",
-          symptoms: ["Localized pain", "Mild inflammation", "Tenderness"]
+          description: "Symptoms potentially triggered by environmental factors",
+          symptoms: ["Respiratory irritation", "Skin sensitivity", "Eye irritation"]
         },
         {
-          name: "Nutritional Deficiency",
+          name: "Minor Inflammatory Response",
           confidence: 25,
-          description: "Symptoms potentially related to vitamin or mineral deficiency",
-          symptoms: ["Fatigue", "Weakness", "Poor concentration"]
+          description: "Mild inflammatory reaction in affected areas",
+          symptoms: ["Localized discomfort", "Mild swelling", "Sensitivity"]
+        },
+        {
+          name: "Nutritional or Lifestyle Factors",
+          confidence: 20,
+          description: "Symptoms potentially related to diet, sleep, or activity patterns",
+          symptoms: ["Energy changes", "Digestive sensitivity", "General wellness"]
         }
       ];
     }
@@ -234,10 +248,9 @@ export const generateFollowUpQuestion = async (
   symptoms: string, 
   previousQuestions: string[], 
   previousAnswers: string[] = [],
-  currentQuestionText: string = ''
+  sessionContext?: any
 ) => {
   return tryWithFallback(async (apiKey, provider) => {
-    // Only consider diseases with >0% confidence
     const viableDiseases = diseases.filter(d => d.confidence > 0);
     const diseaseList = viableDiseases.map(d => `${d.name} (${d.confidence}%)`).join(', ');
     
@@ -249,48 +262,47 @@ export const generateFollowUpQuestion = async (
     const topDisease = viableDiseases[0];
     const secondDisease = viableDiseases[1];
     
-    const prompt = `
-      Medical Diagnostic Context:
+    const enhancedPrompt = `
+      MEDICAL DIAGNOSTIC CONTEXT:
       - Original symptoms: ${symptoms}
-      - Current viable diagnoses: ${diseaseList}
+      - Current viable conditions: ${diseaseList}
       - Top condition: ${topDisease?.name} (${topDisease?.confidence}%)
       ${secondDisease ? `- Second condition: ${secondDisease?.name} (${secondDisease?.confidence}%)` : ''}
       
-      Previous Questions & Answers:
+      PREVIOUS ASSESSMENT:
       ${qaContext}
       
-      Generate ONE targeted follow-up question that will:
-      1. Help distinguish between the top 2-3 conditions
-      2. Focus on key differentiating symptoms or characteristics
-      3. Provide meaningful confidence adjustments based on medical knowledge
-      4. Build logically on previous answers
+      QUESTION GENERATION RULES:
+      1. Generate ONE specific follow-up question
+      2. Focus on distinguishing between top conditions
+      3. Ask about SYMPTOMS, not conditions or diseases
+      4. Use medically relevant differential diagnosis principles
+      5. Target key symptoms that differentiate conditions
+      6. Keep questions clear and answerable
       
-      Question should target specific symptoms, timing, severity, or characteristics that are diagnostically significant.
-      
-      Format your response as JSON:
+      RESPONSE FORMAT (strict JSON):
       {
-        "question": "Specific medical question here?",
+        "question": "Specific symptom-focused question?",
         "type": "yes_no",
         "diseaseImpacts": {
           "${topDisease?.name}": 15,
-          "${secondDisease?.name}": -12,
-          "Other Disease": 8
+          "${secondDisease?.name}": -12
         }
       }
       
-      Disease impacts should be:
-      - Higher positive values (10-25) for conditions this question strongly supports
-      - Negative values (-10 to -20) for conditions this question rules out
-      - Smaller values (3-8) for mild support/opposition
-      - Based on actual medical differential diagnosis principles
+      IMPACT GUIDELINES:
+      - Positive values (10-25): Question supports this condition
+      - Negative values (-10 to -25): Question rules out this condition
+      - Base impacts on medical differential diagnosis principles
+      - Higher absolute values for more definitive questions
     `;
 
     let responseText: string;
     
     if (provider === 'groq') {
-      responseText = await callGroqAPI(prompt, apiKey);
+      responseText = await callGroqAPI(enhancedPrompt, apiKey);
     } else if (provider === 'openrouter') {
-      responseText = await callOpenRouterAPI(prompt, apiKey);
+      responseText = await callOpenRouterAPI(enhancedPrompt, apiKey);
     } else {
       const genAI = createGenAI(apiKey);
       if (!genAI) {
@@ -298,25 +310,24 @@ export const generateFollowUpQuestion = async (
       }
       
       const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-      const result = await model.generateContent(prompt);
+      const result = await model.generateContent(enhancedPrompt);
       const response = await result.response;
       responseText = response.text();
     }
     
-    console.log('Raw question response:', responseText);
+    console.log('Enhanced question response:', responseText);
     
     try {
       const cleanedText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       const parsed = JSON.parse(cleanedText);
-      console.log('Parsed question:', parsed);
       return parsed;
     } catch (parseError) {
-      console.log('Question parsing failed, using fallback:', parseError);
+      console.log('Question parsing failed, using enhanced fallback:', parseError);
       return {
-        question: "Have you noticed if your symptoms worsen at specific times of day or in certain environments?",
+        question: "Are your symptoms worse at specific times of day or in certain situations?",
         type: "yes_no",
         diseaseImpacts: viableDiseases.reduce((acc, disease, index) => {
-          acc[disease.name] = index === 0 ? 12 : index === 1 ? -8 : 5;
+          acc[disease.name] = index === 0 ? 15 : index === 1 ? -10 : 5;
           return acc;
         }, {} as Record<string, number>)
       };
