@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -17,7 +17,12 @@ import {
   AlertTriangle,
   CheckCircle,
   Plus,
-  ArrowRight
+  ArrowRight,
+  Sparkles,
+  Brain,
+  Shield,
+  Zap,
+  Star
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import HealthGoals from '@/components/HealthGoals';
@@ -26,14 +31,28 @@ import EmergencyContacts from '@/components/EmergencyContacts';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [currentTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [greeting, setGreeting] = useState('');
 
-  // Sample user data - in a real app, this would come from an API
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting('Good Morning');
+    else if (hour < 18) setGreeting('Good Afternoon');
+    else setGreeting('Good Evening');
+    
+    return () => clearInterval(timer);
+  }, []);
+
+  // Enhanced user data with more engagement features
   const userStats = {
     totalConsultations: 12,
     lastCheckup: '2 days ago',
     upcomingAppointments: 1,
-    healthScore: 85
+    healthScore: 85,
+    streakDays: 7,
+    achievementsUnlocked: 3
   };
 
   const recentActivity = [
@@ -41,20 +60,29 @@ const Dashboard = () => {
       id: 1,
       type: 'consultation',
       title: 'AI Diagnosis Completed',
-      description: 'Common Cold diagnosed with 87% confidence',
+      description: 'Common Cold diagnosed with 92% confidence',
       time: '2 hours ago',
-      status: 'completed'
+      status: 'completed',
+      confidence: 92
     },
     {
       id: 2,
-      type: 'goal',
-      title: 'Daily Steps Goal Achieved',
-      description: '10,000 steps completed',
-      time: '5 hours ago',
+      type: 'achievement',
+      title: 'Health Streak Achievement!',
+      description: '7 days of consistent health tracking',
+      time: '4 hours ago',
       status: 'success'
     },
     {
       id: 3,
+      type: 'goal',
+      title: 'Daily Steps Goal Achieved',
+      description: '10,000 steps completed with bonus 2,000',
+      time: '5 hours ago',
+      status: 'success'
+    },
+    {
+      id: 4,
       type: 'reminder',
       title: 'Medication Reminder',
       description: 'Time to take your evening medication',
@@ -69,29 +97,39 @@ const Dashboard = () => {
       description: 'Get instant health assessment',
       icon: Stethoscope,
       action: () => navigate('/diagnosis'),
-      color: 'bg-blue-500 hover:bg-blue-600'
+      gradient: 'from-blue-500 to-blue-600',
+      feature: 'Smart AI'
     },
     {
       title: 'Health Chat',
       description: 'Ask health questions',
       icon: MessageSquare,
       action: () => navigate('/chat'),
-      color: 'bg-green-500 hover:bg-green-600'
+      gradient: 'from-green-500 to-emerald-600',
+      feature: '24/7 Support'
     },
     {
       title: 'Monitor Vitals',
       description: 'Track your health metrics',
       icon: Activity,
       action: () => navigate('/monitor'),
-      color: 'bg-purple-500 hover:bg-purple-600'
+      gradient: 'from-purple-500 to-purple-600',
+      feature: 'Real-time'
     },
     {
       title: 'View History',
       description: 'See past consultations',
       icon: Clock,
       action: () => navigate('/history'),
-      color: 'bg-orange-500 hover:bg-orange-600'
+      gradient: 'from-orange-500 to-red-500',
+      feature: 'Analytics'
     }
+  ];
+
+  const achievements = [
+    { name: 'Early Bird', description: 'Completed morning checkup', icon: '🌅' },
+    { name: 'Consistency King', description: '7 day health tracking streak', icon: '👑' },
+    { name: 'Health Detective', description: 'Used AI diagnosis 5 times', icon: '🔍' }
   ];
 
   const getStatusIcon = (status: string) => {
@@ -107,24 +145,51 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Navbar />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Section */}
+        {/* Enhanced Welcome Section */}
         <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Welcome back!</h1>
-              <p className="text-gray-600 mt-1">Here's your health overview for today</p>
-            </div>
-            <div className="mt-4 sm:mt-0 flex items-center space-x-4">
-              <div className="text-sm text-gray-500">
-                Current time: {currentTime}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                  <Heart className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    {greeting}!
+                  </h1>
+                  <p className="text-gray-600">Here's your personalized health dashboard</p>
+                </div>
               </div>
-              <Button onClick={() => navigate('/diagnosis')} className="bg-blue-600 hover:bg-blue-700">
-                <Plus className="h-4 w-4 mr-2" />
-                New Diagnosis
+              
+              {/* Live Stats */}
+              <div className="flex items-center space-x-6 text-sm text-gray-600 mt-4">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span>Live: {currentTime.toLocaleTimeString()}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Sparkles className="h-4 w-4 text-yellow-500" />
+                  <span>{userStats.streakDays} day streak</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Star className="h-4 w-4 text-purple-500" />
+                  <span>{userStats.achievementsUnlocked} achievements</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-6 lg:mt-0 flex flex-col sm:flex-row gap-3">
+              <Button variant="outline" className="flex items-center space-x-2">
+                <Brain className="h-4 w-4" />
+                <span>AI Health Insights</span>
+              </Button>
+              <Button onClick={() => navigate('/diagnosis')} className="medical-gradient text-white hover:opacity-90 flex items-center space-x-2">
+                <Plus className="h-4 w-4" />
+                <span>New Diagnosis</span>
               </Button>
             </div>
           </div>
@@ -133,62 +198,72 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Stats Overview */}
+            {/* Enhanced Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card>
+              <Card className="stat-card floating-card">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-600">Total Consultations</p>
-                      <p className="text-2xl font-bold">{userStats.totalConsultations}</p>
+                      <p className="text-blue-100 text-sm">Total Consultations</p>
+                      <p className="text-3xl font-bold text-white">{userStats.totalConsultations}</p>
+                      <p className="text-blue-200 text-xs">+2 this week</p>
                     </div>
-                    <Stethoscope className="h-8 w-8 text-blue-500" />
+                    <Stethoscope className="h-8 w-8 text-blue-200" />
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-gradient-to-r from-green-500 to-emerald-600 text-white floating-card">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-600">Health Score</p>
-                      <p className="text-2xl font-bold">{userStats.healthScore}/100</p>
+                      <p className="text-green-100 text-sm">Health Score</p>
+                      <p className="text-3xl font-bold">{userStats.healthScore}</p>
+                      <p className="text-green-200 text-xs">Excellent</p>
                     </div>
-                    <Heart className="h-8 w-8 text-red-500" />
+                    <div className="relative">
+                      <Heart className="h-8 w-8 text-green-200" />
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+                    </div>
                   </div>
-                  <Progress value={userStats.healthScore} className="mt-2" />
+                  <Progress value={userStats.healthScore} className="mt-3 bg-green-400/30" />
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white floating-card">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-600">Last Checkup</p>
-                      <p className="text-lg font-semibold">{userStats.lastCheckup}</p>
+                      <p className="text-purple-100 text-sm">Streak Days</p>
+                      <p className="text-3xl font-bold">{userStats.streakDays}</p>
+                      <p className="text-purple-200 text-xs">Keep it up!</p>
                     </div>
-                    <Calendar className="h-8 w-8 text-green-500" />
+                    <Zap className="h-8 w-8 text-purple-200" />
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-gradient-to-r from-orange-500 to-red-500 text-white floating-card">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-600">Upcoming</p>
-                      <p className="text-2xl font-bold">{userStats.upcomingAppointments}</p>
+                      <p className="text-orange-100 text-sm">Achievements</p>
+                      <p className="text-3xl font-bold">{userStats.achievementsUnlocked}</p>
+                      <p className="text-orange-200 text-xs">2 more to unlock</p>
                     </div>
-                    <Clock className="h-8 w-8 text-purple-500" />
+                    <Star className="h-8 w-8 text-orange-200" />
                   </div>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Quick Actions */}
-            <Card>
+            {/* Quick Actions with Enhanced Design */}
+            <Card className="glass-card">
               <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
+                <CardTitle className="flex items-center space-x-2">
+                  <Sparkles className="h-5 w-5 text-blue-600" />
+                  <span>Quick Actions</span>
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -196,14 +271,24 @@ const Dashboard = () => {
                     <div
                       key={index}
                       onClick={action.action}
-                      className={`p-4 rounded-lg cursor-pointer transition-all duration-200 text-white ${action.color} hover:shadow-lg transform hover:scale-105`}
+                      className="feature-card cursor-pointer group"
                     >
                       <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="font-semibold">{action.title}</h3>
-                          <p className="text-sm opacity-90">{action.description}</p>
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-3">
+                            <div className={`p-3 rounded-xl bg-gradient-to-r ${action.gradient} text-white`}>
+                              <action.icon className="h-6 w-6" />
+                            </div>
+                            <div>
+                              <h3 className="font-semibold text-gray-900">{action.title}</h3>
+                              <p className="text-sm text-gray-600">{action.description}</p>
+                            </div>
+                          </div>
+                          <Badge variant="secondary" className="text-xs">
+                            {action.feature}
+                          </Badge>
                         </div>
-                        <action.icon className="h-6 w-6" />
+                        <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
                       </div>
                     </div>
                   ))}
@@ -211,11 +296,11 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Recent Activity */}
+            {/* Recent Activity with Enhanced UI */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
-                  Recent Activity
+                  <span>Recent Activity</span>
                   <Button variant="ghost" size="sm" onClick={() => navigate('/history')}>
                     View All
                     <ArrowRight className="h-4 w-4 ml-1" />
@@ -225,16 +310,27 @@ const Dashboard = () => {
               <CardContent>
                 <div className="space-y-4">
                   {recentActivity.map((activity) => (
-                    <div key={activity.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                      {getStatusIcon(activity.status)}
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-gray-900">{activity.title}</h4>
-                        <p className="text-sm text-gray-600">{activity.description}</p>
-                        <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
+                    <div key={activity.id} className="flex items-start space-x-4 p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border border-gray-100 hover:border-blue-200 transition-colors">
+                      <div className="flex-shrink-0">
+                        {getStatusIcon(activity.status)}
                       </div>
-                      <Badge variant={activity.status === 'success' ? 'default' : 'secondary'}>
-                        {activity.status}
-                      </Badge>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium text-gray-900">{activity.title}</h4>
+                          <Badge variant={activity.status === 'success' ? 'default' : 'secondary'}>
+                            {activity.status}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1">{activity.description}</p>
+                        <div className="flex items-center justify-between mt-2">
+                          <p className="text-xs text-gray-500">{activity.time}</p>
+                          {activity.confidence && (
+                            <span className="text-xs text-blue-600 font-medium">
+                              {activity.confidence}% confidence
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -245,16 +341,37 @@ const Dashboard = () => {
             <HealthGoals />
           </div>
 
-          {/* Sidebar */}
+          {/* Enhanced Sidebar */}
           <div className="space-y-6">
+            {/* Achievements Section */}
+            <Card className="glass-card">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Star className="h-5 w-5 text-yellow-500" />
+                  <span>Recent Achievements</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {achievements.map((achievement, index) => (
+                  <div key={index} className="flex items-center space-x-3 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
+                    <span className="text-2xl">{achievement.icon}</span>
+                    <div>
+                      <h4 className="font-medium text-gray-900">{achievement.name}</h4>
+                      <p className="text-sm text-gray-600">{achievement.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
             {/* Emergency Contacts */}
             <EmergencyContacts />
 
             {/* AI Health Insights */}
             <HealthInsights />
 
-            {/* Health Tips */}
-            <Card>
+            {/* Health Tips with Enhanced Design */}
+            <Card className="glass-card">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <TrendingUp className="h-5 w-5 text-green-600" />
@@ -262,13 +379,23 @@ const Dashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="p-3 bg-blue-50 rounded-lg">
-                  <h4 className="font-medium text-blue-900">Stay Hydrated</h4>
-                  <p className="text-sm text-blue-700">Drink water regularly throughout the day to maintain optimal health.</p>
+                <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm">💧</span>
+                    </div>
+                    <h4 className="font-medium text-blue-900">Stay Hydrated</h4>
+                  </div>
+                  <p className="text-sm text-blue-800">Drink water regularly throughout the day to maintain optimal health.</p>
                 </div>
-                <div className="p-3 bg-green-50 rounded-lg">
-                  <h4 className="font-medium text-green-900">Get Moving</h4>
-                  <p className="text-sm text-green-700">Take short walks during breaks to improve circulation and energy.</p>
+                <div className="p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm">🚶</span>
+                    </div>
+                    <h4 className="font-medium text-green-900">Get Moving</h4>
+                  </div>
+                  <p className="text-sm text-green-800">Take short walks during breaks to improve circulation and energy.</p>
                 </div>
               </CardContent>
             </Card>

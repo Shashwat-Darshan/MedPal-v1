@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { useNavigate } from 'react-router-dom';
-import { Heart, Shield, Activity, Clock, Mic, MessageSquare, HelpCircle, CheckCircle, History, Phone, RotateCcw } from 'lucide-react';
+import { Heart, Shield, Activity, Clock, Mic, MessageSquare, HelpCircle, CheckCircle, History, Phone, RotateCcw, Brain, Sparkles, Zap, Target } from 'lucide-react';
 import { geminiService, Disease, DiagnosisResponse } from '@/services/geminiService';
 import QuestionCard from '@/components/QuestionCard';
 import DiagnosisChat from '@/components/DiagnosisChat';
@@ -33,16 +33,18 @@ const Index = () => {
   const [questionCount, setQuestionCount] = useState(0);
   const [finalDiagnosis, setFinalDiagnosis] = useState<Disease | null>(null);
 
-  // Health tips that change on refresh
+  // Enhanced health tips with more variety
   const healthTips = [
-    "💧 Drink at least 8 glasses of water daily to stay hydrated!",
-    "🚶‍♂️ Take a 10-minute walk after meals to aid digestion.",
-    "😴 Aim for 7-9 hours of quality sleep each night.",
-    "🥗 Include colorful fruits and vegetables in your daily diet.",
-    "🧘‍♀️ Practice deep breathing for 5 minutes to reduce stress.",
-    "🌞 Get some sunlight exposure for natural Vitamin D.",
-    "🏃‍♂️ Regular exercise boosts both physical and mental health.",
-    "📱 Take breaks from screens every 20 minutes to rest your eyes."
+    "💧 Drink at least 8 glasses of water daily to stay hydrated and boost your immune system!",
+    "🚶‍♂️ Take a 10-minute walk after meals to aid digestion and improve circulation.",
+    "😴 Aim for 7-9 hours of quality sleep each night for optimal health recovery.",
+    "🥗 Include colorful fruits and vegetables in your daily diet for essential nutrients.",
+    "🧘‍♀️ Practice deep breathing for 5 minutes daily to reduce stress and anxiety.",
+    "🌞 Get 15 minutes of sunlight exposure for natural Vitamin D synthesis.",
+    "🏃‍♂️ Regular exercise for 30 minutes can boost both physical and mental health.",
+    "📱 Take breaks from screens every 20 minutes to rest your eyes and prevent strain.",
+    "🍯 Replace processed sugars with natural alternatives like honey or fruits.",
+    "🧼 Wash your hands frequently to prevent the spread of germs and infections."
   ];
 
   const [currentTip] = useState(() => 
@@ -159,102 +161,137 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Health Tip Banner */}
-        <Alert className="mb-6 bg-green-50 border-green-200">
-          <Heart className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-800">
-            <strong>💡 Health Tip:</strong> {currentTip}
-          </AlertDescription>
+        {/* Enhanced Health Tip Banner */}
+        <Alert className="mb-8 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 shadow-lg">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+              <Heart className="h-5 w-5 text-white" />
+            </div>
+            <AlertDescription className="text-green-800 font-medium">
+              <strong>💡 Daily Health Tip:</strong> {currentTip}
+            </AlertDescription>
+          </div>
         </Alert>
 
         {/* Welcome/Symptoms Step */}
         {(currentStep === 'welcome' || currentStep === 'symptoms') && (
           <>
-            {/* Diagnostic Progress */}
-            <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-900">Diagnostic Progress</h2>
-                <span className="text-sm text-gray-600">{Math.round(getProgressPercentage())}%</span>
+            {/* Enhanced Diagnostic Progress */}
+            <div className="glass-card p-6 mb-8">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-3">
+                  <Brain className="h-6 w-6 text-blue-600" />
+                  <h2 className="text-xl font-semibold text-gray-900">AI Diagnostic Journey</h2>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <Sparkles className="h-4 w-4 text-yellow-500" />
+                    <span className="text-sm text-gray-600">Smart Analysis</span>
+                  </div>
+                  <span className="text-lg font-bold text-blue-600">{Math.round(getProgressPercentage())}%</span>
+                </div>
               </div>
-              <Progress value={getProgressPercentage()} className="mb-4" />
+              <Progress value={getProgressPercentage()} className="mb-6 h-3" />
               
-              {/* Progress Steps */}
-              <div className="flex justify-between text-sm">
-                <div className="flex flex-col items-center text-blue-600">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center mb-1 bg-blue-600 text-white">
-                    1
+              {/* Enhanced Progress Steps */}
+              <div className="flex justify-between">
+                <div className="flex flex-col items-center group">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
+                    currentStep === 'welcome' || currentStep === 'symptoms' 
+                      ? 'medical-gradient text-white shadow-lg' 
+                      : 'bg-gray-200 text-gray-500'
+                  }`}>
+                    <Activity className="h-5 w-5" />
                   </div>
-                  <span>Symptoms</span>
+                  <span className="text-sm font-medium">Symptoms</span>
+                  <span className="text-xs text-gray-500">Describe your condition</span>
                 </div>
-                <div className="flex flex-col items-center text-gray-400">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center mb-1 bg-gray-200">
-                    2
+                <div className="flex flex-col items-center group">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
+                    currentStep === 'questions' 
+                      ? 'medical-gradient text-white shadow-lg' 
+                      : 'bg-gray-200 text-gray-500'
+                  }`}>
+                    <MessageSquare className="h-5 w-5" />
                   </div>
-                  <span>Questions</span>
+                  <span className="text-sm font-medium">Questions</span>
+                  <span className="text-xs text-gray-500">AI clarification</span>
                 </div>
-                <div className="flex flex-col items-center text-gray-400">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center mb-1 bg-gray-200">
-                    3
+                <div className="flex flex-col items-center group">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
+                    currentStep === 'complete' 
+                      ? 'medical-gradient text-white shadow-lg' 
+                      : 'bg-gray-200 text-gray-500'
+                  }`}>
+                    <Target className="h-5 w-5" />
                   </div>
-                  <span>Results</span>
+                  <span className="text-sm font-medium">Results</span>
+                  <span className="text-xs text-gray-500">AI diagnosis</span>
                 </div>
               </div>
             </div>
 
-            {/* Main Content */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 space-y-6">
-                {/* Symptom Description */}
-                <Card>
+                {/* Enhanced Symptom Description */}
+                <Card className="glass-card">
                   <CardHeader>
-                    <div className="flex items-center space-x-2">
-                      <Activity className="h-5 w-5 text-blue-600" />
-                      <CardTitle>Describe Your Symptoms</CardTitle>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                        <Activity className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-xl">Describe Your Symptoms</CardTitle>
+                        <p className="text-gray-600 text-sm">Our AI will analyze your symptoms for accurate assessment</p>
+                      </div>
                     </div>
-                    <p className="text-gray-600">Tell me about what you're experiencing so I can help with an accurate assessment</p>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-4">
                         What symptoms are you experiencing?
                       </label>
                       
-                      {/* Voice Input Toggle */}
+                      {/* Enhanced Voice Input Toggle */}
                       <div className="flex items-center space-x-4 mb-4">
                         <Button
                           variant={useVoice ? "default" : "outline"}
                           size="sm"
                           onClick={() => setUseVoice(!useVoice)}
-                          className="flex items-center space-x-2"
+                          className={`flex items-center space-x-2 ${useVoice ? 'medical-gradient text-white' : ''}`}
                         >
                           <Mic className="h-4 w-4" />
                           <span>Voice Input</span>
                         </Button>
-                        <span className="text-sm text-gray-500">or type below</span>
+                        <div className="flex items-center space-x-2 text-sm text-gray-500">
+                          <Zap className="h-4 w-4 text-yellow-500" />
+                          <span>or type below</span>
+                        </div>
                       </div>
 
                       {useVoice ? (
                         <VoiceRecorder onTranscript={handleVoiceTranscript} />
                       ) : (
                         <Textarea
-                          placeholder="Example: I've been having a persistent headache for 2 days, feeling tired, and have a slight fever..."
+                          placeholder="Example: I've been having a persistent headache for 2 days, feeling tired, and have a slight fever. The headache is mainly on the right side and gets worse with movement..."
                           value={symptoms}
                           onChange={(e) => setSymptoms(e.target.value)}
-                          className="min-h-32"
+                          className="min-h-40 resize-none border-2 focus:border-blue-400 transition-colors"
                         />
                       )}
                     </div>
 
-                    {/* Duration and Severity */}
+                    {/* Enhanced Duration and Severity */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Duration</label>
+                      <div className="space-y-3">
+                        <label className="block text-sm font-medium text-gray-700">Duration</label>
                         <Select value={duration} onValueChange={setDuration}>
-                          <SelectTrigger>
+                          <SelectTrigger className="border-2 focus:border-blue-400">
                             <SelectValue placeholder="Select duration" />
                           </SelectTrigger>
                           <SelectContent>
@@ -268,9 +305,9 @@ const Index = () => {
                         </Select>
                       </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Severity (1-10): {severity[0]}
+                      <div className="space-y-3">
+                        <label className="block text-sm font-medium text-gray-700">
+                          Severity Level: {severity[0]}/10
                         </label>
                         <div className="px-3">
                           <Slider
@@ -281,10 +318,10 @@ const Index = () => {
                             step={1}
                             className="w-full"
                           />
-                          <div className="flex justify-between text-xs text-gray-500 mt-1">
-                            <span>Mild</span>
-                            <span>Moderate</span>
-                            <span>Severe</span>
+                          <div className="flex justify-between text-xs text-gray-500 mt-2">
+                            <span>😊 Mild</span>
+                            <span>😐 Moderate</span>
+                            <span>😣 Severe</span>
                           </div>
                         </div>
                       </div>
@@ -293,45 +330,67 @@ const Index = () => {
                     <Button 
                       onClick={handleSymptomSubmit}
                       disabled={!symptoms.trim() || isLoading}
-                      className="w-full bg-blue-600 hover:bg-blue-700"
+                      className="w-full medical-gradient text-white hover:opacity-90 py-6 text-lg font-medium"
                       size="lg"
                     >
-                      {isLoading ? <LoadingSpinner size="sm" message="Starting Diagnosis..." /> : "Start Diagnosis"}
+                      {isLoading ? (
+                        <LoadingSpinner size="sm" message="AI analyzing symptoms..." />
+                      ) : (
+                        <div className="flex items-center space-x-3">
+                          <Brain className="h-5 w-5" />
+                          <span>Start AI Diagnosis</span>
+                          <Sparkles className="h-5 w-5" />
+                        </div>
+                      )}
                     </Button>
                   </CardContent>
                 </Card>
 
-                {/* Medical Disclaimer */}
-                <Alert className="bg-orange-50 border-orange-200">
-                  <Shield className="h-4 w-4 text-orange-600" />
+                {/* Enhanced Medical Disclaimer */}
+                <Alert className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200">
+                  <Shield className="h-5 w-5 text-orange-600" />
                   <AlertDescription className="text-orange-800">
-                    <strong>Important:</strong> This is not professional medical advice. Please consult a healthcare provider for proper diagnosis and treatment.
+                    <strong>Important Medical Disclaimer:</strong> This AI-powered diagnostic tool is for informational purposes only and should not replace professional medical advice. Always consult with a qualified healthcare provider for proper diagnosis and treatment.
                   </AlertDescription>
                 </Alert>
               </div>
 
-              {/* Sidebar */}
+              {/* Enhanced Sidebar */}
               <div className="space-y-6">
                 {/* Quick Actions */}
-                <Card>
+                <Card className="glass-card">
                   <CardHeader>
-                    <CardTitle className="text-lg">Quick Actions</CardTitle>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Zap className="h-5 w-5 text-yellow-500" />
+                      <span>Quick Actions</span>
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <Button
                       variant="ghost"
-                      className="w-full justify-start"
+                      className="w-full justify-start hover:bg-blue-50"
                       onClick={() => navigate('/history')}
                     >
                       <History className="h-4 w-4 mr-3" />
                       <div className="text-left">
                         <div className="font-medium">View History</div>
-                        <div className="text-xs text-gray-500">Past consultations</div>
+                        <div className="text-xs text-gray-500">Past consultations & trends</div>
                       </div>
                     </Button>
                     <Button
                       variant="ghost"
-                      className="w-full justify-start"
+                      className="w-full justify-start hover:bg-green-50"
+                      onClick={() => navigate('/chat')}
+                    >
+                      <MessageSquare className="h-4 w-4 mr-3" />
+                      <div className="text-left">
+                        <div className="font-medium">Health Chat</div>
+                        <div className="text-xs text-gray-500">Ask health questions</div>
+                      </div>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start hover:bg-red-50"
                     >
                       <Phone className="h-4 w-4 mr-3" />
                       <div className="text-left">
@@ -343,32 +402,28 @@ const Index = () => {
                 </Card>
 
                 {/* Recent Activity */}
-                <Card>
+                <Card className="glass-card">
                   <CardHeader>
-                    <CardTitle className="text-lg">Recent Activity</CardTitle>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Clock className="h-5 w-5 text-purple-500" />
+                      <span>Recent Activity</span>
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <div className="flex-1">
-                        <div className="font-medium text-sm">Consultation #4</div>
-                        <div className="text-xs text-gray-500">Jun 14, 2025</div>
+                    {[
+                      { id: 4, date: 'Jun 14, 2025', result: 'Common Cold', confidence: '94%' },
+                      { id: 3, date: 'Jun 13, 2025', result: 'Tension Headache', confidence: '87%' },
+                      { id: 2, date: 'Jun 12, 2025', result: 'Allergic Reaction', confidence: '92%' }
+                    ].map((item) => (
+                      <div key={item.id} className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <div className="flex-1">
+                          <div className="font-medium text-sm">{item.result}</div>
+                          <div className="text-xs text-gray-500">{item.date}</div>
+                        </div>
+                        <div className="text-xs text-blue-600 font-medium">{item.confidence}</div>
                       </div>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <div className="flex-1">
-                        <div className="font-medium text-sm">Consultation #3</div>
-                        <div className="text-xs text-gray-500">Jun 13, 2025</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <div className="flex-1">
-                        <div className="font-medium text-sm">Consultation #2</div>
-                        <div className="text-xs text-gray-500">Jun 12, 2025</div>
-                      </div>
-                    </div>
+                    ))}
                   </CardContent>
                 </Card>
               </div>
@@ -378,18 +433,26 @@ const Index = () => {
 
         {/* Diagnosis Loading */}
         {currentStep === 'diagnosis' && (
-          <div className="text-center py-12">
-            <LoadingSpinner size="lg" message="Analyzing your symptoms and generating possible conditions..." />
+          <div className="text-center py-16">
+            <div className="max-w-md mx-auto">
+              <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 float-animation">
+                <Brain className="h-10 w-10 text-white" />
+              </div>
+              <LoadingSpinner size="lg" message="AI is analyzing your symptoms and cross-referencing with medical databases..." />
+            </div>
           </div>
         )}
 
         {/* Questions Step */}
         {currentStep === 'questions' && (
           <>
-            <Card className="mb-6">
+            <Card className="glass-card mb-6">
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Diagnostic Assessment</h3>
+                  <div className="flex items-center space-x-3">
+                    <Brain className="h-6 w-6 text-blue-600" />
+                    <h3 className="text-lg font-semibold text-gray-900">AI Diagnostic Assessment</h3>
+                  </div>
                   <div className="flex items-center space-x-4">
                     <span className="text-sm text-gray-600">Question {questionCount}</span>
                     <Button
@@ -403,7 +466,7 @@ const Index = () => {
                     </Button>
                   </div>
                 </div>
-                <Progress value={getProgressPercentage()} className="mb-4" />
+                <Progress value={getProgressPercentage()} className="mb-4 h-3" />
               </CardContent>
             </Card>
 
@@ -421,21 +484,32 @@ const Index = () => {
               </div>
 
               <div>
-                <Card>
+                <Card className="glass-card">
                   <CardHeader>
-                    <CardTitle className="text-lg">Possible Conditions</CardTitle>
-                    <p className="text-sm text-gray-600">Current analysis</p>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Target className="h-5 w-5 text-purple-600" />
+                      <span>Possible Conditions</span>
+                    </CardTitle>
+                    <p className="text-sm text-gray-600">Current AI analysis</p>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {diseases.map((disease, index) => (
-                      <div key={index} className="p-3 bg-gray-50 rounded-lg">
-                        <div className="flex justify-between items-center mb-2">
+                      <div key={index} className={`p-4 rounded-xl border transition-all duration-300 ${
+                        index === 0 
+                          ? 'bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200' 
+                          : 'bg-gray-50 border-gray-200'
+                      }`}>
+                        <div className="flex justify-between items-center mb-3">
                           <span className="font-medium text-sm">{disease.name}</span>
-                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                          <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                            index === 0 
+                              ? 'bg-blue-100 text-blue-800' 
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
                             {Math.round(disease.confidence)}%
                           </span>
                         </div>
-                        <Progress value={disease.confidence} className="h-1" />
+                        <Progress value={disease.confidence} className="h-2" />
                       </div>
                     ))}
                   </CardContent>
@@ -449,26 +523,33 @@ const Index = () => {
         {currentStep === 'complete' && finalDiagnosis && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-6">
-              <Card className="border-green-200 bg-green-50">
-                <CardContent className="pt-6">
+              <Card className="glass-card border-green-200 bg-gradient-to-r from-green-50 to-emerald-50">
+                <CardContent className="pt-8">
                   <div className="text-center">
-                    <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
-                    <h3 className="text-2xl font-semibold text-green-800 mb-2">
+                    <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <CheckCircle className="h-10 w-10 text-white" />
+                    </div>
+                    <h3 className="text-3xl font-bold text-green-800 mb-3">
                       Diagnosis Complete
                     </h3>
-                    <p className="text-lg text-green-700 mb-4">
+                    <p className="text-xl text-green-700 mb-4">
                       Most likely condition: <strong>{finalDiagnosis.name}</strong>
                     </p>
-                    <p className="text-sm text-green-600 mb-6">
-                      Confidence: {Math.round(finalDiagnosis.confidence)}%
-                    </p>
-                    <p className="text-green-700 mb-6">
+                    <div className="flex items-center justify-center space-x-4 mb-6">
+                      <div className="flex items-center space-x-2">
+                        <Brain className="h-5 w-5 text-green-600" />
+                        <span className="text-sm text-green-600 font-medium">
+                          AI Confidence: {Math.round(finalDiagnosis.confidence)}%
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-green-700 mb-8 text-lg">
                       {finalDiagnosis.description}
                     </p>
                     <Alert className="bg-orange-100 border-orange-300 text-orange-800">
-                      <Shield className="h-4 w-4" />
-                      <AlertDescription>
-                        Please consult with a healthcare professional for proper diagnosis and treatment.
+                      <Shield className="h-5 w-5" />
+                      <AlertDescription className="font-medium">
+                        Please consult with a healthcare professional for proper diagnosis and treatment plan.
                       </AlertDescription>
                     </Alert>
                   </div>
@@ -483,20 +564,31 @@ const Index = () => {
             </div>
 
             <div className="space-y-6">
-              <Card>
+              <Card className="glass-card">
                 <CardHeader>
-                  <CardTitle className="text-lg">All Considered Conditions</CardTitle>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Target className="h-5 w-5 text-purple-600" />
+                    <span>All Considered Conditions</span>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {diseases.map((disease, index) => (
-                    <div key={index} className={`p-3 rounded-lg ${index === 0 ? 'bg-green-100 border border-green-200' : 'bg-gray-50'}`}>
-                      <div className="flex justify-between items-center mb-2">
+                    <div key={index} className={`p-4 rounded-xl border transition-all duration-300 ${
+                      index === 0 
+                        ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200' 
+                        : 'bg-gray-50 border-gray-200'
+                    }`}>
+                      <div className="flex justify-between items-center mb-3">
                         <span className="font-medium text-sm">{disease.name}</span>
-                        <span className={`text-xs px-2 py-1 rounded ${index === 0 ? 'bg-green-200 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
+                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                          index === 0 
+                            ? 'bg-green-200 text-green-800' 
+                            : 'bg-gray-200 text-gray-800'
+                        }`}>
                           {Math.round(disease.confidence)}%
                         </span>
                       </div>
-                      <Progress value={disease.confidence} className="h-1" />
+                      <Progress value={disease.confidence} className="h-2" />
                     </div>
                   ))}
                 </CardContent>
@@ -506,14 +598,16 @@ const Index = () => {
                 <Button 
                   variant="outline" 
                   onClick={resetDiagnosis}
-                  className="w-full"
+                  className="w-full hover:bg-blue-50"
                 >
+                  <Plus className="h-4 w-4 mr-2" />
                   Start New Diagnosis
                 </Button>
                 <Button 
                   onClick={() => navigate('/dashboard')}
-                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  className="w-full medical-gradient text-white hover:opacity-90"
                 >
+                  <Heart className="h-4 w-4 mr-2" />
                   Go to Dashboard
                 </Button>
               </div>
