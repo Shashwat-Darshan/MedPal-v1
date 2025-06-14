@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 
 export interface Disease {
@@ -37,24 +36,28 @@ export const useDiagnosticFlow = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const shouldEndDiagnosis = useCallback(() => {
-    if (diseases.length === 0) return false;
+    // Filter out diseases with 0% confidence
+    const viableDiseases = diseases.filter(d => d.confidence > 0);
     
-    const sortedDiseases = [...diseases].sort((a, b) => b.confidence - a.confidence);
+    if (viableDiseases.length === 0) return true;
+    if (viableDiseases.length === 1) return true;
+    
+    const sortedDiseases = [...viableDiseases].sort((a, b) => b.confidence - a.confidence);
     const highest = sortedDiseases[0];
     const secondHighest = sortedDiseases[1];
 
-    // End if any disease is above 90%
-    if (highest.confidence >= 90) return true;
+    // End if any disease is above 85%
+    if (highest.confidence >= 85) return true;
     
-    // End if difference between top 2 is 20+ and lowest is above 60%
+    // End if difference between top 2 is 30+ and highest is above 70%
     if (secondHighest && 
-        (highest.confidence - secondHighest.confidence >= 20) && 
-        secondHighest.confidence >= 60) {
+        (highest.confidence - secondHighest.confidence >= 30) && 
+        highest.confidence >= 70) {
       return true;
     }
 
-    // End after 10 questions to prevent infinite loops
-    if (questionHistory.length >= 10) return true;
+    // End after 15 questions to prevent infinite loops
+    if (questionHistory.length >= 15) return true;
 
     return false;
   }, [diseases, questionHistory.length]);
@@ -66,12 +69,15 @@ export const useDiagnosticFlow = () => {
       
       if (question.type === 'yes_no') {
         if (answer.toLowerCase() === 'yes') {
+          // Positive answer: if impact is positive, increase confidence
+          // if impact is negative, it means "yes" actually decreases this disease probability
           change = impact;
         } else if (answer.toLowerCase() === 'no') {
-          change = -Math.abs(impact) / 2;
+          // Negative answer: reverse the impact
+          change = -impact;
         } else {
-          // Custom text answer - use AI analysis for impact
-          change = impact * 0.7; // Moderate impact for custom answers
+          // Custom text answer - use moderate impact based on AI analysis
+          change = impact * 0.6;
         }
       } else if (question.type === 'severity') {
         const severity = parseInt(answer) || 1;
@@ -83,14 +89,30 @@ export const useDiagnosticFlow = () => {
     }));
   }, []);
 
+  const getViableDiseases = useCallback(() => {
+    return diseases.filter(d => d.confidence > 0).sort((a, b) => b.confidence - a.confidence);
+  }, [diseases]);
+
   const calculateProgress = useCallback(() => {
     if (currentStep === 'initial') return 0;
     if (currentStep === 'symptoms') return 20;
     if (currentStep === 'analysis') return 40;
-    if (currentStep === 'questions') return 60 + (questionHistory.length * 3);
+    if (currentStep === 'questions') {
+      const viableDiseases = getViableDiseases();
+      if (viableDiseases.length <= 1) return 95;
+      
+      const baseProgress = 50;
+      const questionProgress = Math.min(35, questionHistory.length * 3);
+      
+      // Add bonus progress if we're converging on a diagnosis
+      const topDisease = viableDiseases[0];
+      const confidenceBonus = Math.max(0, (topDisease?.confidence || 0) - 60) * 0.3;
+      
+      return Math.min(95, baseProgress + questionProgress + confidenceBonus);
+    }
     if (currentStep === 'results') return 100;
     return 0;
-  }, [currentStep, questionHistory.length]);
+  }, [currentStep, questionHistory.length, getViableDiseases]);
 
   const saveSessionData = useCallback((data: SessionData) => {
     try {
@@ -154,6 +176,7 @@ export const useDiagnosticFlow = () => {
     shouldEndDiagnosis,
     updateConfidence,
     restartDiagnosis,
-    saveSessionData
+    saveSessionData,
+    getViableDiseases
   };
 };

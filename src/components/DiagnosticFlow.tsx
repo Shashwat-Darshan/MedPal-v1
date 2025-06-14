@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,7 +31,8 @@ const DiagnosticFlow = () => {
     shouldEndDiagnosis,
     updateConfidence,
     restartDiagnosis,
-    saveSessionData
+    saveSessionData,
+    getViableDiseases
   } = useDiagnosticFlow();
 
   const [severityValue, setSeverityValue] = useState([3]);
@@ -88,14 +88,22 @@ const DiagnosticFlow = () => {
 
   const generateNextQuestion = async (currentDiseases: Disease[], history: string[], previousAnswers: string[]) => {
     try {
-      console.log('Generating next question for diseases:', currentDiseases.map(d => d.name));
+      console.log('Generating next question for diseases:', currentDiseases.map(d => `${d.name}: ${d.confidence}%`));
       
-      const top5Diseases = currentDiseases
+      // Only consider diseases with >0% confidence
+      const viableDiseases = currentDiseases.filter(d => d.confidence > 0);
+      
+      if (viableDiseases.length === 0) {
+        setCurrentStep('results');
+        return;
+      }
+      
+      const top3Diseases = viableDiseases
         .sort((a, b) => b.confidence - a.confidence)
-        .slice(0, 5);
+        .slice(0, 3);
       
       const questionData = await generateFollowUpQuestion(
-        top5Diseases, 
+        top3Diseases, 
         symptoms, 
         history, 
         previousAnswers,
@@ -122,12 +130,15 @@ const DiagnosticFlow = () => {
       setCurrentQuestion(question);
     } catch (error) {
       console.error('Error generating question:', error);
+      
+      // Fallback question focusing on top diseases
+      const viableDiseases = currentDiseases.filter(d => d.confidence > 0);
       const fallbackQuestion: DiagnosticQuestion = {
         id: `fallback_${Date.now()}`,
-        text: "Are you experiencing any fever or elevated temperature?",
+        text: "Are you experiencing any fever or elevated body temperature?",
         type: 'yes_no',
-        diseaseImpact: currentDiseases.reduce((acc, disease) => {
-          acc[disease.id] = Math.random() > 0.5 ? 10 : -5;
+        diseaseImpact: viableDiseases.reduce((acc, disease, index) => {
+          acc[disease.id] = index === 0 ? 15 : index === 1 ? -10 : 5;
           return acc;
         }, {} as Record<string, number>)
       };
@@ -339,192 +350,207 @@ const DiagnosticFlow = () => {
     </div>
   );
 
-  const renderQuestionsStep = () => (
-    <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 py-6">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="mb-4">
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg p-3 shadow-md border border-white/20">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-md">
-                  <Target className="h-4 w-4 text-white" />
+  const renderQuestionsStep = () => {
+    const viableDiseases = getViableDiseases();
+    
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">
+        <div className="container mx-auto px-4 py-6">
+          {/* Progress Bar */}
+          <div className="mb-6">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-white/20">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-md">
+                    <Target className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                      Diagnostic Assessment
+                    </h1>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Question {questionHistory.length + 1} • {viableDiseases.length} conditions remaining
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h1 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                    Refining Your Diagnosis
-                  </h1>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">
-                    Question {questionHistory.length + 1} • {Math.round(progress)}% complete
-                  </p>
-                </div>
+                <Button
+                  onClick={restartDiagnosis}
+                  variant="outline"
+                  size="sm"
+                  className="rounded-lg px-4 py-2 border"
+                >
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Restart
+                </Button>
               </div>
-              <Button
-                onClick={restartDiagnosis}
-                variant="outline"
-                size="sm"
-                className="rounded-md px-3 py-1 border text-xs"
-              >
-                <RotateCcw className="h-3 w-3 mr-1" />
-                Restart
-              </Button>
+              <Progress value={progress} className="h-2 rounded-full" />
             </div>
-            <Progress value={progress} className="h-1.5 rounded-full mt-2" />
           </div>
-        </div>
 
-        <div className="grid grid-cols-12 gap-4">
-          <div className="col-span-8">
-            {currentQuestion && (
-              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg p-5 shadow-lg border border-white/20">
-                <div className="space-y-4">
-                  <div className="text-center">
-                    <div className="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-md mb-3">
-                      <span className="text-white text-sm font-bold">?</span>
+          <div className="grid grid-cols-12 gap-6">
+            {/* Questions Section - 8/12 width */}
+            <div className="col-span-8">
+              {currentQuestion && (
+                <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 shadow-xl border border-white/20">
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <div className="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-md mb-3">
+                        <span className="text-white text-sm font-bold">?</span>
+                      </div>
+                      
+                      <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                        Follow-up Question
+                      </h2>
+                      
+                      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-700">
+                        <p className="text-sm text-gray-900 dark:text-gray-100 leading-relaxed">
+                          {currentQuestion.text}
+                        </p>
+                      </div>
                     </div>
                     
-                    <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">
-                      Follow-up Question
-                    </h2>
+                    {!showCustomAnswer ? (
+                      <div className="space-y-3">
+                        {currentQuestion.type === 'yes_no' && (
+                          <div className="grid grid-cols-2 gap-3">
+                            <Button 
+                              onClick={() => handleAnswerQuestion('yes')}
+                              className="bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-2 text-sm font-medium rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                            >
+                              <CheckCircle className="h-4 w-4 mr-2" />
+                              Yes
+                            </Button>
+                            <Button 
+                              onClick={() => handleAnswerQuestion('no')}
+                              className="bg-gradient-to-br from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white py-2 text-sm font-medium rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                            >
+                              <AlertTriangle className="h-4 w-4 mr-2" />
+                              No
+                            </Button>
+                          </div>
+                        )}
+                        
+                        <div className="border-t pt-3">
+                          <Button
+                            onClick={() => setShowCustomAnswer(true)}
+                            variant="outline"
+                            className="w-full py-2 text-xs rounded-lg border-dashed border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
+                          >
+                            <MessageSquare className="h-3 w-3 mr-2" />
+                            Write detailed answer
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="space-y-2">
+                          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                            Describe your specific situation:
+                          </label>
+                          <Textarea
+                            value={customAnswer}
+                            onChange={(e) => setCustomAnswer(e.target.value)}
+                            placeholder="Please provide more details about your condition, symptoms, or any relevant information..."
+                            className="min-h-[80px] p-3 rounded-lg border border-gray-200 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 bg-white/70 dark:bg-gray-700/70 backdrop-blur-sm resize-none text-xs"
+                            rows={4}
+                          />
+                        </div>
+                        <div className="flex space-x-2">
+                          <Button
+                            onClick={handleCustomAnswerSubmit}
+                            disabled={!customAnswer.trim()}
+                            className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-2 text-xs font-medium rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                          >
+                            <Send className="h-3 w-3 mr-2" />
+                            Submit
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              setShowCustomAnswer(false);
+                              setCustomAnswer('');
+                            }}
+                            variant="outline"
+                            className="px-4 py-2 rounded-lg border text-xs"
+                          >
+                            Back
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                     
-                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-700">
-                      <p className="text-sm text-gray-900 dark:text-gray-100 leading-relaxed">
-                        {currentQuestion.text}
+                    <div className="text-center">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 p-2 rounded-md">
+                        💡 Your detailed responses improve diagnostic accuracy
                       </p>
                     </div>
                   </div>
-                  
-                  {!showCustomAnswer ? (
-                    <div className="space-y-3">
-                      {currentQuestion.type === 'yes_no' && (
-                        <div className="grid grid-cols-2 gap-3">
-                          <Button 
-                            onClick={() => handleAnswerQuestion('yes')}
-                            className="bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-2 text-sm font-medium rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
-                          >
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                            Yes
-                          </Button>
-                          <Button 
-                            onClick={() => handleAnswerQuestion('no')}
-                            className="bg-gradient-to-br from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white py-2 text-sm font-medium rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
-                          >
-                            <AlertTriangle className="h-4 w-4 mr-2" />
-                            No
-                          </Button>
-                        </div>
-                      )}
-                      
-                      <div className="border-t pt-3">
-                        <Button
-                          onClick={() => setShowCustomAnswer(true)}
-                          variant="outline"
-                          className="w-full py-2 text-xs rounded-lg border-dashed border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
-                        >
-                          <MessageSquare className="h-3 w-3 mr-2" />
-                          Write detailed answer
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <div className="space-y-2">
-                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
-                          Describe your specific situation:
-                        </label>
-                        <Textarea
-                          value={customAnswer}
-                          onChange={(e) => setCustomAnswer(e.target.value)}
-                          placeholder="Please provide more details about your condition, symptoms, or any relevant information..."
-                          className="min-h-[80px] p-3 rounded-lg border border-gray-200 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 bg-white/70 dark:bg-gray-700/70 backdrop-blur-sm resize-none text-xs"
-                          rows={4}
-                        />
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button
-                          onClick={handleCustomAnswerSubmit}
-                          disabled={!customAnswer.trim()}
-                          className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-2 text-xs font-medium rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
-                        >
-                          <Send className="h-3 w-3 mr-2" />
-                          Submit
-                        </Button>
-                        <Button
-                          onClick={() => {
-                            setShowCustomAnswer(false);
-                            setCustomAnswer('');
-                          }}
-                          variant="outline"
-                          className="px-4 py-2 rounded-lg border text-xs"
-                        >
-                          Back
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="text-center">
-                    <p className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 p-2 rounded-md">
-                      💡 Your detailed responses improve diagnostic accuracy
-                    </p>
-                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
 
-          <div className="col-span-4">
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg p-4 shadow-lg border border-white/20 sticky top-4">
-              <div className="flex items-center space-x-2 mb-4">
-                <Stethoscope className="h-4 w-4 text-indigo-600" />
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                  Possible Conditions
-                </h3>
-                <Badge variant="outline" className="ml-auto text-xs">
-                  {diseases.length}
-                </Badge>
-              </div>
-              
-              <div className="space-y-3 max-h-[60vh] overflow-y-auto">
-                {diseases.sort((a, b) => b.confidence - a.confidence).map((disease, index) => (
-                  <div key={disease.id} className={`p-3 rounded-lg transition-all duration-300 ${
-                    index === 0 ? 'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-700' : 
-                    index === 1 ? 'bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border border-yellow-200 dark:border-yellow-700' :
-                    'bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600'
-                  }`}>
-                    <div className="flex justify-between items-center mb-2">
-                      <div className="flex items-center space-x-2">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white font-bold text-xs ${
-                          index === 0 ? 'bg-green-500' :
-                          index === 1 ? 'bg-yellow-500' :
-                          'bg-gray-500'
-                        }`}>
-                          {index + 1}
+            {/* Conditions Section - 4/12 width */}
+            <div className="col-span-4">
+              <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-5 shadow-xl border border-white/20 sticky top-6">
+                <div className="flex items-center space-x-2 mb-4">
+                  <Stethoscope className="h-5 w-5 text-indigo-600" />
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+                    Active Conditions
+                  </h3>
+                  <Badge variant="outline" className="ml-auto">
+                    {viableDiseases.length}
+                  </Badge>
+                </div>
+                
+                <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+                  {viableDiseases.map((disease, index) => (
+                    <div key={disease.id} className={`p-3 rounded-lg transition-all duration-300 ${
+                      index === 0 ? 'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-700' : 
+                      index === 1 ? 'bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border border-yellow-200 dark:border-yellow-700' :
+                      'bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600'
+                    }`}>
+                      <div className="flex justify-between items-center mb-2">
+                        <div className="flex items-center space-x-2">
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white font-bold text-xs ${
+                            index === 0 ? 'bg-green-500' :
+                            index === 1 ? 'bg-yellow-500' :
+                            'bg-gray-500'
+                          }`}>
+                            {index + 1}
+                          </div>
+                          <h4 className="font-medium text-gray-900 dark:text-gray-100 text-sm">
+                            {disease.name}
+                          </h4>
                         </div>
-                        <h4 className="font-medium text-gray-900 dark:text-gray-100 text-xs">
-                          {disease.name}
-                        </h4>
+                        <span className={`text-sm font-bold ${
+                          disease.confidence >= 80 ? 'text-green-600' :
+                          disease.confidence >= 60 ? 'text-yellow-600' :
+                          'text-gray-600'
+                        }`}>
+                          {Math.round(disease.confidence)}%
+                        </span>
                       </div>
-                      <span className={`text-xs font-bold ${
-                        disease.confidence >= 80 ? 'text-green-600' :
-                        disease.confidence >= 60 ? 'text-yellow-600' :
-                        'text-gray-600'
-                      }`}>
-                        {Math.round(disease.confidence)}%
-                      </span>
+                      <Progress value={disease.confidence} className="h-2 mb-2" />
+                      <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
+                        {disease.description}
+                      </p>
                     </div>
-                    <Progress value={disease.confidence} className="h-1.5 mb-2" />
-                    <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
-                      {disease.description}
+                  ))}
+                </div>
+                
+                {viableDiseases.length === 0 && (
+                  <div className="text-center py-4">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      No viable conditions remaining
                     </p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderResultsStep = () => {
     const sortedDiseases = diseases.sort((a, b) => b.confidence - a.confidence);

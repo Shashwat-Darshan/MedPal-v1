@@ -147,19 +147,23 @@ export const generateDiagnosisFromSymptoms = async (symptoms: string, age: strin
       - Gender: ${gender || 'Not specified'}
       - Symptoms: ${symptoms}
       
-      Please provide EXACTLY 5 diagnoses with confidence levels. Format your response as JSON with this EXACT structure:
+      Please provide EXACTLY 5 diagnoses with realistic confidence levels. Format your response as JSON with this EXACT structure:
       {
         "diagnoses": [
           {
             "name": "Diagnosis Name",
-            "confidence": 65,
+            "confidence": 45,
             "description": "Brief description of the condition",
             "symptoms": ["symptom1", "symptom2", "symptom3"]
           }
         ]
       }
       
-      Make sure confidence levels are realistic (20-80% range initially) and the diagnoses are ordered by likelihood.
+      Important guidelines:
+      - Start with moderate confidence levels (25-65% range initially)
+      - Ensure diagnoses are medically realistic for the given symptoms
+      - Order by likelihood but keep confidence levels reasonable for initial assessment
+      - Each diagnosis should have distinct symptom patterns
     `;
 
     let responseText: string;
@@ -182,46 +186,43 @@ export const generateDiagnosisFromSymptoms = async (symptoms: string, age: strin
     
     console.log('Raw API response:', responseText);
     
-    // Try to parse JSON, fallback to structured response
     try {
-      // Clean the response text
       const cleanedText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       const parsed = JSON.parse(cleanedText);
       console.log('Parsed diagnoses:', parsed.diagnoses);
       return parsed.diagnoses || [];
     } catch (parseError) {
       console.log('JSON parsing failed, using fallback diagnoses:', parseError);
-      // Fallback diagnoses if parsing fails
       return [
         {
-          name: "Common Viral Infection",
-          confidence: 60,
-          description: "A general viral infection affecting the upper respiratory system",
-          symptoms: ["Fatigue", "Mild fever", "Body aches"]
+          name: "Viral Upper Respiratory Infection",
+          confidence: 55,
+          description: "Common viral infection affecting the upper respiratory tract",
+          symptoms: ["Congestion", "Mild fever", "Fatigue", "Throat irritation"]
         },
         {
           name: "Stress-Related Symptoms",
-          confidence: 45,
-          description: "Physical symptoms potentially caused by stress or anxiety",
-          symptoms: ["Tension", "Sleep disturbances", "General discomfort"]
+          confidence: 40,
+          description: "Physical symptoms potentially caused by psychological stress",
+          symptoms: ["Tension headaches", "Sleep disturbances", "Muscle tension"]
         },
         {
           name: "Seasonal Allergies",
           confidence: 35,
-          description: "Allergic reaction to environmental factors",
-          symptoms: ["Congestion", "Sneezing", "Irritation"]
+          description: "Allergic reaction to environmental allergens",
+          symptoms: ["Nasal congestion", "Sneezing", "Watery eyes"]
         },
         {
-          name: "Minor Bacterial Infection",
+          name: "Mild Bacterial Infection",
           confidence: 30,
-          description: "Localized bacterial infection requiring attention",
-          symptoms: ["Localized pain", "Mild inflammation", "Discomfort"]
+          description: "Localized bacterial infection requiring medical attention",
+          symptoms: ["Localized pain", "Mild inflammation", "Tenderness"]
         },
         {
           name: "Nutritional Deficiency",
           confidence: 25,
-          description: "Symptoms potentially related to dietary factors",
-          symptoms: ["Fatigue", "Weakness", "General malaise"]
+          description: "Symptoms potentially related to vitamin or mineral deficiency",
+          symptoms: ["Fatigue", "Weakness", "Poor concentration"]
         }
       ];
     }
@@ -236,43 +237,52 @@ export const generateFollowUpQuestion = async (
   currentQuestionText: string = ''
 ) => {
   return tryWithFallback(async (apiKey, provider) => {
-    const diseaseList = diseases.map(d => `${d.name} (${d.confidence}%)`).join(', ');
+    // Only consider diseases with >0% confidence
+    const viableDiseases = diseases.filter(d => d.confidence > 0);
+    const diseaseList = viableDiseases.map(d => `${d.name} (${d.confidence}%)`).join(', ');
     
-    // Create context from previous Q&A pairs
     const qaContext = previousQuestions.map((q, index) => {
       const answer = previousAnswers[index] || 'No answer';
       return `Q: ${q}\nA: ${answer}`;
     }).join('\n\n');
     
+    const topDisease = viableDiseases[0];
+    const secondDisease = viableDiseases[1];
+    
     const prompt = `
       Medical Diagnostic Context:
       - Original symptoms: ${symptoms}
-      - Current top 5 possible diagnoses: ${diseaseList}
+      - Current viable diagnoses: ${diseaseList}
+      - Top condition: ${topDisease?.name} (${topDisease?.confidence}%)
+      ${secondDisease ? `- Second condition: ${secondDisease?.name} (${secondDisease?.confidence}%)` : ''}
       
       Previous Questions & Answers:
       ${qaContext}
       
-      Current Question: ${currentQuestionText}
+      Generate ONE targeted follow-up question that will:
+      1. Help distinguish between the top 2-3 conditions
+      2. Focus on key differentiating symptoms or characteristics
+      3. Provide meaningful confidence adjustments based on medical knowledge
+      4. Build logically on previous answers
       
-      Based on this comprehensive context, generate ONE specific follow-up question that would help differentiate between these conditions and improve diagnostic accuracy.
-      
-      Focus on questions that:
-      1. Help distinguish between the top conditions
-      2. Build upon previous answers
-      3. Are medically relevant and specific
+      Question should target specific symptoms, timing, severity, or characteristics that are diagnostically significant.
       
       Format your response as JSON:
       {
-        "question": "Your specific medical question here?",
+        "question": "Specific medical question here?",
         "type": "yes_no",
         "diseaseImpacts": {
-          "Disease Name 1": 15,
-          "Disease Name 2": -10,
-          "Disease Name 3": 5
+          "${topDisease?.name}": 15,
+          "${secondDisease?.name}": -12,
+          "Other Disease": 8
         }
       }
       
-      The diseaseImpacts should show how a "yes" answer would change each disease's confidence (positive or negative numbers).
+      Disease impacts should be:
+      - Higher positive values (10-25) for conditions this question strongly supports
+      - Negative values (-10 to -20) for conditions this question rules out
+      - Smaller values (3-8) for mild support/opposition
+      - Based on actual medical differential diagnosis principles
     `;
 
     let responseText: string;
@@ -296,19 +306,17 @@ export const generateFollowUpQuestion = async (
     console.log('Raw question response:', responseText);
     
     try {
-      // Clean the response text
       const cleanedText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       const parsed = JSON.parse(cleanedText);
       console.log('Parsed question:', parsed);
       return parsed;
     } catch (parseError) {
       console.log('Question parsing failed, using fallback:', parseError);
-      // Fallback question
       return {
-        question: "Are you experiencing any fever or elevated temperature?",
+        question: "Have you noticed if your symptoms worsen at specific times of day or in certain environments?",
         type: "yes_no",
-        diseaseImpacts: diseases.reduce((acc, disease) => {
-          acc[disease.name] = Math.random() > 0.5 ? 10 : -5;
+        diseaseImpacts: viableDiseases.reduce((acc, disease, index) => {
+          acc[disease.name] = index === 0 ? 12 : index === 1 ? -8 : 5;
           return acc;
         }, {} as Record<string, number>)
       };
