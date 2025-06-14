@@ -38,9 +38,9 @@ const Navbar = () => {
     <nav className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="flex-shrink-0 mr-4 sm:mr-8">
-            <div className="flex items-center cursor-pointer group" onClick={() => navigate('/dashboard')}>
+          {/* Logo - Far Left with proper spacing */}
+          <div className="flex items-center">
+            <div className="flex items-center cursor-pointer group mr-8 lg:mr-12" onClick={() => navigate('/dashboard')}>
               {isMobile ? (
                 // Mobile: Compact logo
                 <div className="bg-white/20 dark:bg-gray-800/30 backdrop-blur-sm border border-gray-200/30 dark:border-gray-600/30 rounded-2xl px-3 py-2 shadow-lg">
@@ -85,29 +85,29 @@ const Navbar = () => {
                 </div>
               )}
             </div>
+
+            {/* Navigation Links - Desktop - Positioned after logo */}
+            <div className="hidden md:flex items-center space-x-1">
+              {navItems.map(item => (
+                <Button 
+                  key={item.path} 
+                  variant={location.pathname === item.path ? "default" : "ghost"} 
+                  size="sm" 
+                  onClick={() => navigate(item.path)} 
+                  className={`text-sm transition-all duration-200 ${
+                    location.pathname === item.path 
+                      ? 'medical-gradient text-white shadow-lg' 
+                      : 'hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-300'
+                  }`}
+                >
+                  {item.label}
+                </Button>
+              ))}
+            </div>
           </div>
 
-          {/* Navigation Links - Desktop */}
-          <div className="hidden md:flex items-center space-x-1 flex-1 justify-center">
-            {navItems.map(item => (
-              <Button 
-                key={item.path} 
-                variant={location.pathname === item.path ? "default" : "ghost"} 
-                size="sm" 
-                onClick={() => navigate(item.path)} 
-                className={`text-sm transition-all duration-200 ${
-                  location.pathname === item.path 
-                    ? 'medical-gradient text-white shadow-lg' 
-                    : 'hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-300'
-                }`}
-              >
-                {item.label}
-              </Button>
-            ))}
-          </div>
-
-          {/* User Menu */}
-          <div className="flex items-center space-x-2 flex-shrink-0">
+          {/* Right Side - Settings and User Menu */}
+          <div className="flex items-center space-x-3">
             {!isMobile && (
               <>
                 {/* Search Button - Desktop Only */}
@@ -152,7 +152,7 @@ const Navbar = () => {
               </Button>
             )}
 
-            {/* Settings Dropdown - Desktop Only */}
+            {/* Settings Dropdown - Desktop Only - Far Right */}
             {!isMobile && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
