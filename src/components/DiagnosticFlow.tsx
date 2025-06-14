@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,9 +6,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
-import { Mic, Send, Brain, Activity, CheckCircle, AlertTriangle, RotateCcw } from 'lucide-react';
+import { Mic, Send, Brain, Activity, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useDiagnosticFlow, Disease, DiagnosticQuestion } from '@/hooks/useDiagnosticFlow';
-import { generateDiagnosisFromSymptoms, generateFollowUpQuestion } from '@/services/geminiService';
+import { analyzeSymptomsWithGemini } from '@/services/geminiService';
 import { useToast } from '@/hooks/use-toast';
 
 const DiagnosticFlow = () => {
@@ -21,14 +22,11 @@ const DiagnosticFlow = () => {
     setDiseases,
     currentQuestion,
     setCurrentQuestion,
-    questionHistory,
-    setQuestionHistory,
     progress,
     isAnalyzing,
     setIsAnalyzing,
     shouldEndDiagnosis,
-    updateConfidence,
-    restartDiagnosis
+    updateConfidence
   } = useDiagnosticFlow();
 
   const [severityValue, setSeverityValue] = useState([3]);
@@ -51,26 +49,51 @@ const DiagnosticFlow = () => {
     setIsAnalyzing(true);
 
     try {
-      console.log('Generating diagnosis from symptoms:', symptoms);
-      const diagnosisResults = await generateDiagnosisFromSymptoms(symptoms);
+      const result = await analyzeSymptomsWithGemini(symptoms, '', '');
       
-      // Convert to our Disease format with IDs
-      const formattedDiseases: Disease[] = diagnosisResults.map((result: any, index: number) => ({
-        id: (index + 1).toString(),
-        name: result.name,
-        confidence: result.confidence,
-        description: result.description,
-        symptoms: result.symptoms || []
-      }));
+      // Mock disease data with confidence levels
+      const mockDiseases: Disease[] = [
+        {
+          id: '1',
+          name: result.diagnosis || 'Common Cold',
+          confidence: Math.min(result.confidence || 70, 85),
+          description: result.possibleCauses?.[0] || 'Viral infection',
+          symptoms: result.recommendations || ['Rest', 'Hydration']
+        },
+        {
+          id: '2',
+          name: 'Flu',
+          confidence: Math.max((result.confidence || 70) - 15, 45),
+          description: 'Influenza virus infection',
+          symptoms: ['Fever', 'Body aches', 'Fatigue']
+        },
+        {
+          id: '3',
+          name: 'Allergic Reaction',
+          confidence: Math.max((result.confidence || 70) - 25, 35),
+          description: 'Allergic response to environmental factors',
+          symptoms: ['Sneezing', 'Runny nose', 'Itchy eyes']
+        },
+        {
+          id: '4',
+          name: 'Sinusitis',
+          confidence: Math.max((result.confidence || 70) - 30, 30),
+          description: 'Inflammation of sinus cavities',
+          symptoms: ['Facial pressure', 'Headache', 'Congestion']
+        },
+        {
+          id: '5',
+          name: 'Bacterial Infection',
+          confidence: Math.max((result.confidence || 70) - 40, 20),
+          description: 'Bacterial respiratory infection',
+          symptoms: ['Persistent cough', 'Colored mucus', 'Fever']
+        }
+      ];
 
-      console.log('Generated diseases:', formattedDiseases);
-      setDiseases(formattedDiseases);
+      setDiseases(mockDiseases);
       setCurrentStep('questions');
-      
-      // Generate first question
-      await generateNextQuestion(formattedDiseases, []);
+      generateNextQuestion(mockDiseases);
     } catch (error) {
-      console.error('Analysis error:', error);
       toast({
         title: "Analysis Failed",
         description: "Unable to analyze symptoms. Please try again.",
@@ -82,68 +105,36 @@ const DiagnosticFlow = () => {
     }
   };
 
-  const generateNextQuestion = async (currentDiseases: Disease[], history: string[]) => {
-    try {
-      console.log('Generating next question for diseases:', currentDiseases.map(d => d.name));
-      const questionData = await generateFollowUpQuestion(currentDiseases, symptoms, history);
-      
-      // Convert to our DiagnosticQuestion format
-      const question: DiagnosticQuestion = {
-        id: `q_${Date.now()}`,
-        text: questionData.question,
-        type: 'yes_no',
-        diseaseImpact: {}
-      };
-
-      // Map disease impacts by disease ID instead of name
-      if (questionData.diseaseImpacts) {
-        currentDiseases.forEach(disease => {
-          const impact = questionData.diseaseImpacts[disease.name];
-          if (impact !== undefined) {
-            question.diseaseImpact[disease.id] = impact;
-          }
-        });
+  const generateNextQuestion = (currentDiseases: Disease[]) => {
+    // Mock question generation based on top diseases
+    const mockQuestion: DiagnosticQuestion = {
+      id: Date.now().toString(),
+      text: "Have you experienced any fever in the last 24 hours?",
+      type: 'yes_no',
+      diseaseImpact: {
+        '1': -10, // Common cold less likely with fever
+        '2': 15,  // Flu more likely with fever
+        '3': -5,  // Allergies less likely with fever
+        '4': 8,   // Sinusitis somewhat more likely
+        '5': 12   // Bacterial infection more likely
       }
-
-      console.log('Generated question:', question);
-      setCurrentQuestion(question);
-    } catch (error) {
-      console.error('Error generating question:', error);
-      // Fallback to a generic question if AI fails
-      const fallbackQuestion: DiagnosticQuestion = {
-        id: `fallback_${Date.now()}`,
-        text: "Are you experiencing any fever or elevated body temperature?",
-        type: 'yes_no',
-        diseaseImpact: currentDiseases.reduce((acc, disease) => {
-          acc[disease.id] = Math.random() > 0.5 ? 10 : -5;
-          return acc;
-        }, {} as Record<string, number>)
-      };
-      setCurrentQuestion(fallbackQuestion);
-    }
+    };
+    setCurrentQuestion(mockQuestion);
   };
 
-  const handleAnswerQuestion = async (answer: string) => {
+  const handleAnswerQuestion = (answer: string) => {
     if (!currentQuestion) return;
 
-    console.log('Answer received:', answer, 'for question:', currentQuestion.text);
-
-    // Update confidence based on answer
     updateConfidence(answer, currentQuestion);
     
-    // Add question to history
-    const newHistory = [...questionHistory, currentQuestion.id];
-    setQuestionHistory(newHistory);
-    
-    // Check if we should end diagnosis after a delay to show the update
-    setTimeout(async () => {
+    // Check if we should end diagnosis
+    setTimeout(() => {
       if (shouldEndDiagnosis()) {
         setCurrentStep('results');
       } else {
-        // Generate next question
-        await generateNextQuestion(diseases, newHistory);
+        generateNextQuestion(diseases);
       }
-    }, 1000);
+    }, 500);
   };
 
   const renderInitialStep = () => (
@@ -171,24 +162,13 @@ const DiagnosticFlow = () => {
 
   const renderSymptomsStep = () => (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            Describe Your Symptoms
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Tell me about what you're experiencing so I can help with an accurate assessment
-          </p>
-        </div>
-        <Button
-          onClick={restartDiagnosis}
-          variant="outline"
-          size="sm"
-          className="flex items-center space-x-2"
-        >
-          <RotateCcw className="h-4 w-4" />
-          <span>Restart</span>
-        </Button>
+      <div>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+          Describe Your Symptoms
+        </h2>
+        <p className="text-gray-600 dark:text-gray-400 mb-4">
+          Tell me about what you're experiencing so I can help with an accurate assessment
+        </p>
       </div>
       
       <div className="space-y-4">
@@ -197,14 +177,24 @@ const DiagnosticFlow = () => {
             What symptoms are you experiencing?
           </label>
           <div className="relative">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute right-2 top-2 z-10"
+            >
+              <Mic className="h-4 w-4" />
+            </Button>
             <Textarea
               value={symptoms}
               onChange={(e) => setSymptoms(e.target.value)}
               placeholder="Example: I've been having a persistent headache for 2 days, feeling tired, and have a slight fever..."
-              className="min-h-[120px] glass-light-subtle dark:bg-gray-800"
+              className="min-h-[120px] pr-12 glass-light-subtle dark:bg-gray-800"
               rows={5}
             />
           </div>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            or type below
+          </p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -245,12 +235,12 @@ const DiagnosticFlow = () => {
 
       <Button 
         onClick={handleSymptomsSubmit}
-        disabled={!symptoms.trim() || isAnalyzing}
+        disabled={!symptoms.trim()}
         className="w-full medical-gradient text-white"
         size="lg"
       >
         <Send className="h-4 w-4 mr-2" />
-        {isAnalyzing ? 'Analyzing...' : 'Start Diagnosis'}
+        Start Diagnosis
       </Button>
     </div>
   );
@@ -276,21 +266,6 @@ const DiagnosticFlow = () => {
 
   const renderQuestionsStep = () => (
     <div className="space-y-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-          Assessment in Progress
-        </h2>
-        <Button
-          onClick={restartDiagnosis}
-          variant="outline"
-          size="sm"
-          className="flex items-center space-x-2"
-        >
-          <RotateCcw className="h-4 w-4" />
-          <span>Restart</span>
-        </Button>
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
@@ -301,7 +276,7 @@ const DiagnosticFlow = () => {
               <div key={disease.id} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                 <div className="flex justify-between items-center mb-2">
                   <span className="font-medium text-gray-900 dark:text-gray-100">
-                    {index + 1}. {disease.name}
+                    {disease.name}
                   </span>
                   <Badge 
                     className={
@@ -310,11 +285,10 @@ const DiagnosticFlow = () => {
                       'bg-red-100 text-red-800'
                     }
                   >
-                    {Math.round(disease.confidence)}%
+                    {disease.confidence}%
                   </Badge>
                 </div>
-                <Progress value={disease.confidence} className="h-2 mb-2" />
-                <p className="text-sm text-gray-600 dark:text-gray-400">{disease.description}</p>
+                <Progress value={disease.confidence} className="h-2" />
               </div>
             ))}
           </div>
@@ -358,31 +332,20 @@ const DiagnosticFlow = () => {
   );
 
   const renderResultsStep = () => {
-    const sortedDiseases = diseases.sort((a, b) => b.confidence - a.confidence);
-    const topDisease = sortedDiseases[0];
+    const topDisease = diseases.sort((a, b) => b.confidence - a.confidence)[0];
     
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="text-center flex-1">
-            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="h-8 w-8 text-white" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-              Assessment Complete
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400">
-              Based on your symptoms, here's what I found:
-            </p>
+        <div className="text-center">
+          <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="h-8 w-8 text-white" />
           </div>
-          <Button
-            onClick={restartDiagnosis}
-            variant="outline"
-            className="flex items-center space-x-2"
-          >
-            <RotateCcw className="h-4 w-4" />
-            <span>New Assessment</span>
-          </Button>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            Assessment Complete
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            Based on your symptoms, here's what I found:
+          </p>
         </div>
 
         <Card className="border-green-200 bg-green-50 dark:bg-green-900/20">
@@ -392,7 +355,7 @@ const DiagnosticFlow = () => {
                 Most Likely: {topDisease?.name}
               </span>
               <Badge className="bg-green-600 text-white">
-                {Math.round(topDisease?.confidence || 0)}% Confidence
+                {topDisease?.confidence}% Confidence
               </Badge>
             </CardTitle>
           </CardHeader>
@@ -400,17 +363,6 @@ const DiagnosticFlow = () => {
             <p className="text-green-800 dark:text-green-200 mb-4">
               {topDisease?.description}
             </p>
-            
-            <div className="space-y-3 mb-4">
-              <h4 className="font-medium text-green-900 dark:text-green-100">All Results:</h4>
-              {sortedDiseases.map((disease, index) => (
-                <div key={disease.id} className="flex justify-between items-center p-2 bg-white/50 dark:bg-gray-800/50 rounded">
-                  <span className="text-sm">{index + 1}. {disease.name}</span>
-                  <Badge variant="outline">{Math.round(disease.confidence)}%</Badge>
-                </div>
-              ))}
-            </div>
-
             <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700 rounded-lg p-4">
               <div className="flex items-start space-x-2">
                 <AlertTriangle className="h-5 w-5 text-orange-600 flex-shrink-0 mt-0.5" />
