@@ -45,7 +45,7 @@ const Navbar = () => {
                 <img 
                   src="https://i.ibb.co/FkJx6sMy/medpal-high-resolution-logo-1.png" 
                   alt="MedPal" 
-                  className="h-8 w-auto object-contain"
+                  className="h-8 w-auto object-contain rounded-lg"
                 />
               </div>
             ) : (
@@ -54,7 +54,7 @@ const Navbar = () => {
                 <img 
                   src="https://i.ibb.co/FkJx6sMy/medpal-high-resolution-logo-1.png" 
                   alt="MedPal" 
-                  className="h-10 w-auto object-contain group-hover:scale-105 transition-transform duration-300"
+                  className="h-10 w-auto object-contain group-hover:scale-105 transition-transform duration-300 rounded-xl"
                 />
                 <div className="flex items-center space-x-1">
                   <Sparkles className="h-3 w-3 text-yellow-500" />
