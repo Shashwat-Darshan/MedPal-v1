@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -90,6 +89,12 @@ export default {
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out'
+			},
+			wordBreak: {
+				'break-word': 'break-word',
+			},
+			hyphens: {
+				'auto': 'auto',
 			}
 		}
 	},
