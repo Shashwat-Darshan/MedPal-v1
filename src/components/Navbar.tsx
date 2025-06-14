@@ -55,18 +55,18 @@ const Navbar = () => {
             {isMobile ?
           // Mobile: Compact stacked text logo with curved box
           <div className="bg-white/20 dark:bg-gray-800/30 backdrop-blur-sm border border-gray-200/30 dark:border-gray-600/30 rounded-2xl px-3 py-2 shadow-lg">
-                <div className="flex flex-col items-start justify-center" style={{ lineHeight: '0.1' }}>
+                <div className="flex flex-col items-start justify-center" style={{ lineHeight: '0.8' }}>
                   <span className="text-white font-black text-lg tracking-wide font-serif" style={{
                 fontFamily: 'Impact, "Franklin Gothic Bold", "Helvetica Neue", Arial, sans-serif',
                 textShadow: '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 2px 2px 4px rgba(0,0,0,0.3)',
-                marginBottom: '-8px'
+                marginBottom: '-4px'
               }}>
                     MED
                   </span>
                   <span className="text-blue-600 dark:text-blue-400 font-black text-lg tracking-wide font-serif" style={{
                 fontFamily: 'Impact, "Franklin Gothic Bold", "Helvetica Neue", Arial, sans-serif',
                 textShadow: '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 2px 2px 4px rgba(0,0,0,0.3)',
-                marginTop: '-8px'
+                marginTop: '-4px'
               }}>
                     PAL
                   </span>
@@ -75,18 +75,18 @@ const Navbar = () => {
           // Desktop: Larger stacked text logo with tagline and curved box
           <div className="flex items-center space-x-4">
                 <div className="bg-white/20 dark:bg-gray-800/30 backdrop-blur-sm border border-gray-200/20 dark:border-gray-600/20 shadow-lg px-[18px] py-0 rounded-2xl">
-                  <div className="flex flex-col items-start justify-center" style={{ lineHeight: '0.1' }}>
+                  <div className="flex flex-col items-start justify-center" style={{ lineHeight: '0.8' }}>
                     <span className="text-white font-black text-2xl tracking-wide font-serif" style={{
                   fontFamily: 'Impact, "Franklin Gothic Bold", "Helvetica Neue", Arial, sans-serif',
                   textShadow: '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 2px 2px 4px rgba(0,0,0,0.3)',
-                  marginBottom: '-12px'
+                  marginBottom: '-6px'
                 }}>
                       MED
                     </span>
                     <span className="text-blue-600 dark:text-blue-400 font-black text-2xl tracking-wide font-serif" style={{
                   fontFamily: 'Impact, "Franklin Gothic Bold", "Helvetica Neue", Arial, sans-serif',
                   textShadow: '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 2px 2px 4px rgba(0,0,0,0.3)',
-                  marginTop: '-12px'
+                  marginTop: '-6px'
                 }}>
                       PAL
                     </span>
