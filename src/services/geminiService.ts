@@ -181,11 +181,17 @@ export const generateDiagnosisFromSymptoms = async (symptoms: string, age: strin
       responseText = response.text();
     }
     
+    console.log('Raw API response:', responseText);
+    
     // Try to parse JSON, fallback to structured response
     try {
-      const parsed = JSON.parse(responseText);
+      // Clean the response text
+      const cleanedText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const parsed = JSON.parse(cleanedText);
+      console.log('Parsed diagnoses:', parsed.diagnoses);
       return parsed.diagnoses || [];
-    } catch {
+    } catch (parseError) {
+      console.log('JSON parsing failed, using fallback diagnoses:', parseError);
       // Fallback diagnoses if parsing fails
       return [
         {
@@ -267,9 +273,16 @@ export const generateFollowUpQuestion = async (diseases: Disease[], symptoms: st
       responseText = response.text();
     }
     
+    console.log('Raw question response:', responseText);
+    
     try {
-      return JSON.parse(responseText);
-    } catch {
+      // Clean the response text
+      const cleanedText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const parsed = JSON.parse(cleanedText);
+      console.log('Parsed question:', parsed);
+      return parsed;
+    } catch (parseError) {
+      console.log('Question parsing failed, using fallback:', parseError);
       // Fallback question
       return {
         question: "Are you experiencing any fever or elevated temperature?",
