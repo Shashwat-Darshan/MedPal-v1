@@ -183,7 +183,7 @@ const Dashboard = () => {
             </div>
             
             <div className="mt-6 lg:mt-0 flex flex-col sm:flex-row gap-3">
-              <Button variant="outline" className="flex items-center space-x-2 glass-card dark:border-gray-700 dark:text-gray-200">
+              <Button variant="outline" className="flex items-center space-x-2 glass-light dark:glass-card dark:border-gray-700 dark:text-gray-200">
                 <Brain className="h-4 w-4" />
                 <span>AI Health Insights</span>
               </Button>
@@ -202,7 +202,7 @@ const Dashboard = () => {
             <HealthInsights />
 
             {/* Health Tips */}
-            <Card className="glass-card dark:bg-gray-900/30 dark:border-gray-700">
+            <Card className="glass-light dark:glass-card dark:border-gray-700">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-gray-100">
                   <TrendingUp className="h-5 w-5 text-green-600" />
@@ -210,7 +210,7 @@ const Dashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                <div className="p-4 tip-card rounded-xl">
                   <div className="flex items-center space-x-2 mb-2">
                     <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
                       <span className="text-white text-sm">💧</span>
@@ -219,7 +219,7 @@ const Dashboard = () => {
                   </div>
                   <p className="text-sm text-blue-800 dark:text-blue-200">Drink water regularly throughout the day to maintain optimal health.</p>
                 </div>
-                <div className="p-4 bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-xl border border-green-200 dark:border-green-800">
+                <div className="p-4 tip-card rounded-xl">
                   <div className="flex items-center space-x-2 mb-2">
                     <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                       <span className="text-white text-sm">🚶</span>
@@ -249,7 +249,7 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="bg-gradient-to-r from-green-500 to-emerald-600 text-white floating-card">
+              <Card className="bg-gradient-to-r from-green-500 to-emerald-600 text-white floating-card glass-stats">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
@@ -266,7 +266,7 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white floating-card">
+              <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white floating-card glass-stats">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
@@ -279,7 +279,7 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="bg-gradient-to-r from-orange-500 to-red-500 text-white floating-card">
+              <Card className="bg-gradient-to-r from-orange-500 to-red-500 text-white floating-card glass-stats">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
@@ -294,7 +294,7 @@ const Dashboard = () => {
             </div>
 
             {/* Quick Actions with Enhanced Design */}
-            <Card className="glass-card dark:bg-gray-900/30 dark:border-gray-700">
+            <Card className="glass-light dark:glass-card dark:border-gray-700">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-gray-100">
                   <Sparkles className="h-5 w-5 text-blue-600" />
@@ -307,7 +307,7 @@ const Dashboard = () => {
                     <div
                       key={index}
                       onClick={action.action}
-                      className="feature-card cursor-pointer group dark:bg-gray-800/30 dark:border-gray-700 dark:hover:border-gray-600"
+                      className="feature-card cursor-pointer group"
                     >
                       <div className="flex items-center justify-between">
                         <div className="space-y-2">
@@ -333,7 +333,7 @@ const Dashboard = () => {
             </Card>
 
             {/* Recent Activity with Enhanced UI */}
-            <Card className="dark:bg-gray-900/30 dark:border-gray-700">
+            <Card className="glass-light dark:glass-card dark:border-gray-700">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between text-gray-900 dark:text-gray-100">
                   <span>Recent Activity</span>
@@ -346,7 +346,7 @@ const Dashboard = () => {
               <CardContent>
                 <div className="space-y-4">
                   {recentActivity.map((activity) => (
-                    <div key={activity.id} className="flex items-start space-x-4 p-4 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800/30 dark:to-blue-900/20 rounded-xl border border-gray-100 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-600 transition-colors">
+                    <div key={activity.id} className="activity-card flex items-start space-x-4 p-4 rounded-xl">
                       <div className="flex-shrink-0">
                         {getStatusIcon(activity.status)}
                       </div>
@@ -380,7 +380,7 @@ const Dashboard = () => {
           {/* Right Sidebar */}
           <div className="space-y-6 lg:hidden">
             {/* Achievements Section */}
-            <Card className="glass-card dark:bg-gray-900/30 dark:border-gray-700">
+            <Card className="glass-light dark:glass-card dark:border-gray-700">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-gray-100">
                   <Star className="h-5 w-5 text-yellow-500" />
@@ -389,7 +389,7 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent className="space-y-3">
                 {achievements.map((achievement, index) => (
-                  <div key={index} className="flex items-center space-x-3 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                  <div key={index} className="flex items-center space-x-3 p-3 tip-card rounded-lg">
                     <span className="text-2xl">{achievement.icon}</span>
                     <div>
                       <h4 className="font-medium text-gray-900 dark:text-gray-100">{achievement.name}</h4>
@@ -411,7 +411,7 @@ const Dashboard = () => {
           <div></div>
           <div className="space-y-6">
             {/* Achievements Section */}
-            <Card className="glass-card dark:bg-gray-900/30 dark:border-gray-700">
+            <Card className="glass-light dark:glass-card dark:border-gray-700">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-gray-100">
                   <Star className="h-5 w-5 text-yellow-500" />
@@ -420,7 +420,7 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent className="space-y-3">
                 {achievements.map((achievement, index) => (
-                  <div key={index} className="flex items-center space-x-3 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                  <div key={index} className="flex items-center space-x-3 p-3 tip-card rounded-lg">
                     <span className="text-2xl">{achievement.icon}</span>
                     <div>
                       <h4 className="font-medium text-gray-900 dark:text-gray-100">{achievement.name}</h4>
