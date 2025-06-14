@@ -1,7 +1,12 @@
-
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+
+if (!apiKey) {
+  console.error('VITE_GEMINI_API_KEY is not set. Please add your Gemini API key to the environment variables.');
+}
+
+const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 
 export interface Disease {
   name: string;
@@ -17,6 +22,10 @@ export interface ChatMessage {
 }
 
 export const analyzeSymptomsWithGemini = async (symptoms: string, age: string, gender: string) => {
+  if (!genAI) {
+    throw new Error('Gemini API key is not configured. Please set VITE_GEMINI_API_KEY in your environment variables.');
+  }
+
   const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
   
   const prompt = `
@@ -63,11 +72,18 @@ export const analyzeSymptomsWithGemini = async (symptoms: string, age: string, g
     }
   } catch (error) {
     console.error('Error analyzing symptoms:', error);
+    if (error.message?.includes('403') || error.message?.includes('API Key')) {
+      throw new Error('Invalid or missing API key. Please check your Gemini API key configuration.');
+    }
     throw new Error('Failed to analyze symptoms');
   }
 };
 
 export const getChatResponseFromGemini = async (message: string, context?: string) => {
+  if (!genAI) {
+    throw new Error('Gemini API key is not configured. Please set VITE_GEMINI_API_KEY in your environment variables.');
+  }
+
   const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
   
   const prompt = `
@@ -85,6 +101,9 @@ export const getChatResponseFromGemini = async (message: string, context?: strin
     return response.text();
   } catch (error) {
     console.error('Error getting chat response:', error);
+    if (error.message?.includes('403') || error.message?.includes('API Key')) {
+      throw new Error('Invalid or missing API key. Please check your Gemini API key configuration.');
+    }
     throw new Error('Failed to get response');
   }
 };
@@ -94,6 +113,10 @@ const chatAboutDiagnosis = async (
   message: string, 
   previousMessages: ChatMessage[]
 ): Promise<string> => {
+  if (!genAI) {
+    throw new Error('Gemini API key is not configured. Please set VITE_GEMINI_API_KEY in your environment variables.');
+  }
+
   const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
   
   const conversationHistory = previousMessages
@@ -120,6 +143,9 @@ const chatAboutDiagnosis = async (
     return response.text();
   } catch (error) {
     console.error('Error in diagnosis chat:', error);
+    if (error.message?.includes('403') || error.message?.includes('API Key')) {
+      throw new Error('Invalid or missing API key. Please check your Gemini API key configuration.');
+    }
     throw new Error('Failed to get chat response');
   }
 };
