@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -147,35 +148,35 @@ const DiagnosticFlow = () => {
   };
 
   const renderInitialStep = () => (
-    <div className="min-h-[70vh] flex items-center justify-center">
-      <div className="text-center space-y-10 max-w-3xl mx-auto">
+    <div className="min-h-[35vh] flex items-center justify-center">
+      <div className="text-center space-y-8 max-w-2xl mx-auto">
         <div className="relative">
-          <div className="w-32 h-32 bg-gradient-to-br from-blue-500 via-purple-600 to-teal-500 rounded-full flex items-center justify-center mx-auto shadow-2xl">
-            <Brain className="h-16 w-16 text-white" />
+          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 via-purple-600 to-teal-500 rounded-full flex items-center justify-center mx-auto shadow-xl">
+            <Brain className="h-10 w-10 text-white" />
           </div>
-          <div className="absolute -top-3 -right-3 w-8 h-8 bg-green-500 rounded-full animate-pulse flex items-center justify-center">
-            <div className="w-4 h-4 bg-white rounded-full"></div>
+          <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full animate-pulse flex items-center justify-center">
+            <div className="w-3 h-3 bg-white rounded-full"></div>
           </div>
         </div>
         
-        <div className="space-y-6">
-          <h2 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 bg-clip-text text-transparent">
+        <div className="space-y-4">
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 bg-clip-text text-transparent">
             AI Health Assistant
           </h2>
-          <p className="text-2xl text-gray-600 dark:text-gray-300 leading-relaxed">
+          <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
             Get personalized health insights powered by advanced AI technology
           </p>
-          <p className="text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
+          <p className="text-base text-gray-500 dark:text-gray-400 max-w-xl mx-auto">
             Describe your symptoms and I'll help assess your condition with intelligent follow-up questions
           </p>
         </div>
         
         <Button 
           onClick={handleStartDiagnosis}
-          className="medical-gradient text-white px-16 py-6 text-xl font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+          className="medical-gradient text-white px-12 py-4 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
           size="lg"
         >
-          <Stethoscope className="h-6 w-6 mr-4" />
+          <Stethoscope className="h-5 w-5 mr-3" />
           Start Health Assessment
         </Button>
       </div>
