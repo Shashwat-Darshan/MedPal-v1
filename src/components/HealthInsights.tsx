@@ -59,33 +59,33 @@ const HealthInsights = () => {
   };
 
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
-          <Brain className="h-5 w-5 text-purple-600" />
-          <span>AI Health Insights</span>
+          <Brain className="h-5 w-5 text-purple-600 flex-shrink-0" />
+          <span className="break-words">AI Health Insights</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {insights.map((insight) => {
           const Icon = insight.icon;
           return (
-            <div key={insight.id} className={`p-4 rounded-lg border ${getInsightStyle(insight.type)}`}>
-              <div className="flex items-start space-x-3">
+            <div key={insight.id} className={`p-4 rounded-lg border w-full ${getInsightStyle(insight.type)}`}>
+              <div className="flex items-start space-x-3 w-full">
                 <div className="flex-shrink-0">
                   <Icon className="h-5 w-5" />
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium">{insight.title}</h4>
-                    <Badge className={getBadgeStyle(insight.type)}>
+                <div className="flex-1 min-w-0 w-full">
+                  <div className="flex items-start justify-between mb-2 gap-2 w-full">
+                    <h4 className="font-medium break-words flex-1 min-w-0">{insight.title}</h4>
+                    <Badge className={`${getBadgeStyle(insight.type)} flex-shrink-0 whitespace-nowrap text-xs`}>
                       {insight.type}
                     </Badge>
                   </div>
-                  <p className="text-sm mb-3">{insight.description}</p>
-                  <div className="flex items-center space-x-2">
-                    <Lightbulb className="h-4 w-4" />
-                    <span className="text-sm font-medium">{insight.action}</span>
+                  <p className="text-sm mb-3 break-words w-full">{insight.description}</p>
+                  <div className="flex items-start space-x-2 w-full">
+                    <Lightbulb className="h-4 w-4 flex-shrink-0" />
+                    <span className="text-sm font-medium break-words flex-1 min-w-0">{insight.action}</span>
                   </div>
                 </div>
               </div>
