@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -60,33 +61,11 @@ const Navbar = () => {
           {/* Logo */}
           <div className="flex items-center cursor-pointer group" onClick={() => navigate('/dashboard')}>
             {isMobile ? (
-              // Mobile: Compact stacked text logo - no background, left aligned
-              <div className="flex flex-col items-start justify-center">
-                <span 
-                  className="text-white font-black text-lg leading-tight tracking-wide font-serif" 
-                  style={{ 
-                    fontFamily: 'Impact, "Franklin Gothic Bold", "Helvetica Neue", Arial, sans-serif',
-                    textShadow: '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 2px 2px 4px rgba(0,0,0,0.3)'
-                  }}
-                >
-                  MED
-                </span>
-                <span 
-                  className="text-blue-600 dark:text-blue-400 font-black text-lg leading-tight tracking-wide font-serif" 
-                  style={{ 
-                    fontFamily: 'Impact, "Franklin Gothic Bold", "Helvetica Neue", Arial, sans-serif',
-                    textShadow: '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 2px 2px 4px rgba(0,0,0,0.3)'
-                  }}
-                >
-                  PAL
-                </span>
-              </div>
-            ) : (
-              // Desktop: Larger stacked text logo with tagline - no background, left aligned
-              <div className="flex items-center space-x-4">
+              // Mobile: Compact stacked text logo with curved box
+              <div className="bg-white/20 dark:bg-gray-800/30 backdrop-blur-sm border border-gray-200/30 dark:border-gray-600/30 rounded-2xl px-3 py-2 shadow-lg">
                 <div className="flex flex-col items-start justify-center">
                   <span 
-                    className="text-white font-black text-2xl leading-tight tracking-wide font-serif" 
+                    className="text-white font-black text-lg leading-tight tracking-wide font-serif" 
                     style={{ 
                       fontFamily: 'Impact, "Franklin Gothic Bold", "Helvetica Neue", Arial, sans-serif',
                       textShadow: '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 2px 2px 4px rgba(0,0,0,0.3)'
@@ -95,7 +74,7 @@ const Navbar = () => {
                     MED
                   </span>
                   <span 
-                    className="text-blue-600 dark:text-blue-400 font-black text-2xl leading-tight tracking-wide font-serif" 
+                    className="text-blue-600 dark:text-blue-400 font-black text-lg leading-tight tracking-wide font-serif" 
                     style={{ 
                       fontFamily: 'Impact, "Franklin Gothic Bold", "Helvetica Neue", Arial, sans-serif',
                       textShadow: '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 2px 2px 4px rgba(0,0,0,0.3)'
@@ -103,6 +82,32 @@ const Navbar = () => {
                   >
                     PAL
                   </span>
+                </div>
+              </div>
+            ) : (
+              // Desktop: Larger stacked text logo with tagline and curved box
+              <div className="flex items-center space-x-4">
+                <div className="bg-white/20 dark:bg-gray-800/30 backdrop-blur-sm border border-gray-200/30 dark:border-gray-600/30 rounded-2xl px-4 py-3 shadow-lg">
+                  <div className="flex flex-col items-start justify-center">
+                    <span 
+                      className="text-white font-black text-2xl leading-tight tracking-wide font-serif" 
+                      style={{ 
+                        fontFamily: 'Impact, "Franklin Gothic Bold", "Helvetica Neue", Arial, sans-serif',
+                        textShadow: '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 2px 2px 4px rgba(0,0,0,0.3)'
+                      }}
+                    >
+                      MED
+                    </span>
+                    <span 
+                      className="text-blue-600 dark:text-blue-400 font-black text-2xl leading-tight tracking-wide font-serif" 
+                      style={{ 
+                        fontFamily: 'Impact, "Franklin Gothic Bold", "Helvetica Neue", Arial, sans-serif',
+                        textShadow: '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 2px 2px 4px rgba(0,0,0,0.3)'
+                      }}
+                    >
+                      PAL
+                    </span>
+                  </div>
                 </div>
                 <div className="flex items-center space-x-1">
                   <Sparkles className="h-3 w-3 text-yellow-500" />
