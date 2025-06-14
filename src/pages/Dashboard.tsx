@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -144,7 +145,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
       <Navbar />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -160,12 +161,12 @@ const Dashboard = () => {
                   <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                     {greeting}!
                   </h1>
-                  <p className="text-gray-600">Here's your personalized health dashboard</p>
+                  <p className="text-gray-600 dark:text-gray-300">Here's your personalized health dashboard</p>
                 </div>
               </div>
               
               {/* Live Stats */}
-              <div className="flex items-center space-x-6 text-sm text-gray-600 mt-4">
+              <div className="flex items-center space-x-6 text-sm text-gray-600 dark:text-gray-400 mt-4">
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                   <span>Live: {currentTime.toLocaleTimeString()}</span>
@@ -182,7 +183,7 @@ const Dashboard = () => {
             </div>
             
             <div className="mt-6 lg:mt-0 flex flex-col sm:flex-row gap-3">
-              <Button variant="outline" className="flex items-center space-x-2">
+              <Button variant="outline" className="flex items-center space-x-2 glass-card dark:border-gray-700 dark:text-gray-200">
                 <Brain className="h-4 w-4" />
                 <span>AI Health Insights</span>
               </Button>
@@ -201,9 +202,9 @@ const Dashboard = () => {
             <HealthInsights />
 
             {/* Health Tips */}
-            <Card className="glass-card">
+            <Card className="glass-card dark:bg-gray-900/30 dark:border-gray-700">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-gray-100">
                   <TrendingUp className="h-5 w-5 text-green-600" />
                   <span>Today's Health Tips</span>
                 </CardTitle>
@@ -293,9 +294,9 @@ const Dashboard = () => {
             </div>
 
             {/* Quick Actions with Enhanced Design */}
-            <Card className="glass-card">
+            <Card className="glass-card dark:bg-gray-900/30 dark:border-gray-700">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-gray-100">
                   <Sparkles className="h-5 w-5 text-blue-600" />
                   <span>Quick Actions</span>
                 </CardTitle>
@@ -306,7 +307,7 @@ const Dashboard = () => {
                     <div
                       key={index}
                       onClick={action.action}
-                      className="feature-card cursor-pointer group"
+                      className="feature-card cursor-pointer group dark:bg-gray-800/30 dark:border-gray-700 dark:hover:border-gray-600"
                     >
                       <div className="flex items-center justify-between">
                         <div className="space-y-2">
@@ -315,11 +316,11 @@ const Dashboard = () => {
                               <action.icon className="h-6 w-6" />
                             </div>
                             <div>
-                              <h3 className="font-semibold text-gray-900">{action.title}</h3>
-                              <p className="text-sm text-gray-600">{action.description}</p>
+                              <h3 className="font-semibold text-gray-900 dark:text-gray-100">{action.title}</h3>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">{action.description}</p>
                             </div>
                           </div>
-                          <Badge variant="secondary" className="text-xs">
+                          <Badge variant="secondary" className="text-xs dark:bg-gray-700 dark:text-gray-300">
                             {action.feature}
                           </Badge>
                         </div>
@@ -332,11 +333,11 @@ const Dashboard = () => {
             </Card>
 
             {/* Recent Activity with Enhanced UI */}
-            <Card>
+            <Card className="dark:bg-gray-900/30 dark:border-gray-700">
               <CardHeader>
-                <CardTitle className="flex items-center justify-between">
+                <CardTitle className="flex items-center justify-between text-gray-900 dark:text-gray-100">
                   <span>Recent Activity</span>
-                  <Button variant="ghost" size="sm" onClick={() => navigate('/history')}>
+                  <Button variant="ghost" size="sm" onClick={() => navigate('/history')} className="dark:text-gray-300 dark:hover:text-white">
                     View All
                     <ArrowRight className="h-4 w-4 ml-1" />
                   </Button>
@@ -345,20 +346,20 @@ const Dashboard = () => {
               <CardContent>
                 <div className="space-y-4">
                   {recentActivity.map((activity) => (
-                    <div key={activity.id} className="flex items-start space-x-4 p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border border-gray-100 hover:border-blue-200 transition-colors">
+                    <div key={activity.id} className="flex items-start space-x-4 p-4 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800/30 dark:to-blue-900/20 rounded-xl border border-gray-100 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-600 transition-colors">
                       <div className="flex-shrink-0">
                         {getStatusIcon(activity.status)}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <h4 className="font-medium text-gray-900">{activity.title}</h4>
-                          <Badge variant={activity.status === 'success' ? 'default' : 'secondary'}>
+                          <h4 className="font-medium text-gray-900 dark:text-gray-100">{activity.title}</h4>
+                          <Badge variant={activity.status === 'success' ? 'default' : 'secondary'} className="dark:bg-gray-700 dark:text-gray-300">
                             {activity.status}
                           </Badge>
                         </div>
-                        <p className="text-sm text-gray-600 mt-1">{activity.description}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{activity.description}</p>
                         <div className="flex items-center justify-between mt-2">
-                          <p className="text-xs text-gray-500">{activity.time}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-500">{activity.time}</p>
                           {activity.confidence && (
                             <span className="text-xs text-blue-600 font-medium">
                               {activity.confidence}% confidence
@@ -379,9 +380,9 @@ const Dashboard = () => {
           {/* Right Sidebar */}
           <div className="space-y-6 lg:hidden">
             {/* Achievements Section */}
-            <Card className="glass-card">
+            <Card className="glass-card dark:bg-gray-900/30 dark:border-gray-700">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-gray-100">
                   <Star className="h-5 w-5 text-yellow-500" />
                   <span>Recent Achievements</span>
                 </CardTitle>
@@ -410,9 +411,9 @@ const Dashboard = () => {
           <div></div>
           <div className="space-y-6">
             {/* Achievements Section */}
-            <Card className="glass-card">
+            <Card className="glass-card dark:bg-gray-900/30 dark:border-gray-700">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-gray-100">
                   <Star className="h-5 w-5 text-yellow-500" />
                   <span>Recent Achievements</span>
                 </CardTitle>

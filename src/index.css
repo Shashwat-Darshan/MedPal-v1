@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -56,32 +57,32 @@
   }
 
   .dark {
-    --background: 8 8 12;
-    --foreground: 248 250 252;
+    --background: 0 0 0;
+    --foreground: 255 255 255;
 
-    --card: 15 15 20;
-    --card-foreground: 248 250 252;
+    --card: 15 15 15;
+    --card-foreground: 255 255 255;
 
-    --popover: 15 15 20;
-    --popover-foreground: 248 250 252;
+    --popover: 10 10 10;
+    --popover-foreground: 255 255 255;
 
     --primary: 59 130 246;
-    --primary-foreground: 8 8 12;
+    --primary-foreground: 0 0 0;
 
-    --secondary: 24 24 30;
-    --secondary-foreground: 248 250 252;
+    --secondary: 25 25 25;
+    --secondary-foreground: 255 255 255;
 
-    --muted: 20 20 25;
-    --muted-foreground: 161 161 170;
+    --muted: 20 20 20;
+    --muted-foreground: 200 200 200;
 
-    --accent: 30 30 36;
-    --accent-foreground: 248 250 252;
+    --accent: 30 30 30;
+    --accent-foreground: 255 255 255;
 
     --destructive: 239 68 68;
-    --destructive-foreground: 248 250 252;
+    --destructive-foreground: 255 255 255;
 
-    --border: 39 39 42;
-    --input: 24 24 30;
+    --border: 50 50 50;
+    --input: 25 25 25;
     --ring: 59 130 246;
   }
 }
@@ -98,7 +99,7 @@
   }
 
   .dark body {
-    background: rgb(8 8 12);
+    background: rgb(0 0 0);
   }
 }
 
@@ -122,8 +123,13 @@
   
   .glass-card {
     @apply backdrop-blur-md border shadow-lg;
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.7);
     border-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  .dark .glass-card {
+    background: rgba(20, 20, 20, 0.8);
+    border-color: rgba(100, 100, 100, 0.3);
   }
   
   .floating-card {
@@ -140,8 +146,17 @@
     border: 1px solid rgb(219 234 254);
   }
   
+  .dark .feature-card {
+    background: linear-gradient(135deg, rgba(30, 30, 30, 0.8) 0%, rgba(20, 20, 50, 0.8) 100%);
+    border: 1px solid rgb(70 70 70);
+  }
+  
   .feature-card:hover {
     border-color: rgb(147 197 253);
+  }
+  
+  .dark .feature-card:hover {
+    border-color: rgb(100 150 255);
   }
   
   .stat-card {
@@ -155,8 +170,17 @@
     border: 1px solid rgb(226 232 240);
   }
   
+  .dark .medical-card {
+    background: rgba(20, 20, 20, 0.9);
+    border: 1px solid rgb(70 70 70);
+  }
+  
   .medical-card:hover {
     box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.1), 0 10px 10px -5px rgba(59, 130, 246, 0.04);
+  }
+  
+  .dark .medical-card:hover {
+    box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.3), 0 10px 10px -5px rgba(59, 130, 246, 0.2);
   }
   
   .health-metric {
@@ -165,9 +189,19 @@
     border: 1px solid rgb(229 231 235);
   }
   
+  .dark .health-metric {
+    background: linear-gradient(135deg, rgba(25, 25, 25, 0.8) 0%, rgba(30, 30, 30, 0.8) 100%);
+    border: 1px solid rgb(60 60 60);
+  }
+  
   .health-metric:hover {
     background: linear-gradient(135deg, rgb(239 246 255) 0%, rgb(219 234 254) 100%);
     border-color: rgb(147 197 253);
+  }
+  
+  .dark .health-metric:hover {
+    background: linear-gradient(135deg, rgba(20, 30, 50, 0.8) 0%, rgba(30, 40, 60, 0.8) 100%);
+    border-color: rgb(100 150 255);
   }
 
   /* Hover Effects for Images and Cards */
@@ -201,6 +235,83 @@
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   }
+
+  .dark .emergency-card:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
+  }
+
+  /* Animated Gradient Background */
+  .animated-gradient {
+    background: linear-gradient(270deg, 
+      rgba(59, 130, 246, 0.1), 
+      rgba(139, 92, 246, 0.1), 
+      rgba(16, 185, 129, 0.1), 
+      rgba(236, 72, 153, 0.1)
+    );
+    background-size: 800% 800%;
+    animation: gradientShift 20s ease infinite;
+  }
+
+  .dark .animated-gradient {
+    background: linear-gradient(270deg, 
+      rgba(59, 130, 246, 0.05), 
+      rgba(139, 92, 246, 0.05), 
+      rgba(16, 185, 129, 0.05), 
+      rgba(236, 72, 153, 0.05)
+    );
+    background-size: 800% 800%;
+    animation: gradientShift 20s ease infinite;
+  }
+
+  .floating-elements {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .floating-element {
+    position: absolute;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+    border-radius: 50%;
+    animation: float 15s infinite linear;
+  }
+
+  .dark .floating-element {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05));
+  }
+
+  .floating-element:nth-child(1) {
+    width: 80px;
+    height: 80px;
+    left: 10%;
+    animation-duration: 20s;
+    animation-delay: 0s;
+  }
+
+  .floating-element:nth-child(2) {
+    width: 60px;
+    height: 60px;
+    left: 70%;
+    animation-duration: 25s;
+    animation-delay: 5s;
+  }
+
+  .floating-element:nth-child(3) {
+    width: 100px;
+    height: 100px;
+    left: 40%;
+    animation-duration: 30s;
+    animation-delay: 10s;
+  }
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 @keyframes pulse-glow {
@@ -214,10 +325,13 @@
 
 @keyframes float {
   0%, 100% {
-    transform: translateY(0px);
+    transform: translateY(0px) rotate(0deg);
   }
-  50% {
-    transform: translateY(-20px);
+  33% {
+    transform: translateY(-30px) rotate(120deg);
+  }
+  66% {
+    transform: translateY(-60px) rotate(240deg);
   }
 }
 
@@ -249,6 +363,10 @@
 
 ::-webkit-scrollbar-track {
   background: rgb(241 245 249);
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: rgb(20 20 20);
 }
 
 ::-webkit-scrollbar-thumb {
