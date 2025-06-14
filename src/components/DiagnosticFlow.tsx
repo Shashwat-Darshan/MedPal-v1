@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
-import { Mic, Send, Brain, Activity, CheckCircle, AlertTriangle, RotateCcw, Stethoscope, Target, Sparkles, Heart } from 'lucide-react';
+import { Mic, Send, Brain, Activity, CheckCircle, AlertTriangle, RotateCcw, Stethoscope, Target, Sparkles, Heart, MessageSquare } from 'lucide-react';
 import { useDiagnosticFlow, Disease, DiagnosticQuestion } from '@/hooks/useDiagnosticFlow';
 import { generateDiagnosisFromSymptoms, generateFollowUpQuestion } from '@/services/geminiService';
 import { useToast } from '@/hooks/use-toast';
@@ -23,15 +23,20 @@ const DiagnosticFlow = () => {
     setCurrentQuestion,
     questionHistory,
     setQuestionHistory,
+    answerHistory,
+    setAnswerHistory,
     progress,
     isAnalyzing,
     setIsAnalyzing,
     shouldEndDiagnosis,
     updateConfidence,
-    restartDiagnosis
+    restartDiagnosis,
+    saveSessionData
   } = useDiagnosticFlow();
 
   const [severityValue, setSeverityValue] = useState([3]);
+  const [showCustomAnswer, setShowCustomAnswer] = useState(false);
+  const [customAnswer, setCustomAnswer] = useState('');
 
   const handleStartDiagnosis = () => {
     setCurrentStep('symptoms');
@@ -80,10 +85,22 @@ const DiagnosticFlow = () => {
     }
   };
 
-  const generateNextQuestion = async (currentDiseases: Disease[], history: string[]) => {
+  const generateNextQuestion = async (currentDiseases: Disease[], history: string[], previousAnswers: string[]) => {
     try {
       console.log('Generating next question for diseases:', currentDiseases.map(d => d.name));
-      const questionData = await generateFollowUpQuestion(currentDiseases, symptoms, history);
+      
+      // Get top 5 diseases with their confidence levels
+      const top5Diseases = currentDiseases
+        .sort((a, b) => b.confidence - a.confidence)
+        .slice(0, 5);
+      
+      const questionData = await generateFollowUpQuestion(
+        top5Diseases, 
+        symptoms, 
+        history, 
+        previousAnswers,
+        currentQuestion?.text || ''
+      );
       
       const question: DiagnosticQuestion = {
         id: `q_${Date.now()}`,
@@ -107,7 +124,7 @@ const DiagnosticFlow = () => {
       console.error('Error generating question:', error);
       const fallbackQuestion: DiagnosticQuestion = {
         id: `fallback_${Date.now()}`,
-        text: "Are you experiencing any fever or elevated body temperature?",
+        text: "Are you experiencing any fever or elevated temperature?",
         type: 'yes_no',
         diseaseImpact: currentDiseases.reduce((acc, disease) => {
           acc[disease.id] = Math.random() > 0.5 ? 10 : -5;
@@ -123,18 +140,45 @@ const DiagnosticFlow = () => {
 
     console.log('Answer received:', answer, 'for question:', currentQuestion.text);
 
+    // Update confidence based on answer
     updateConfidence(answer, currentQuestion);
     
-    const newHistory = [...questionHistory, currentQuestion.id];
-    setQuestionHistory(newHistory);
+    // Save question-answer pair
+    const newQuestionHistory = [...questionHistory, currentQuestion.id];
+    const newAnswerHistory = [...answerHistory, answer];
+    
+    setQuestionHistory(newQuestionHistory);
+    setAnswerHistory(newAnswerHistory);
+    
+    // Save session data including this Q&A
+    saveSessionData({
+      question: currentQuestion.text,
+      answer: answer,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Reset custom answer form
+    setShowCustomAnswer(false);
+    setCustomAnswer('');
     
     setTimeout(async () => {
       if (shouldEndDiagnosis()) {
         setCurrentStep('results');
+        // Save final results
+        saveSessionData({
+          finalResults: diseases.sort((a, b) => b.confidence - a.confidence),
+          completedAt: new Date().toISOString()
+        });
       } else {
-        await generateNextQuestion(diseases, newHistory);
+        await generateNextQuestion(diseases, newQuestionHistory, newAnswerHistory);
       }
     }, 1000);
+  };
+
+  const handleCustomAnswerSubmit = () => {
+    if (customAnswer.trim()) {
+      handleAnswerQuestion(customAnswer.trim());
+    }
   };
 
   const renderInitialStep = () => (
@@ -327,7 +371,7 @@ const DiagnosticFlow = () => {
 
   const renderQuestionsStep = () => (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 py-8">
-      <div className="max-w-6xl mx-auto px-6">
+      <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
         <div className="mb-8">
           <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-white/20">
@@ -359,86 +403,148 @@ const DiagnosticFlow = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Question Section */}
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Question Section - Takes 8 columns */}
+          <div className="lg:col-span-8">
             {currentQuestion && (
-              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20">
-                <div className="text-center space-y-6">
-                  <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg">
-                    <span className="text-white text-lg font-bold">?</span>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20">
+                <div className="space-y-6">
+                  <div className="text-center">
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg mb-4">
+                      <span className="text-white text-xl font-bold">?</span>
+                    </div>
+                    
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
                       Follow-up Question
                     </h2>
+                    
                     <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 rounded-xl border-2 border-blue-200 dark:border-blue-700">
-                      <p className="text-base text-gray-900 dark:text-gray-100 leading-relaxed font-medium">
+                      <p className="text-lg text-gray-900 dark:text-gray-100 leading-relaxed font-medium">
                         {currentQuestion.text}
                       </p>
                     </div>
                   </div>
                   
-                  {currentQuestion.type === 'yes_no' && (
-                    <div className="grid grid-cols-2 gap-4">
-                      <Button 
-                        onClick={() => handleAnswerQuestion('yes')}
-                        size="lg"
-                        className="bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-6 text-base font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-                      >
-                        <CheckCircle className="h-5 w-5 mr-2" />
-                        Yes
-                      </Button>
-                      <Button 
-                        onClick={() => handleAnswerQuestion('no')}
-                        size="lg"
-                        className="bg-gradient-to-br from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white py-6 text-base font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-                      >
-                        <AlertTriangle className="h-5 w-5 mr-2" />
-                        No
-                      </Button>
+                  {!showCustomAnswer ? (
+                    <div className="space-y-4">
+                      {/* Standard Yes/No Options */}
+                      {currentQuestion.type === 'yes_no' && (
+                        <div className="grid grid-cols-2 gap-4">
+                          <Button 
+                            onClick={() => handleAnswerQuestion('yes')}
+                            size="lg"
+                            className="bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-6 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                          >
+                            <CheckCircle className="h-6 w-6 mr-3" />
+                            Yes
+                          </Button>
+                          <Button 
+                            onClick={() => handleAnswerQuestion('no')}
+                            size="lg"
+                            className="bg-gradient-to-br from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white py-6 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                          >
+                            <AlertTriangle className="h-6 w-6 mr-3" />
+                            No
+                          </Button>
+                        </div>
+                      )}
+                      
+                      {/* Custom Answer Option */}
+                      <div className="border-t pt-4">
+                        <Button
+                          onClick={() => setShowCustomAnswer(true)}
+                          variant="outline"
+                          size="lg"
+                          className="w-full py-4 text-base rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
+                        >
+                          <MessageSquare className="h-5 w-5 mr-3" />
+                          Write your own detailed answer
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="space-y-3">
+                        <label className="block text-base font-semibold text-gray-700 dark:text-gray-300">
+                          Describe your specific situation:
+                        </label>
+                        <Textarea
+                          value={customAnswer}
+                          onChange={(e) => setCustomAnswer(e.target.value)}
+                          placeholder="Please provide more details about your condition, symptoms, or any relevant information..."
+                          className="min-h-[120px] p-4 rounded-xl border-2 border-gray-200 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 bg-white/70 dark:bg-gray-700/70 backdrop-blur-sm resize-none text-base"
+                          rows={5}
+                        />
+                      </div>
+                      <div className="flex space-x-3">
+                        <Button
+                          onClick={handleCustomAnswerSubmit}
+                          disabled={!customAnswer.trim()}
+                          size="lg"
+                          className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-4 text-base font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                        >
+                          <Send className="h-5 w-5 mr-2" />
+                          Submit Answer
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setShowCustomAnswer(false);
+                            setCustomAnswer('');
+                          }}
+                          variant="outline"
+                          size="lg"
+                          className="px-8 py-4 rounded-xl border-2"
+                        >
+                          Back
+                        </Button>
+                      </div>
                     </div>
                   )}
+                  
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
+                      💡 Your detailed responses help improve diagnostic accuracy
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Conditions Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-4 shadow-xl border border-white/20 sticky top-6">
-              <div className="flex items-center space-x-2 mb-4">
-                <Stethoscope className="h-5 w-5 text-indigo-600" />
-                <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">
+          {/* Conditions Sidebar - Takes 4 columns */}
+          <div className="lg:col-span-4">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20 sticky top-6">
+              <div className="flex items-center space-x-3 mb-6">
+                <Stethoscope className="h-6 w-6 text-indigo-600" />
+                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
                   Possible Conditions
                 </h3>
-                <Badge variant="outline" className="ml-auto text-xs">
+                <Badge variant="outline" className="ml-auto">
                   {diseases.length}
                 </Badge>
               </div>
               
-              <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+              <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                 {diseases.sort((a, b) => b.confidence - a.confidence).map((disease, index) => (
-                  <div key={disease.id} className={`p-3 rounded-xl transition-all duration-300 ${
+                  <div key={disease.id} className={`p-4 rounded-xl transition-all duration-300 ${
                     index === 0 ? 'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-200 dark:border-green-700' : 
                     index === 1 ? 'bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border-2 border-yellow-200 dark:border-yellow-700' :
                     'bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600'
                   }`}>
-                    <div className="flex justify-between items-center mb-2">
-                      <div className="flex items-center space-x-2">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white font-bold text-xs ${
+                    <div className="flex justify-between items-center mb-3">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
                           index === 0 ? 'bg-green-500' :
                           index === 1 ? 'bg-yellow-500' :
                           'bg-gray-500'
                         }`}>
                           {index + 1}
                         </div>
-                        <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-xs">
+                        <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
                           {disease.name}
                         </h4>
                       </div>
-                      <span className={`text-sm font-bold ${
+                      <span className={`text-base font-bold ${
                         disease.confidence >= 80 ? 'text-green-600' :
                         disease.confidence >= 60 ? 'text-yellow-600' :
                         'text-gray-600'
@@ -446,7 +552,10 @@ const DiagnosticFlow = () => {
                         {Math.round(disease.confidence)}%
                       </span>
                     </div>
-                    <Progress value={disease.confidence} className="h-1.5" />
+                    <Progress value={disease.confidence} className="h-2 mb-2" />
+                    <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
+                      {disease.description}
+                    </p>
                   </div>
                 ))}
               </div>

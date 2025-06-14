@@ -17,6 +17,14 @@ export interface DiagnosticQuestion {
   diseaseImpact: Record<string, number>; // disease id -> confidence change
 }
 
+export interface SessionData {
+  question?: string;
+  answer?: string;
+  timestamp?: string;
+  finalResults?: Disease[];
+  completedAt?: string;
+}
+
 export type DiagnosticStep = 'initial' | 'symptoms' | 'analysis' | 'questions' | 'results';
 
 export const useDiagnosticFlow = () => {
@@ -25,6 +33,7 @@ export const useDiagnosticFlow = () => {
   const [diseases, setDiseases] = useState<Disease[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<DiagnosticQuestion | null>(null);
   const [questionHistory, setQuestionHistory] = useState<string[]>([]);
+  const [answerHistory, setAnswerHistory] = useState<string[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const shouldEndDiagnosis = useCallback(() => {
@@ -44,8 +53,11 @@ export const useDiagnosticFlow = () => {
       return true;
     }
 
+    // End after 10 questions to prevent infinite loops
+    if (questionHistory.length >= 10) return true;
+
     return false;
-  }, [diseases]);
+  }, [diseases, questionHistory.length]);
 
   const updateConfidence = useCallback((answer: string, question: DiagnosticQuestion) => {
     setDiseases(prev => prev.map(disease => {
@@ -53,7 +65,14 @@ export const useDiagnosticFlow = () => {
       let change = 0;
       
       if (question.type === 'yes_no') {
-        change = answer === 'yes' ? impact : -Math.abs(impact) / 2;
+        if (answer.toLowerCase() === 'yes') {
+          change = impact;
+        } else if (answer.toLowerCase() === 'no') {
+          change = -Math.abs(impact) / 2;
+        } else {
+          // Custom text answer - use AI analysis for impact
+          change = impact * 0.7; // Moderate impact for custom answers
+        }
       } else if (question.type === 'severity') {
         const severity = parseInt(answer) || 1;
         change = (impact * severity) / 5; // Scale by severity 1-5
@@ -68,10 +87,40 @@ export const useDiagnosticFlow = () => {
     if (currentStep === 'initial') return 0;
     if (currentStep === 'symptoms') return 20;
     if (currentStep === 'analysis') return 40;
-    if (currentStep === 'questions') return 60 + (diseases.length > 0 ? Math.min(30, diseases[0].confidence * 0.3) : 0);
+    if (currentStep === 'questions') return 60 + (questionHistory.length * 3);
     if (currentStep === 'results') return 100;
     return 0;
-  }, [currentStep, diseases]);
+  }, [currentStep, questionHistory.length]);
+
+  const saveSessionData = useCallback((data: SessionData) => {
+    try {
+      const sessionId = `diagnosis_session_${Date.now()}`;
+      const existingData = JSON.parse(localStorage.getItem('diagnosisSession') || '{}');
+      
+      const sessionData = {
+        ...existingData,
+        sessionId,
+        symptoms,
+        diseases: diseases.map(d => ({ ...d })),
+        questionAnswerPairs: [
+          ...(existingData.questionAnswerPairs || []),
+          ...(data.question && data.answer ? [{
+            question: data.question,
+            answer: data.answer,
+            timestamp: data.timestamp
+          }] : [])
+        ],
+        ...(data.finalResults && { finalResults: data.finalResults }),
+        ...(data.completedAt && { completedAt: data.completedAt }),
+        lastUpdated: new Date().toISOString()
+      };
+
+      localStorage.setItem('diagnosisSession', JSON.stringify(sessionData));
+      console.log('Session data saved:', sessionData);
+    } catch (error) {
+      console.error('Error saving session data:', error);
+    }
+  }, [symptoms, diseases]);
 
   const restartDiagnosis = useCallback(() => {
     setCurrentStep('initial');
@@ -79,7 +128,11 @@ export const useDiagnosticFlow = () => {
     setDiseases([]);
     setCurrentQuestion(null);
     setQuestionHistory([]);
+    setAnswerHistory([]);
     setIsAnalyzing(false);
+    
+    // Clear session data
+    localStorage.removeItem('diagnosisSession');
   }, []);
 
   return {
@@ -93,11 +146,14 @@ export const useDiagnosticFlow = () => {
     setCurrentQuestion,
     questionHistory,
     setQuestionHistory,
+    answerHistory,
+    setAnswerHistory,
     progress: calculateProgress(),
     isAnalyzing,
     setIsAnalyzing,
     shouldEndDiagnosis,
     updateConfidence,
-    restartDiagnosis
+    restartDiagnosis,
+    saveSessionData
   };
 };

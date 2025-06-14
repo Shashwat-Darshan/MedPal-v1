@@ -1,4 +1,3 @@
-
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // API Keys fallback system - Mixed Groq, Gemini, and OpenRouter keys
@@ -229,17 +228,38 @@ export const generateDiagnosisFromSymptoms = async (symptoms: string, age: strin
   });
 };
 
-export const generateFollowUpQuestion = async (diseases: Disease[], symptoms: string, previousQuestions: string[]) => {
+export const generateFollowUpQuestion = async (
+  diseases: Disease[], 
+  symptoms: string, 
+  previousQuestions: string[], 
+  previousAnswers: string[] = [],
+  currentQuestionText: string = ''
+) => {
   return tryWithFallback(async (apiKey, provider) => {
     const diseaseList = diseases.map(d => `${d.name} (${d.confidence}%)`).join(', ');
     
+    // Create context from previous Q&A pairs
+    const qaContext = previousQuestions.map((q, index) => {
+      const answer = previousAnswers[index] || 'No answer';
+      return `Q: ${q}\nA: ${answer}`;
+    }).join('\n\n');
+    
     const prompt = `
-      Based on these potential diagnoses: ${diseaseList}
+      Medical Diagnostic Context:
+      - Original symptoms: ${symptoms}
+      - Current top 5 possible diagnoses: ${diseaseList}
       
-      Original symptoms: ${symptoms}
-      Previous questions asked: ${previousQuestions.join(', ')}
+      Previous Questions & Answers:
+      ${qaContext}
       
-      Generate ONE specific follow-up question that would help differentiate between these conditions.
+      Current Question: ${currentQuestionText}
+      
+      Based on this comprehensive context, generate ONE specific follow-up question that would help differentiate between these conditions and improve diagnostic accuracy.
+      
+      Focus on questions that:
+      1. Help distinguish between the top conditions
+      2. Build upon previous answers
+      3. Are medically relevant and specific
       
       Format your response as JSON:
       {
