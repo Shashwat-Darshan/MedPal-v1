@@ -166,6 +166,38 @@
     background: linear-gradient(135deg, rgb(239 246 255) 0%, rgb(219 234 254) 100%);
     border-color: rgb(147 197 253);
   }
+
+  /* Hover Effects for Images and Cards */
+  .hover-darken {
+    @apply transition-all duration-300;
+  }
+  
+  .hover-darken:hover {
+    filter: brightness(0.85) saturate(1.1);
+  }
+
+  .image-hover {
+    @apply transition-all duration-300 overflow-hidden;
+  }
+
+  .image-hover img {
+    @apply transition-all duration-300;
+  }
+
+  .image-hover:hover img {
+    filter: brightness(0.7) contrast(1.1);
+    transform: scale(1.05);
+  }
+
+  .emergency-card {
+    @apply transition-all duration-300 cursor-pointer;
+  }
+
+  .emergency-card:hover {
+    filter: brightness(0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
 }
 
 @keyframes pulse-glow {
