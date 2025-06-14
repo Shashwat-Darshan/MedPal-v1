@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -77,41 +76,41 @@ const EmergencyContacts = () => {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Phone className="h-5 w-5 text-red-600" />
-            <span>Emergency Contacts (India)</span>
+    <Card className="w-full">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div className="flex items-center space-x-2 min-w-0 flex-1">
+            <Phone className="h-5 w-5 text-red-600 flex-shrink-0" />
+            <span className="text-sm sm:text-base break-words">Emergency Contacts (India)</span>
           </div>
-          <Button size="sm" variant="outline">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Contact
+          <Button size="sm" variant="outline" className="flex-shrink-0 text-xs sm:text-sm">
+            <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            <span className="whitespace-nowrap">Add Contact</span>
           </Button>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-3 p-4">
         {contacts.map((contact) => {
           const Icon = contact.icon;
           return (
-            <div key={contact.id} className={`p-3 border rounded-lg transition-all duration-300 ${getContactStyle(contact.type)}`}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <Icon className="h-5 w-5 text-gray-600" />
-                  <div>
-                    <h4 className="font-medium text-gray-900">{contact.name}</h4>
-                    <p className="text-sm text-gray-600">{contact.number}</p>
+            <div key={contact.id} className={`p-3 border rounded-lg transition-all duration-300 ${getContactStyle(contact.type)} w-full overflow-hidden`}>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center space-x-3 min-w-0 flex-1">
+                  <Icon className="h-5 w-5 text-gray-600 flex-shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <h4 className="font-medium text-gray-900 text-sm sm:text-base break-words leading-tight">{contact.name}</h4>
+                    <p className="text-sm text-gray-600 break-all">{contact.number}</p>
                     {contact.description && (
-                      <p className="text-xs text-gray-500 mt-1">{contact.description}</p>
+                      <p className="text-xs text-gray-500 mt-1 break-words leading-relaxed">{contact.description}</p>
                     )}
                   </div>
                 </div>
                 <Button 
                   size="sm" 
                   onClick={() => handleCall(contact.number)}
-                  className={`${contact.type === 'emergency' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}`}
+                  className={`flex-shrink-0 ${contact.type === 'emergency' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'} px-2 py-1`}
                 >
-                  <Phone className="h-4 w-4" />
+                  <Phone className="h-3 w-3 sm:h-4 sm:w-4" />
                 </Button>
               </div>
             </div>
@@ -119,9 +118,9 @@ const EmergencyContacts = () => {
         })}
         <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
           <div className="flex items-start space-x-2">
-            <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5" />
-            <div>
-              <p className="text-xs text-amber-800">
+            <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="text-xs text-amber-800 break-words leading-relaxed">
                 <strong>Note:</strong> These are standard emergency numbers for India. For location-specific services, contact your local authorities.
               </p>
             </div>
