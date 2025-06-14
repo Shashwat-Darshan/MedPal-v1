@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -195,7 +194,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Left Sidebar - Health Tips and AI Insights */}
           <div className="space-y-6">
             {/* AI Health Insights */}
@@ -378,37 +377,6 @@ const Dashboard = () => {
           </div>
 
           {/* Right Sidebar */}
-          <div className="space-y-6 lg:hidden">
-            {/* Achievements Section */}
-            <Card className="glass-light dark:glass-card dark:border-gray-700">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-gray-100">
-                  <Star className="h-5 w-5 text-yellow-500" />
-                  <span>Recent Achievements</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {achievements.map((achievement, index) => (
-                  <div key={index} className="flex items-center space-x-3 p-3 tip-card rounded-lg">
-                    <span className="text-2xl">{achievement.icon}</span>
-                    <div>
-                      <h4 className="font-medium text-gray-900 dark:text-gray-100">{achievement.name}</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{achievement.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-
-            {/* Emergency Contacts */}
-            <EmergencyContacts />
-          </div>
-        </div>
-
-        {/* Bottom Section for larger screens */}
-        <div className="hidden lg:grid lg:grid-cols-3 gap-8 mt-8">
-          <div></div>
-          <div></div>
           <div className="space-y-6">
             {/* Achievements Section */}
             <Card className="glass-light dark:glass-card dark:border-gray-700">
