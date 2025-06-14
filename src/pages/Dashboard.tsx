@@ -4,43 +4,19 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Heart, 
-  Activity, 
-  Calendar, 
-  Clock, 
-  TrendingUp, 
-  Users, 
-  MessageSquare, 
-  Stethoscope,
-  AlertTriangle,
-  CheckCircle,
-  Plus,
-  ArrowRight,
-  Sparkles,
-  Brain,
-  Shield,
-  Zap,
-  Star
-} from 'lucide-react';
+import { Heart, Activity, Calendar, Clock, TrendingUp, Users, MessageSquare, Stethoscope, AlertTriangle, CheckCircle, Plus, ArrowRight, Sparkles, Brain, Shield, Zap, Star } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import HealthGoals from '@/components/HealthGoals';
 import HealthInsights from '@/components/HealthInsights';
 import EmergencyContacts from '@/components/EmergencyContacts';
-
 const Dashboard = () => {
   const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [greeting, setGreeting] = useState('');
-
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    
     const hour = new Date().getHours();
-    if (hour < 12) setGreeting('Good Morning');
-    else if (hour < 18) setGreeting('Good Afternoon');
-    else setGreeting('Good Evening');
-    
+    if (hour < 12) setGreeting('Good Morning');else if (hour < 18) setGreeting('Good Afternoon');else setGreeting('Good Evening');
     return () => clearInterval(timer);
   }, []);
 
@@ -53,84 +29,78 @@ const Dashboard = () => {
     streakDays: 7,
     achievementsUnlocked: 3
   };
-
-  const recentActivity = [
-    {
-      id: 1,
-      type: 'consultation',
-      title: 'AI Diagnosis Completed',
-      description: 'Common Cold diagnosed with 92% confidence',
-      time: '2 hours ago',
-      status: 'completed',
-      confidence: 92
-    },
-    {
-      id: 2,
-      type: 'achievement',
-      title: 'Health Streak Achievement!',
-      description: '7 days of consistent health tracking',
-      time: '4 hours ago',
-      status: 'success'
-    },
-    {
-      id: 3,
-      type: 'goal',
-      title: 'Daily Steps Goal Achieved',
-      description: '10,000 steps completed with bonus 2,000',
-      time: '5 hours ago',
-      status: 'success'
-    },
-    {
-      id: 4,
-      type: 'reminder',
-      title: 'Medication Reminder',
-      description: 'Time to take your evening medication',
-      time: '1 day ago',
-      status: 'pending'
-    }
-  ];
-
-  const quickActions = [
-    {
-      title: 'AI Diagnosis',
-      description: 'Get instant health assessment',
-      icon: Stethoscope,
-      action: () => navigate('/diagnosis'),
-      gradient: 'from-blue-500 to-blue-600',
-      feature: 'Smart AI'
-    },
-    {
-      title: 'Health Chat',
-      description: 'Ask health questions',
-      icon: MessageSquare,
-      action: () => navigate('/chat'),
-      gradient: 'from-green-500 to-emerald-600',
-      feature: '24/7 Support'
-    },
-    {
-      title: 'Monitor Vitals',
-      description: 'Track your health metrics',
-      icon: Activity,
-      action: () => navigate('/monitor'),
-      gradient: 'from-purple-500 to-purple-600',
-      feature: 'Real-time'
-    },
-    {
-      title: 'View History',
-      description: 'See past consultations',
-      icon: Clock,
-      action: () => navigate('/history'),
-      gradient: 'from-orange-500 to-red-500',
-      feature: 'Analytics'
-    }
-  ];
-
-  const achievements = [
-    { name: 'Early Bird', description: 'Completed morning checkup', icon: '🌅' },
-    { name: 'Consistency King', description: '7 day health tracking streak', icon: '👑' },
-    { name: 'Health Detective', description: 'Used AI diagnosis 5 times', icon: '🔍' }
-  ];
-
+  const recentActivity = [{
+    id: 1,
+    type: 'consultation',
+    title: 'AI Diagnosis Completed',
+    description: 'Common Cold diagnosed with 92% confidence',
+    time: '2 hours ago',
+    status: 'completed',
+    confidence: 92
+  }, {
+    id: 2,
+    type: 'achievement',
+    title: 'Health Streak Achievement!',
+    description: '7 days of consistent health tracking',
+    time: '4 hours ago',
+    status: 'success'
+  }, {
+    id: 3,
+    type: 'goal',
+    title: 'Daily Steps Goal Achieved',
+    description: '10,000 steps completed with bonus 2,000',
+    time: '5 hours ago',
+    status: 'success'
+  }, {
+    id: 4,
+    type: 'reminder',
+    title: 'Medication Reminder',
+    description: 'Time to take your evening medication',
+    time: '1 day ago',
+    status: 'pending'
+  }];
+  const quickActions = [{
+    title: 'AI Diagnosis',
+    description: 'Get instant health assessment',
+    icon: Stethoscope,
+    action: () => navigate('/diagnosis'),
+    gradient: 'from-blue-500 to-blue-600',
+    feature: 'Smart AI'
+  }, {
+    title: 'Health Chat',
+    description: 'Ask health questions',
+    icon: MessageSquare,
+    action: () => navigate('/chat'),
+    gradient: 'from-green-500 to-emerald-600',
+    feature: '24/7 Support'
+  }, {
+    title: 'Monitor Vitals',
+    description: 'Track your health metrics',
+    icon: Activity,
+    action: () => navigate('/monitor'),
+    gradient: 'from-purple-500 to-purple-600',
+    feature: 'Real-time'
+  }, {
+    title: 'View History',
+    description: 'See past consultations',
+    icon: Clock,
+    action: () => navigate('/history'),
+    gradient: 'from-orange-500 to-red-500',
+    feature: 'Analytics'
+  }];
+  const achievements = [{
+    name: 'Early Bird',
+    description: 'Completed morning checkup',
+    icon: '🌅'
+  }, {
+    name: 'Consistency King',
+    description: '7 day health tracking streak',
+    icon: '👑'
+  }, {
+    name: 'Health Detective',
+    description: 'Used AI diagnosis 5 times',
+    icon: '🔍'
+  }];
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
@@ -142,12 +112,10 @@ const Dashboard = () => {
         return <Clock className="h-4 w-4 text-gray-500" />;
     }
   };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+  return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
       <Navbar />
       
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-[29px] lg:px-[54px]">
         {/* Enhanced Welcome Section */}
         <div className="mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
@@ -302,12 +270,7 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {quickActions.map((action, index) => (
-                    <div
-                      key={index}
-                      onClick={action.action}
-                      className="feature-card cursor-pointer group"
-                    >
+                  {quickActions.map((action, index) => <div key={index} onClick={action.action} className="feature-card cursor-pointer group">
                       <div className="flex items-center justify-between">
                         <div className="space-y-2">
                           <div className="flex items-center space-x-3">
@@ -325,8 +288,7 @@ const Dashboard = () => {
                         </div>
                         <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
                       </div>
-                    </div>
-                  ))}
+                    </div>)}
                 </div>
               </CardContent>
             </Card>
@@ -344,8 +306,7 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {recentActivity.map((activity) => (
-                    <div key={activity.id} className="activity-card flex items-start space-x-4 p-4 rounded-xl">
+                  {recentActivity.map(activity => <div key={activity.id} className="activity-card flex items-start space-x-4 p-4 rounded-xl">
                       <div className="flex-shrink-0">
                         {getStatusIcon(activity.status)}
                       </div>
@@ -359,15 +320,12 @@ const Dashboard = () => {
                         <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{activity.description}</p>
                         <div className="flex items-center justify-between mt-2">
                           <p className="text-xs text-gray-500 dark:text-gray-500">{activity.time}</p>
-                          {activity.confidence && (
-                            <span className="text-xs text-blue-600 font-medium">
+                          {activity.confidence && <span className="text-xs text-blue-600 font-medium">
                               {activity.confidence}% confidence
-                            </span>
-                          )}
+                            </span>}
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    </div>)}
                 </div>
               </CardContent>
             </Card>
@@ -387,15 +345,13 @@ const Dashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {achievements.map((achievement, index) => (
-                  <div key={index} className="flex items-center space-x-3 p-3 tip-card rounded-lg">
+                {achievements.map((achievement, index) => <div key={index} className="flex items-center space-x-3 p-3 tip-card rounded-lg">
                     <span className="text-2xl">{achievement.icon}</span>
                     <div>
                       <h4 className="font-medium text-gray-900 dark:text-gray-100">{achievement.name}</h4>
                       <p className="text-sm text-gray-600 dark:text-gray-400">{achievement.description}</p>
                     </div>
-                  </div>
-                ))}
+                  </div>)}
               </CardContent>
             </Card>
 
@@ -404,8 +360,6 @@ const Dashboard = () => {
           </div>
         </div>
       </main>
-    </div>
-  );
+    </div>;
 };
-
 export default Dashboard;
