@@ -134,9 +134,9 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
       <Navbar />
       
-      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 py-6 lg:px-8">
+      <main className="max-w-[1600px] mx-auto px-3 sm:px-4 py-4 lg:px-6">
         {/* Enhanced Welcome Section */}
-        <div className="mb-8">
+        <div className="mb-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-3">
               <div className="flex items-center space-x-4">
@@ -181,45 +181,9 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-          {/* Left Sidebar */}
-          <div className="lg:col-span-3 space-y-6">
-            {/* AI Health Insights */}
-            <HealthInsights />
-
-            {/* Health Tips */}
-            <Card className="glass-light dark:glass-card dark:border-gray-700">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center space-x-2 text-base text-gray-900 dark:text-gray-100">
-                  <TrendingUp className="h-5 w-5 text-green-600" />
-                  <span>Health Tips</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 pt-0">
-                <div className="p-4 tip-card rounded-xl">
-                  <div className="flex items-center space-x-3 mb-3">
-                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm">💧</span>
-                    </div>
-                    <h4 className="font-medium text-sm text-blue-900 dark:text-blue-100">Stay Hydrated</h4>
-                  </div>
-                  <p className="text-sm text-blue-800 dark:text-blue-200">Drink water regularly throughout the day.</p>
-                </div>
-                <div className="p-4 tip-card rounded-xl">
-                  <div className="flex items-center space-x-3 mb-3">
-                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm">🚶</span>
-                    </div>
-                    <h4 className="font-medium text-sm text-green-900 dark:text-green-100">Get Moving</h4>
-                  </div>
-                  <p className="text-sm text-green-800 dark:text-green-200">Take short walks during breaks.</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Main Content */}
-          <div className="lg:col-span-6 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
+          {/* Main Content - appears first on mobile */}
+          <div className="lg:col-span-6 lg:order-2 space-y-4">
             {/* Enhanced Stats Overview */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <Card className="stat-card floating-card">
@@ -359,8 +323,44 @@ const Dashboard = () => {
             <HealthGoals />
           </div>
 
+          {/* Left Sidebar - appears second on mobile */}
+          <div className="lg:col-span-3 lg:order-1 space-y-4">
+            {/* AI Health Insights */}
+            <HealthInsights />
+
+            {/* Health Tips */}
+            <Card className="glass-light dark:glass-card dark:border-gray-700">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center space-x-2 text-base text-gray-900 dark:text-gray-100">
+                  <TrendingUp className="h-5 w-5 text-green-600" />
+                  <span>Health Tips</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-0">
+                <div className="p-4 tip-card rounded-xl">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm">💧</span>
+                    </div>
+                    <h4 className="font-medium text-sm text-blue-900 dark:text-blue-100">Stay Hydrated</h4>
+                  </div>
+                  <p className="text-sm text-blue-800 dark:text-blue-200">Drink water regularly throughout the day.</p>
+                </div>
+                <div className="p-4 tip-card rounded-xl">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm">🚶</span>
+                    </div>
+                    <h4 className="font-medium text-sm text-green-900 dark:text-green-100">Get Moving</h4>
+                  </div>
+                  <p className="text-sm text-green-800 dark:text-green-200">Take short walks during breaks.</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           {/* Right Sidebar */}
-          <div className="lg:col-span-3 space-y-6">
+          <div className="lg:col-span-3 lg:order-3 space-y-4">
             {/* Achievements Section */}
             <Card className="glass-light dark:glass-card dark:border-gray-700">
               <CardHeader className="pb-4">
