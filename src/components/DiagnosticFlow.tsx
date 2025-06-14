@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -547,11 +548,11 @@ const DiagnosticFlow = () => {
   };
 
   return (
-    <div className="space-y-8 w-full max-w-full mx-auto px-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 p-6">
       {/* Progress Header */}
-      <Card className="glass-light dark:glass-card shadow-lg">
-        <CardContent className="pt-8">
-          <div className="flex items-center justify-between mb-8">
+      <div className="max-w-7xl mx-auto mb-8">
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between mb-6">
             <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Diagnostic Progress
             </h1>
@@ -562,7 +563,7 @@ const DiagnosticFlow = () => {
               </span>
             </div>
           </div>
-          <Progress value={progress} className="h-4 mb-8 rounded-full" />
+          <Progress value={progress} className="h-4 mb-6 rounded-full" />
           <div className="flex justify-between text-lg font-medium">
             <div className={`flex items-center space-x-3 ${currentStep === 'symptoms' ? 'text-blue-600' : 'text-gray-500'}`}>
               <div className={`w-4 h-4 rounded-full ${currentStep === 'symptoms' ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
@@ -577,21 +578,22 @@ const DiagnosticFlow = () => {
               <span>Results</span>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Main Content */}
-      <Card className="glass-light dark:glass-card shadow-xl">
-        <CardContent className="p-10">
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-8">
           {currentStep === 'initial' && renderInitialStep()}
           {currentStep === 'symptoms' && renderSymptomsStep()}
           {currentStep === 'analysis' && renderAnalysisStep()}
           {currentStep === 'questions' && renderQuestionsStep()}
           {currentStep === 'results' && renderResultsStep()}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };
 
 export default DiagnosticFlow;
+
