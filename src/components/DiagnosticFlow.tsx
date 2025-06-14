@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { Mic, Send, Brain, Activity, CheckCircle, AlertTriangle, RotateCcw } from 'lucide-react';
 import { useDiagnosticFlow, Disease, DiagnosticQuestion } from '@/hooks/useDiagnosticFlow';
-import { analyzeSymptomsWithGemini } from '@/services/geminiService';
+import { generateDiagnosisFromSymptoms, generateFollowUpQuestion } from '@/services/geminiService';
 import { useToast } from '@/hooks/use-toast';
 
 const DiagnosticFlow = () => {
@@ -52,48 +51,24 @@ const DiagnosticFlow = () => {
     setIsAnalyzing(true);
 
     try {
-      // Generate 5 diseases based on symptoms
-      const mockDiseases: Disease[] = [
-        {
-          id: '1',
-          name: 'Common Cold',
-          confidence: 65,
-          description: 'Viral upper respiratory infection',
-          symptoms: ['Runny nose', 'Sneezing', 'Mild cough']
-        },
-        {
-          id: '2',
-          name: 'Flu (Influenza)',
-          confidence: 45,
-          description: 'Viral infection affecting respiratory system',
-          symptoms: ['Fever', 'Body aches', 'Fatigue', 'Cough']
-        },
-        {
-          id: '3',
-          name: 'Allergic Rhinitis',
-          confidence: 35,
-          description: 'Allergic reaction causing nasal symptoms',
-          symptoms: ['Sneezing', 'Itchy eyes', 'Clear nasal discharge']
-        },
-        {
-          id: '4',
-          name: 'Sinusitis',
-          confidence: 30,
-          description: 'Inflammation of sinus cavities',
-          symptoms: ['Facial pressure', 'Headache', 'Thick nasal discharge']
-        },
-        {
-          id: '5',
-          name: 'Strep Throat',
-          confidence: 20,
-          description: 'Bacterial throat infection',
-          symptoms: ['Sore throat', 'Fever', 'Swollen lymph nodes']
-        }
-      ];
+      console.log('Generating diagnosis from symptoms:', symptoms);
+      const diagnosisResults = await generateDiagnosisFromSymptoms(symptoms);
+      
+      // Convert to our Disease format with IDs
+      const formattedDiseases: Disease[] = diagnosisResults.map((result: any, index: number) => ({
+        id: (index + 1).toString(),
+        name: result.name,
+        confidence: result.confidence,
+        description: result.description,
+        symptoms: result.symptoms || []
+      }));
 
-      setDiseases(mockDiseases);
+      console.log('Generated diseases:', formattedDiseases);
+      setDiseases(formattedDiseases);
       setCurrentStep('questions');
-      generateNextQuestion(mockDiseases, []);
+      
+      // Generate first question
+      await generateNextQuestion(formattedDiseases, []);
     } catch (error) {
       console.error('Analysis error:', error);
       toast({
@@ -107,81 +82,51 @@ const DiagnosticFlow = () => {
     }
   };
 
-  const generateNextQuestion = (currentDiseases: Disease[], history: string[]) => {
-    const questions = [
-      {
-        id: 'fever',
-        text: "Do you have a fever (temperature above 100.4°F/38°C)?",
-        type: 'yes_no' as const,
-        diseaseImpact: {
-          '1': -10, // Common cold less likely with high fever
-          '2': 15,  // Flu more likely with fever
-          '3': -15, // Allergies very unlikely with fever
-          '4': 5,   // Sinusitis slightly more likely
-          '5': 20   // Strep throat much more likely
-        }
-      },
-      {
-        id: 'throat_pain',
-        text: "Are you experiencing significant throat pain or difficulty swallowing?",
-        type: 'yes_no' as const,
-        diseaseImpact: {
-          '1': -5,  // Common cold less likely
-          '2': 5,   // Flu slightly more likely
-          '3': -10, // Allergies unlikely
-          '4': -5,  // Sinusitis less likely
-          '5': 25   // Strep throat much more likely
-        }
-      },
-      {
-        id: 'nasal_congestion',
-        text: "Do you have significant nasal congestion or runny nose?",
-        type: 'yes_no' as const,
-        diseaseImpact: {
-          '1': 15,  // Common cold more likely
-          '2': 5,   // Flu slightly more likely
-          '3': 20,  // Allergies more likely
-          '4': 15,  // Sinusitis more likely
-          '5': -15  // Strep throat less likely
-        }
-      },
-      {
-        id: 'body_aches',
-        text: "Are you experiencing body aches or muscle pain?",
-        type: 'yes_no' as const,
-        diseaseImpact: {
-          '1': -5,  // Common cold less likely
-          '2': 20,  // Flu much more likely
-          '3': -10, // Allergies unlikely
-          '4': 0,   // Sinusitis neutral
-          '5': 5    // Strep throat slightly more likely
-        }
-      },
-      {
-        id: 'itchy_eyes',
-        text: "Do you have itchy, watery eyes?",
-        type: 'yes_no' as const,
-        diseaseImpact: {
-          '1': -5,  // Common cold less likely
-          '2': -10, // Flu less likely
-          '3': 25,  // Allergies much more likely
-          '4': -5,  // Sinusitis less likely
-          '5': -15  // Strep throat much less likely
-        }
-      }
-    ];
+  const generateNextQuestion = async (currentDiseases: Disease[], history: string[]) => {
+    try {
+      console.log('Generating next question for diseases:', currentDiseases.map(d => d.name));
+      const questionData = await generateFollowUpQuestion(currentDiseases, symptoms, history);
+      
+      // Convert to our DiagnosticQuestion format
+      const question: DiagnosticQuestion = {
+        id: `q_${Date.now()}`,
+        text: questionData.question,
+        type: 'yes_no',
+        diseaseImpact: {}
+      };
 
-    // Find a question that hasn't been asked yet
-    const availableQuestions = questions.filter(q => !history.includes(q.id));
-    
-    if (availableQuestions.length > 0) {
-      const randomQuestion = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
-      setCurrentQuestion(randomQuestion);
+      // Map disease impacts by disease ID instead of name
+      if (questionData.diseaseImpacts) {
+        currentDiseases.forEach(disease => {
+          const impact = questionData.diseaseImpacts[disease.name];
+          if (impact !== undefined) {
+            question.diseaseImpact[disease.id] = impact;
+          }
+        });
+      }
+
+      console.log('Generated question:', question);
+      setCurrentQuestion(question);
+    } catch (error) {
+      console.error('Error generating question:', error);
+      // Fallback to a generic question if AI fails
+      const fallbackQuestion: DiagnosticQuestion = {
+        id: `fallback_${Date.now()}`,
+        text: "Are you experiencing any fever or elevated body temperature?",
+        type: 'yes_no',
+        diseaseImpact: currentDiseases.reduce((acc, disease) => {
+          acc[disease.id] = Math.random() > 0.5 ? 10 : -5;
+          return acc;
+        }, {} as Record<string, number>)
+      };
+      setCurrentQuestion(fallbackQuestion);
     }
   };
 
-  const handleAnswerQuestion = (answer: string) => {
+  const handleAnswerQuestion = async (answer: string) => {
     if (!currentQuestion) return;
+
+    console.log('Answer received:', answer, 'for question:', currentQuestion.text);
 
     // Update confidence based on answer
     updateConfidence(answer, currentQuestion);
@@ -191,12 +136,12 @@ const DiagnosticFlow = () => {
     setQuestionHistory(newHistory);
     
     // Check if we should end diagnosis after a delay to show the update
-    setTimeout(() => {
+    setTimeout(async () => {
       if (shouldEndDiagnosis()) {
         setCurrentStep('results');
       } else {
         // Generate next question
-        generateNextQuestion(diseases, newHistory);
+        await generateNextQuestion(diseases, newHistory);
       }
     }, 1000);
   };
