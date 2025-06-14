@@ -173,7 +173,7 @@ const Index = () => {
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <VoiceRecorder onResult={handleVoiceResult} />
+                  <VoiceRecorder />
                   <div className="flex space-x-3">
                     <Button variant="outline" onClick={handleReset} className="dark:border-gray-600 dark:text-gray-300">
                       Reset
@@ -213,7 +213,7 @@ const Index = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <DiagnosisCard diagnosis={diagnosis} />
+                  <DiagnosisCard />
                 </CardContent>
               </Card>
             )}
@@ -228,7 +228,7 @@ const Index = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <QuestionCard onAnswersSubmit={(answers) => console.log(answers)} />
+                  <QuestionCard />
                 </CardContent>
               </Card>
             )}

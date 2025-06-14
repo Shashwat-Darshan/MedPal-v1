@@ -7,7 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { useAuth } from '@/hooks/useAuth';
 import { useDarkMode } from '@/hooks/useDarkMode';
 import { useNotifications } from '@/hooks/useNotifications';
-import { User, LogOut, Menu, Bell, Search, Settings, Sparkles, Moon, Sun } from 'lucide-react';
+import { User, LogOut, Menu, Bell, Settings, Sparkles, Moon, Sun } from 'lucide-react';
 import NotificationDropdown from '@/components/NotificationDropdown';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -106,17 +106,8 @@ const Navbar = () => {
             </div>
           </div>
 
-          {/* Right Side - Settings and User Menu */}
+          {/* Right Side - Dark Mode, Settings and User Menu */}
           <div className="flex items-center space-x-3">
-            {!isMobile && (
-              <>
-                {/* Search Button - Desktop Only */}
-                <Button variant="ghost" size="sm">
-                  <Search className="h-4 w-4" />
-                </Button>
-              </>
-            )}
-            
             {/* Notifications */}
             <div className="relative">
               <Button variant="ghost" size="sm" onClick={() => setNotificationOpen(!notificationOpen)} className="relative">
@@ -145,6 +136,13 @@ const Navbar = () => {
               </div>
             )}
 
+            {/* Dark Mode Toggle - Desktop Only */}
+            {!isMobile && (
+              <Button variant="ghost" size="sm" onClick={toggleTheme} className="p-2">
+                {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
+            )}
+
             {/* Mobile: Dark Mode Toggle */}
             {isMobile && (
               <Button variant="ghost" size="sm" onClick={toggleTheme} className="p-2">
@@ -161,14 +159,6 @@ const Navbar = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      {isDark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-                      <span>Dark Mode</span>
-                    </div>
-                    <Switch checked={isDark} onCheckedChange={toggleTheme} className="data-[state=checked]:bg-blue-600" />
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="text-red-600 dark:text-red-400 focus:text-red-700 dark:focus:text-red-300">
                     <LogOut className="h-4 w-4 mr-2" />
                     Sign Out
