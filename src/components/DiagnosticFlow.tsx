@@ -9,6 +9,7 @@ import { Mic, Send, Brain, Activity, CheckCircle, AlertTriangle, RotateCcw, Stet
 import { useDiagnosticFlow, Disease, DiagnosticQuestion } from '@/hooks/useDiagnosticFlow';
 import { generateDiagnosisFromSymptoms, generateFollowUpQuestion } from '@/services/geminiService';
 import { useToast } from '@/hooks/use-toast';
+import QuestionCard from './QuestionCard';
 
 const DiagnosticFlow = () => {
   const { toast } = useToast();
@@ -40,8 +41,7 @@ const DiagnosticFlow = () => {
   } = useDiagnosticFlow();
 
   const [severityValue, setSeverityValue] = useState([3]);
-  const [showCustomAnswer, setShowCustomAnswer] = useState(false);
-  const [customAnswer, setCustomAnswer] = useState('');
+  const [isProcessingAnswer, setIsProcessingAnswer] = useState(false);
 
   const handleStartDiagnosis = () => {
     initializeSession();
@@ -125,6 +125,7 @@ const DiagnosticFlow = () => {
       
       if (viableDiseases.length === 0) {
         setCurrentStep('results');
+        setIsProcessingAnswer(false);
         return;
       }
       
@@ -158,6 +159,7 @@ const DiagnosticFlow = () => {
 
       console.log('Generated question:', question);
       setCurrentQuestion(question);
+      setIsProcessingAnswer(false);
     } catch (error) {
       console.error('Error generating question:', error);
       
@@ -173,6 +175,7 @@ const DiagnosticFlow = () => {
         }, {} as Record<string, number>)
       };
       setCurrentQuestion(fallbackQuestion);
+      setIsProcessingAnswer(false);
     }
   };
 
@@ -180,6 +183,7 @@ const DiagnosticFlow = () => {
     if (!currentQuestion) return;
 
     console.log('Answer received:', answer, 'for question:', currentQuestion.text);
+    setIsProcessingAnswer(true);
 
     updateConfidence(answer, currentQuestion);
     
@@ -195,12 +199,10 @@ const DiagnosticFlow = () => {
       timestamp: new Date().toISOString()
     });
     
-    setShowCustomAnswer(false);
-    setCustomAnswer('');
-    
     setTimeout(async () => {
       if (shouldEndDiagnosis()) {
         setCurrentStep('results');
+        setIsProcessingAnswer(false);
         saveSessionData({
           finalResults: diseases.sort((a, b) => b.confidence - a.confidence),
           completedAt: new Date().toISOString()
@@ -208,13 +210,7 @@ const DiagnosticFlow = () => {
       } else {
         await generateNextQuestion(diseases, newQuestionHistory, newAnswerHistory);
       }
-    }, 1000);
-  };
-
-  const handleCustomAnswerSubmit = () => {
-    if (customAnswer.trim()) {
-      handleAnswerQuestion(customAnswer.trim());
-    }
+    }, 2000); // 2 second delay to show processing
   };
 
   const renderInitialStep = () => (
@@ -421,100 +417,11 @@ const DiagnosticFlow = () => {
             {/* Questions Section - 8/12 width */}
             <div className="col-span-8">
               {currentQuestion && (
-                <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 shadow-xl border border-white/20">
-                  <div className="space-y-4">
-                    <div className="text-center">
-                      <div className="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-md mb-3">
-                        <span className="text-white text-sm font-bold">?</span>
-                      </div>
-                      
-                      <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">
-                        Follow-up Question
-                      </h2>
-                      
-                      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-700">
-                        <p className="text-sm text-gray-900 dark:text-gray-100 leading-relaxed">
-                          {currentQuestion.text}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    {!showCustomAnswer ? (
-                      <div className="space-y-3">
-                        {currentQuestion.type === 'yes_no' && (
-                          <div className="grid grid-cols-2 gap-3">
-                            <Button 
-                              onClick={() => handleAnswerQuestion('yes')}
-                              className="bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-2 text-sm font-medium rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
-                            >
-                              <CheckCircle className="h-4 w-4 mr-2" />
-                              Yes
-                            </Button>
-                            <Button 
-                              onClick={() => handleAnswerQuestion('no')}
-                              className="bg-gradient-to-br from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white py-2 text-sm font-medium rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
-                            >
-                              <AlertTriangle className="h-4 w-4 mr-2" />
-                              No
-                            </Button>
-                          </div>
-                        )}
-                        
-                        <div className="border-t pt-3">
-                          <Button
-                            onClick={() => setShowCustomAnswer(true)}
-                            variant="outline"
-                            className="w-full py-2 text-xs rounded-lg border-dashed border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
-                          >
-                            <MessageSquare className="h-3 w-3 mr-2" />
-                            Write detailed answer
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        <div className="space-y-2">
-                          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
-                            Describe your specific situation:
-                          </label>
-                          <Textarea
-                            value={customAnswer}
-                            onChange={(e) => setCustomAnswer(e.target.value)}
-                            placeholder="Please provide more details about your condition, symptoms, or any relevant information..."
-                            className="min-h-[80px] p-3 rounded-lg border border-gray-200 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 bg-white/70 dark:bg-gray-700/70 backdrop-blur-sm resize-none text-xs"
-                            rows={4}
-                          />
-                        </div>
-                        <div className="flex space-x-2">
-                          <Button
-                            onClick={handleCustomAnswerSubmit}
-                            disabled={!customAnswer.trim()}
-                            className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-2 text-xs font-medium rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
-                          >
-                            <Send className="h-3 w-3 mr-2" />
-                            Submit
-                          </Button>
-                          <Button
-                            onClick={() => {
-                              setShowCustomAnswer(false);
-                              setCustomAnswer('');
-                            }}
-                            variant="outline"
-                            className="px-4 py-2 rounded-lg border text-xs"
-                          >
-                            Back
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                    
-                    <div className="text-center">
-                      <p className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 p-2 rounded-md">
-                        💡 Your detailed responses improve diagnostic accuracy
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                <QuestionCard
+                  question={currentQuestion}
+                  onAnswer={handleAnswerQuestion}
+                  isLoading={isProcessingAnswer}
+                />
               )}
             </div>
 
