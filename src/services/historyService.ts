@@ -1,4 +1,3 @@
-
 export interface DiagnosticSession {
   id: string;
   timestamp: string;
@@ -49,11 +48,7 @@ export const saveSession = (sessionData: Partial<DiagnosticSession>): string => 
     const limitedSessions = updatedSessions.slice(0, 50);
     
     localStorage.setItem('diagnosticHistory', JSON.stringify(limitedSessions));
-    console.log('Session saved successfully:', {
-      sessionId,
-      totalSessions: limitedSessions.length,
-      sessionData: session
-    });
+    console.log('Session saved:', sessionId);
     
     return sessionId;
   } catch (error) {
@@ -65,17 +60,7 @@ export const saveSession = (sessionData: Partial<DiagnosticSession>): string => 
 export const getSessionHistory = (): DiagnosticSession[] => {
   try {
     const history = localStorage.getItem('diagnosticHistory');
-    const sessions = history ? JSON.parse(history) : [];
-    console.log('Retrieved session history:', {
-      count: sessions.length,
-      sessions: sessions.map((s: DiagnosticSession) => ({
-        id: s.id,
-        timestamp: s.timestamp,
-        symptoms: s.symptoms?.substring(0, 50) + '...',
-        qaCount: s.questionAnswerPairs?.length || 0
-      }))
-    });
-    return sessions;
+    return history ? JSON.parse(history) : [];
   } catch (error) {
     console.error('Error loading session history:', error);
     return [];
@@ -85,9 +70,7 @@ export const getSessionHistory = (): DiagnosticSession[] => {
 export const getSession = (sessionId: string): DiagnosticSession | null => {
   try {
     const sessions = getSessionHistory();
-    const session = sessions.find(s => s.id === sessionId) || null;
-    console.log('Retrieved specific session:', sessionId, session ? 'found' : 'not found');
-    return session;
+    return sessions.find(s => s.id === sessionId) || null;
   } catch (error) {
     console.error('Error getting session:', error);
     return null;
@@ -100,23 +83,9 @@ export const updateSession = (sessionId: string, updates: Partial<DiagnosticSess
     const sessionIndex = sessions.findIndex(s => s.id === sessionId);
     
     if (sessionIndex >= 0) {
-      const updatedSession = { ...sessions[sessionIndex], ...updates };
-      
-      // Merge question answer pairs properly
-      if (updates.questionAnswerPairs && updates.questionAnswerPairs.length > 0) {
-        const existingQAs = sessions[sessionIndex].questionAnswerPairs || [];
-        updatedSession.questionAnswerPairs = [...existingQAs, ...updates.questionAnswerPairs];
-      }
-      
-      sessions[sessionIndex] = updatedSession;
+      sessions[sessionIndex] = { ...sessions[sessionIndex], ...updates };
       localStorage.setItem('diagnosticHistory', JSON.stringify(sessions));
-      console.log('Session updated successfully:', {
-        sessionId,
-        updates,
-        updatedSession
-      });
-    } else {
-      console.warn('Session not found for update:', sessionId);
+      console.log('Session updated:', sessionId);
     }
   } catch (error) {
     console.error('Error updating session:', error);

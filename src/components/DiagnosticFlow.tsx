@@ -44,8 +44,7 @@ const DiagnosticFlow = () => {
   const [isProcessingAnswer, setIsProcessingAnswer] = useState(false);
 
   const handleStartDiagnosis = () => {
-    const newSessionId = initializeSession();
-    console.log('New session started:', newSessionId);
+    initializeSession();
     setCurrentStep('symptoms');
   };
 
@@ -186,21 +185,13 @@ const DiagnosticFlow = () => {
     console.log('Answer received:', answer, 'for question:', currentQuestion.text);
     setIsProcessingAnswer(true);
 
-    // Update confidence scores
     updateConfidence(answer, currentQuestion);
     
-    const newQuestionHistory = [...questionHistory, currentQuestion.text];
+    const newQuestionHistory = [...questionHistory, currentQuestion.id];
     const newAnswerHistory = [...answerHistory, answer];
     
-    setQuestionHistory([...questionHistory, currentQuestion.id]);
+    setQuestionHistory(newQuestionHistory);
     setAnswerHistory(newAnswerHistory);
-    
-    // Save the Q&A pair immediately
-    console.log('Saving session data for Q&A:', {
-      question: currentQuestion.text,
-      answer: answer,
-      sessionId: sessionId
-    });
     
     saveSessionData({
       question: currentQuestion.text,
@@ -210,7 +201,6 @@ const DiagnosticFlow = () => {
     
     setTimeout(async () => {
       if (shouldEndDiagnosis()) {
-        console.log('Diagnosis ending, saving final results');
         setCurrentStep('results');
         setIsProcessingAnswer(false);
         saveSessionData({
