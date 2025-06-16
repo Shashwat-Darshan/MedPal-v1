@@ -1,6 +1,4 @@
 import { useState, useCallback } from 'react';
-import { validateInput, ValidationResult } from '@/services/inputValidationService';
-import { saveSession, updateSession } from '@/services/historyService';
 
 export interface Disease {
   id: string;
@@ -36,8 +34,6 @@ export const useDiagnosticFlow = () => {
   const [questionHistory, setQuestionHistory] = useState<string[]>([]);
   const [answerHistory, setAnswerHistory] = useState<string[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [sessionId, setSessionId] = useState<string>('');
-  const [inputValidation, setInputValidation] = useState<ValidationResult | null>(null);
 
   const shouldEndDiagnosis = useCallback(() => {
     // Filter out diseases with 0% confidence
@@ -118,69 +114,35 @@ export const useDiagnosticFlow = () => {
     return 0;
   }, [currentStep, questionHistory.length, getViableDiseases]);
 
-  const validateSymptoms = useCallback((inputSymptoms: string): ValidationResult => {
-    const validation = validateInput(inputSymptoms);
-    setInputValidation(validation);
-    console.log('Input validation result:', validation);
-    return validation;
-  }, []);
-
-  const initializeSession = useCallback(() => {
-    const newSessionId = saveSession({
-      symptoms: '',
-      diseases: [],
-      questionAnswerPairs: [],
-      timestamp: new Date().toISOString()
-    });
-    setSessionId(newSessionId);
-    return newSessionId;
-  }, []);
-
-  const updateSessionData = useCallback((updates: any) => {
-    if (sessionId) {
-      updateSession(sessionId, {
-        ...updates,
-        lastUpdated: new Date().toISOString()
-      });
-    }
-  }, [sessionId]);
-
   const saveSessionData = useCallback((data: SessionData) => {
     try {
-      if (!sessionId) return;
+      const sessionId = `diagnosis_session_${Date.now()}`;
+      const existingData = JSON.parse(localStorage.getItem('diagnosisSession') || '{}');
       
       const sessionData = {
+        ...existingData,
+        sessionId,
         symptoms,
-        diseases: diseases.map(d => ({ 
-          name: d.name, 
-          confidence: d.confidence, 
-          description: d.description 
-        })),
+        diseases: diseases.map(d => ({ ...d })),
         questionAnswerPairs: [
+          ...(existingData.questionAnswerPairs || []),
           ...(data.question && data.answer ? [{
             question: data.question,
             answer: data.answer,
-            timestamp: data.timestamp || new Date().toISOString()
+            timestamp: data.timestamp
           }] : [])
         ],
         ...(data.finalResults && { finalResults: data.finalResults }),
         ...(data.completedAt && { completedAt: data.completedAt }),
-        ...(inputValidation && {
-          inputValidation: {
-            originalInput: symptoms,
-            sanitizedInput: inputValidation.sanitizedInput,
-            classification: inputValidation.classification.type,
-            issues: inputValidation.classification.issues
-          }
-        })
+        lastUpdated: new Date().toISOString()
       };
 
-      updateSessionData(sessionData);
-      console.log('Enhanced session data saved');
+      localStorage.setItem('diagnosisSession', JSON.stringify(sessionData));
+      console.log('Session data saved:', sessionData);
     } catch (error) {
-      console.error('Error saving enhanced session data:', error);
+      console.error('Error saving session data:', error);
     }
-  }, [symptoms, diseases, sessionId, inputValidation, updateSessionData]);
+  }, [symptoms, diseases]);
 
   const restartDiagnosis = useCallback(() => {
     setCurrentStep('initial');
@@ -190,8 +152,6 @@ export const useDiagnosticFlow = () => {
     setQuestionHistory([]);
     setAnswerHistory([]);
     setIsAnalyzing(false);
-    setSessionId('');
-    setInputValidation(null);
     
     // Clear session data
     localStorage.removeItem('diagnosisSession');
@@ -217,10 +177,6 @@ export const useDiagnosticFlow = () => {
     updateConfidence,
     restartDiagnosis,
     saveSessionData,
-    getViableDiseases,
-    validateSymptoms,
-    inputValidation,
-    sessionId,
-    initializeSession
+    getViableDiseases
   };
 };
