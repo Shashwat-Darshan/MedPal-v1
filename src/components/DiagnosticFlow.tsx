@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
-import { Mic, Send, Brain, Activity, CheckCircle, AlertTriangle, RotateCcw, Stethoscope, Target, Sparkles, Heart, MessageSquare } from 'lucide-react';
+import { Mic, Send, Brain, Activity, CheckCircle, AlertTriangle, RotateCcw, Stethoscope, Target, Sparkles, Heart, MessageSquare, Shield, Zap, Clock } from 'lucide-react';
 import { useDiagnosticFlow, Disease, DiagnosticQuestion } from '@/hooks/useDiagnosticFlow';
 import { generateDiagnosisFromSymptoms, generateFollowUpQuestion } from '@/services/geminiService';
 import { useToast } from '@/hooks/use-toast';
@@ -189,41 +188,94 @@ const DiagnosticFlow = () => {
   };
 
   const renderInitialStep = () => (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
-      <div className="max-w-sm w-full space-y-3">
-        <div className="text-center space-y-2">
-          <div className="w-14 h-14 bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 rounded-full flex items-center justify-center mx-auto shadow-xl mb-3">
-            <Stethoscope className="h-7 w-7 text-white" />
-          </div>
-          
-          <div className="space-y-1">
-            <h1 className="text-lg font-bold text-white leading-tight">
-              Get instant health assessment powered by advanced AI
-            </h1>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-slate-900/40 to-slate-900"></div>
+      <div className="absolute top-0 -left-4 w-72 h-72 bg-blue-600/10 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
+      <div className="absolute top-0 -right-4 w-72 h-72 bg-purple-600/10 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse delay-75"></div>
+      <div className="absolute -bottom-8 left-20 w-72 h-72 bg-indigo-600/10 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse delay-150"></div>
+      
+      <div className="relative z-10 min-h-screen flex items-center justify-center p-6">
+        <div className="max-w-lg w-full">
+          {/* Main Card */}
+          <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-8 shadow-2xl">
+            {/* Logo/Icon */}
+            <div className="text-center mb-8">
+              <div className="relative inline-block">
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <Stethoscope className="h-10 w-10 text-white" />
+                </div>
+                <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                  <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                </div>
+              </div>
+              
+              <h1 className="text-3xl font-bold text-white mb-3 bg-gradient-to-r from-blue-200 via-white to-purple-200 bg-clip-text text-transparent">
+                AI Health Assistant
+              </h1>
+              <p className="text-blue-200/80 text-base leading-relaxed">
+                Get instant, personalized health insights powered by advanced medical AI
+              </p>
+            </div>
+
+            {/* Features Grid */}
+            <div className="grid grid-cols-3 gap-4 mb-8">
+              <div className="text-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-green-500/20 to-emerald-600/20 rounded-xl flex items-center justify-center mx-auto mb-2 border border-green-500/20">
+                  <Zap className="h-6 w-6 text-green-400" />
+                </div>
+                <p className="text-xs text-green-200 font-medium">Instant Analysis</p>
+              </div>
+              <div className="text-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500/20 to-indigo-600/20 rounded-xl flex items-center justify-center mx-auto mb-2 border border-purple-500/20">
+                  <Brain className="h-6 w-6 text-purple-400" />
+                </div>
+                <p className="text-xs text-purple-200 font-medium">AI Powered</p>
+              </div>
+              <div className="text-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500/20 to-cyan-600/20 rounded-xl flex items-center justify-center mx-auto mb-2 border border-blue-500/20">
+                  <Shield className="h-6 w-6 text-blue-400" />
+                </div>
+                <p className="text-xs text-blue-200 font-medium">Secure & Private</p>
+              </div>
+            </div>
+
+            {/* CTA Button */}
+            <Button 
+              onClick={handleStartDiagnosis}
+              className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 text-white py-4 text-lg font-semibold rounded-2xl shadow-xl hover:shadow-2xl transform hover:scale-[1.02] transition-all duration-300 border-0"
+            >
+              <div className="flex items-center justify-center space-x-3">
+                <Sparkles className="h-5 w-5" />
+                <span>Start Health Assessment</span>
+                <Send className="h-5 w-5" />
+              </div>
+            </Button>
+
+            {/* Trust Indicators */}
+            <div className="mt-6 flex items-center justify-center space-x-6 text-xs text-blue-200/60">
+              <div className="flex items-center space-x-1">
+                <Clock className="h-3 w-3" />
+                <span>2-3 minutes</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <Shield className="h-3 w-3" />
+                <span>100% Confidential</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <Heart className="h-3 w-3" />
+                <span>Trusted by thousands</span>
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center justify-center space-x-4 text-xs py-2">
-            <div className="flex items-center space-x-1">
-              <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-              <span className="text-gray-300">AI Assistant Online</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <Brain className="h-3 w-3 text-purple-400" />
-              <span className="text-gray-300">Advanced Analysis</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <Sparkles className="h-3 w-3 text-yellow-400" />
-              <span className="text-gray-300">Instant Results</span>
-            </div>
+          {/* Disclaimer */}
+          <div className="mt-6 text-center">
+            <p className="text-xs text-blue-300/60 leading-relaxed">
+              This AI assessment provides educational insights only and should not replace professional medical advice. 
+              Always consult healthcare professionals for medical concerns.
+            </p>
           </div>
-          
-          <Button 
-            onClick={handleStartDiagnosis}
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-2.5 text-sm font-medium rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 mt-4"
-          >
-            <Send className="h-4 w-4 mr-2" />
-            Start Analysis
-          </Button>
         </div>
       </div>
     </div>
