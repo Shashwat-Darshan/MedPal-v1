@@ -5,7 +5,7 @@ const API_KEYS = [
   // Gemini API keys (prioritize these since they're working)
   'AIzaSyAGgztg1kQInnvAJuGTjVrb-OGdm5BR_l4',
   'AIzaSyAi4xSyRh17eC9DvM7NcCCxps-myI2QFQU',
-  // Groq API keys (keep these for parallel calls)
+  // Groq API keys (with correct models now)
   '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',
   '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', 
   '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',
@@ -32,8 +32,11 @@ const createGenAI = (apiKey: string) => {
   return new GoogleGenerativeAI(apiKey);
 };
 
-const callGroqAPI = async (prompt: string, apiKey: string) => {
+const callGroqAPI = async (prompt: string, apiKey: string, useWhisper: boolean = false) => {
   console.log('Attempting Groq API call with key:', apiKey.substring(0, 8) + '...');
+  
+  // Use correct Groq model names based on available models
+  const model = useWhisper ? 'whisper-large-v3' : 'llama-3.1-8b-instant';
   
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
@@ -42,7 +45,7 @@ const callGroqAPI = async (prompt: string, apiKey: string) => {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'llama-3.1-70b-versatile',
+      model: model,
       messages: [
         {
           role: 'user',
@@ -59,13 +62,58 @@ const callGroqAPI = async (prompt: string, apiKey: string) => {
     console.error('Groq API error details:', {
       status: response.status,
       statusText: response.statusText,
-      error: errorText
+      error: errorText,
+      model: model
     });
     throw new Error(`Groq API error: ${response.status} - ${errorText}`);
   }
 
   const data = await response.json();
   return data.choices[0].message.content;
+};
+
+// New function for Groq Whisper audio transcription
+export const transcribeAudioWithGroq = async (audioBlob: Blob): Promise<string> => {
+  const apiKeys = getApiKeys();
+  const groqKeys = apiKeys.filter(key => key.startsWith('gsk_'));
+  
+  if (groqKeys.length === 0) {
+    throw new Error('No Groq API keys available for audio transcription');
+  }
+
+  const formData = new FormData();
+  formData.append('file', audioBlob, 'audio.wav');
+  formData.append('model', 'whisper-large-v3');
+  formData.append('response_format', 'json');
+  
+  for (const apiKey of groqKeys) {
+    try {
+      console.log('Attempting Groq Whisper transcription...');
+      
+      const response = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Groq Whisper error:', response.status, errorText);
+        continue;
+      }
+
+      const data = await response.json();
+      console.log('Groq Whisper transcription successful');
+      return data.text || '';
+    } catch (error) {
+      console.error('Groq Whisper transcription failed:', error);
+      continue;
+    }
+  }
+  
+  throw new Error('All Groq Whisper transcription attempts failed');
 };
 
 const callOpenRouterAPI = async (prompt: string, apiKey: string) => {
@@ -121,20 +169,20 @@ export interface ChatMessage {
   timestamp: Date;
 }
 
-// Parallel API call implementation with critical thinking
+// Enhanced parallel API call implementation with fixed Groq model
 const callParallelAPIs = async (prompt: string): Promise<string> => {
   const apiKeys = getApiKeys();
   const groqKeys = apiKeys.filter(key => key.startsWith('gsk_'));
   const geminiKeys = apiKeys.filter(key => key.startsWith('AIza'));
   
-  console.log('Starting parallel API calls...');
+  console.log('Starting parallel API calls with correct models...');
   
   const promises: Promise<{ source: string; response: string }>[] = [];
   
-  // Add Groq calls (if keys available)
+  // Add Groq calls with correct model (if keys available)
   if (groqKeys.length > 0) {
     promises.push(
-      callGroqAPI(prompt, groqKeys[0])
+      callGroqAPI(prompt, groqKeys[0], false) // Use llama-3.1-8b-instant
         .then(response => ({ source: 'groq', response }))
         .catch(error => {
           console.log('Groq call failed:', error);
@@ -286,7 +334,7 @@ export const generateDiagnosisFromSymptoms = async (symptoms: string, age: strin
   `;
 
   try {
-    // Try parallel API calls first
+    // Try parallel API calls first with corrected Groq models
     console.log('Attempting parallel API calls for diagnosis generation...');
     const responseText = await callParallelAPIs(prompt);
     
@@ -339,7 +387,7 @@ export const generateDiagnosisFromSymptoms = async (symptoms: string, age: strin
       let responseText: string;
       
       if (provider === 'groq') {
-        responseText = await callGroqAPI(prompt, apiKey);
+        responseText = await callGroqAPI(prompt, apiKey, false);
       } else if (provider === 'openrouter') {
         responseText = await callOpenRouterAPI(prompt, apiKey);
       } else {
@@ -445,7 +493,7 @@ export const generateFollowUpQuestion = async (
   `;
 
   try {
-    // Try parallel API calls for question generation too
+    // Try parallel API calls for question generation too with correct models
     console.log('Attempting parallel API calls for question generation...');
     const responseText = await callParallelAPIs(prompt);
     
@@ -474,7 +522,7 @@ export const generateFollowUpQuestion = async (
       let responseText: string;
       
       if (provider === 'groq') {
-        responseText = await callGroqAPI(prompt, apiKey);
+        responseText = await callGroqAPI(prompt, apiKey, false);
       } else if (provider === 'openrouter') {
         responseText = await callOpenRouterAPI(prompt, apiKey);
       } else {
@@ -511,7 +559,7 @@ export const getChatResponseFromGemini = async (message: string, context?: strin
     `;
 
     if (provider === 'groq') {
-      return await callGroqAPI(prompt, apiKey);
+      return await callGroqAPI(prompt, apiKey, false);
     } else if (provider === 'openrouter') {
       return await callOpenRouterAPI(prompt, apiKey);
     } else {
@@ -553,7 +601,7 @@ const chatAboutDiagnosis = async (
     `;
 
     if (provider === 'groq') {
-      return await callGroqAPI(prompt, apiKey);
+      return await callGroqAPI(prompt, apiKey, false);
     } else if (provider === 'openrouter') {
       return await callOpenRouterAPI(prompt, apiKey);
     } else {

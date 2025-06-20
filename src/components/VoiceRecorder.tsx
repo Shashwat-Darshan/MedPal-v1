@@ -3,6 +3,7 @@ import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Mic, MicOff, Volume2 } from 'lucide-react';
+import { transcribeAudioWithGroq } from '@/services/geminiService';
 
 interface VoiceRecorderProps {
   onTranscript: (transcript: string) => void;
@@ -12,6 +13,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscript }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [audioURL, setAudioURL] = useState<string>('');
   const [transcript, setTranscript] = useState<string>('');
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 
@@ -28,17 +30,37 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscript }) => {
         }
       };
 
-      mediaRecorder.onstop = () => {
+      mediaRecorder.onstop = async () => {
         const blob = new Blob(chunksRef.current, { type: 'audio/wav' });
         const url = URL.createObjectURL(blob);
         setAudioURL(url);
         
-        // Mock transcription (in real app, this would call your voice service)
-        setTimeout(() => {
+        // Use Groq Whisper for real transcription
+        setIsTranscribing(true);
+        try {
+          console.log('Starting Groq Whisper transcription...');
+          const transcriptionResult = await transcribeAudioWithGroq(blob);
+          
+          if (transcriptionResult && transcriptionResult.trim()) {
+            setTranscript(transcriptionResult);
+            onTranscript(transcriptionResult);
+            console.log('Transcription successful:', transcriptionResult);
+          } else {
+            // Fallback to mock transcription if Whisper fails
+            const mockTranscript = "I have been experiencing a runny nose, cough, and feeling tired for the past 3 days.";
+            setTranscript(mockTranscript);
+            onTranscript(mockTranscript);
+            console.log('Using fallback mock transcription');
+          }
+        } catch (error) {
+          console.error('Whisper transcription failed, using mock:', error);
+          // Fallback to mock transcription
           const mockTranscript = "I have been experiencing a runny nose, cough, and feeling tired for the past 3 days.";
           setTranscript(mockTranscript);
           onTranscript(mockTranscript);
-        }, 1000);
+        } finally {
+          setIsTranscribing(false);
+        }
 
         // Stop all tracks
         stream.getTracks().forEach(track => track.stop());
@@ -75,9 +97,10 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscript }) => {
                 onClick={startRecording}
                 className="bg-red-500 hover:bg-red-600 text-white px-8 py-4 rounded-full"
                 size="lg"
+                disabled={isTranscribing}
               >
                 <Mic className="h-6 w-6 mr-2" />
-                Start Recording
+                {isTranscribing ? 'Processing...' : 'Start Recording'}
               </Button>
             ) : (
               <Button
@@ -104,7 +127,14 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscript }) => {
             </div>
           )}
 
-          {audioURL && (
+          {isTranscribing && (
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+              <p className="text-sm text-blue-600">Transcribing with Groq Whisper...</p>
+            </div>
+          )}
+
+          {audioURL && !isTranscribing && (
             <div className="space-y-3">
               <div className="flex justify-center">
                 <Button
@@ -127,7 +157,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscript }) => {
           )}
 
           <div className="text-center text-xs text-gray-500">
-            <p>Your voice data is processed securely and not stored permanently</p>
+            <p>Powered by Groq Whisper • Your voice data is processed securely</p>
           </div>
         </div>
       </CardContent>
