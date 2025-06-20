@@ -190,38 +190,38 @@ const DiagnosticFlow = () => {
 
   const renderInitialStep = () => (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
-      <div className="max-w-md w-full space-y-4">
-        <div className="text-center space-y-3">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 rounded-full flex items-center justify-center mx-auto shadow-xl">
-            <Stethoscope className="h-8 w-8 text-white" />
+      <div className="max-w-sm w-full space-y-3">
+        <div className="text-center space-y-2">
+          <div className="w-14 h-14 bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 rounded-full flex items-center justify-center mx-auto shadow-xl mb-3">
+            <Stethoscope className="h-7 w-7 text-white" />
           </div>
           
-          <div className="space-y-2">
-            <h1 className="text-xl font-bold text-white">
+          <div className="space-y-1">
+            <h1 className="text-lg font-bold text-white leading-tight">
               Get instant health assessment powered by advanced AI
             </h1>
           </div>
 
-          <div className="flex items-center justify-center space-x-6 text-sm">
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+          <div className="flex items-center justify-center space-x-4 text-xs py-2">
+            <div className="flex items-center space-x-1">
+              <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
               <span className="text-gray-300">AI Assistant Online</span>
             </div>
-            <div className="flex items-center space-x-2">
-              <Brain className="h-4 w-4 text-purple-400" />
+            <div className="flex items-center space-x-1">
+              <Brain className="h-3 w-3 text-purple-400" />
               <span className="text-gray-300">Advanced Analysis</span>
             </div>
-            <div className="flex items-center space-x-2">
-              <Sparkles className="h-4 w-4 text-yellow-400" />
+            <div className="flex items-center space-x-1">
+              <Sparkles className="h-3 w-3 text-yellow-400" />
               <span className="text-gray-300">Instant Results</span>
             </div>
           </div>
           
           <Button 
             onClick={handleStartDiagnosis}
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 text-base font-medium rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-2.5 text-sm font-medium rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 mt-4"
           >
-            <Send className="h-5 w-5 mr-3" />
+            <Send className="h-4 w-4 mr-2" />
             Start Analysis
           </Button>
         </div>
