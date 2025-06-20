@@ -190,8 +190,8 @@ const DiagnosticFlow = () => {
 
   const renderInitialStep = () => (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
-      <div className="max-w-md w-full space-y-6">
-        <div className="text-center space-y-4">
+      <div className="max-w-md w-full space-y-4">
+        <div className="text-center space-y-3">
           <div className="w-16 h-16 bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 rounded-full flex items-center justify-center mx-auto shadow-xl">
             <Stethoscope className="h-8 w-8 text-white" />
           </div>
@@ -231,7 +231,7 @@ const DiagnosticFlow = () => {
 
   const renderSymptomsStep = () => (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4">
-      <div className="max-w-md mx-auto space-y-6 pt-8">
+      <div className="max-w-md mx-auto space-y-4 pt-6">
         {/* Progress Header */}
         <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50">
           <div className="flex items-center justify-between mb-3">
@@ -242,7 +242,7 @@ const DiagnosticFlow = () => {
         </div>
 
         {/* Main Content */}
-        <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50 space-y-6">
+        <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-5 border border-gray-700/50 space-y-5">
           <div className="text-center space-y-3">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mx-auto">
               <Activity className="h-6 w-6 text-white" />
@@ -312,7 +312,7 @@ const DiagnosticFlow = () => {
 
   const renderAnalysisStep = () => (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
-      <div className="max-w-md w-full text-center space-y-6">
+      <div className="max-w-md w-full text-center space-y-4">
         <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto">
           <Activity className="h-8 w-8 text-white animate-pulse" />
         </div>

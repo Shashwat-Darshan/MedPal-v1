@@ -1,14 +1,15 @@
+
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // API Keys fallback system - Mixed Groq, Gemini, and OpenRouter keys
 const API_KEYS = [
-  // Groq API keys
+  // Gemini API keys (prioritize these since they're working)
+  'AIzaSyAGgztg1kQInnvAJuGTjVrb-OGdm5BR_l4',
+  'AIzaSyAi4xSyRh17eC9DvM7NcCCxps-myI2QFQU',
+  // Groq API keys (these are failing with 400 errors)
   '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',
   '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', 
   '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',
-  // Gemini API keys
-  'AIzaSyAGgztg1kQInnvAJuGTjVrb-OGdm5BR_l4',
-  'AIzaSyAi4xSyRh17eC9DvM7NcCCxps-myI2QFQU',
   // OpenRouter API key
   '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'
 ];
@@ -33,6 +34,8 @@ const createGenAI = (apiKey: string) => {
 };
 
 const callGroqAPI = async (prompt: string, apiKey: string) => {
+  console.log('Attempting Groq API call with key:', apiKey.substring(0, 8) + '...');
+  
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -53,7 +56,13 @@ const callGroqAPI = async (prompt: string, apiKey: string) => {
   });
 
   if (!response.ok) {
-    throw new Error(`Groq API error: ${response.status}`);
+    const errorText = await response.text();
+    console.error('Groq API error details:', {
+      status: response.status,
+      statusText: response.statusText,
+      error: errorText
+    });
+    throw new Error(`Groq API error: ${response.status} - ${errorText}`);
   }
 
   const data = await response.json();
@@ -119,6 +128,12 @@ const tryWithFallback = async <T>(
     
     if (!isGroq && !isOpenRouter && !isGemini) {
       console.log(`Skipping invalid API key format: ${apiKey.substring(0, 10)}...`);
+      continue;
+    }
+    
+    // Skip Groq keys for now since they're returning 400 errors
+    if (isGroq) {
+      console.log('Skipping Groq API key due to known 400 errors');
       continue;
     }
     
