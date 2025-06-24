@@ -169,7 +169,7 @@ export interface ChatMessage {
   timestamp: Date;
 }
 
-// Enhanced parallel API call implementation with fixed Groq model
+// Enhanced parallel API call implementation with fixed critical thinking prompts
 const callParallelAPIs = async (prompt: string): Promise<string> => {
   const apiKeys = getApiKeys();
   const groqKeys = apiKeys.filter(key => key.startsWith('gsk_'));
@@ -232,36 +232,72 @@ const callParallelAPIs = async (prompt: string): Promise<string> => {
   if (successfulResults.length > 1 && geminiKeys.length > 0) {
     console.log('Using Gemini for critical thinking analysis...');
     
-    const criticalThinkingPrompt = `
-      As a medical AI with critical thinking capabilities, analyze these multiple AI responses to the same medical query and provide the best synthesized answer.
-      
-      Original Query: ${prompt}
-      
-      Responses to analyze:
-      ${successfulResults.map((result, index) => `
-      Response ${index + 1} (from ${result.source}):
-      ${result.response}
-      `).join('\n')}
-      
-      Instructions:
-      1. Compare the medical accuracy and completeness of each response
-      2. Identify any contradictions or inconsistencies
-      3. Synthesize the best elements from all responses
-      4. Provide a single, improved response that combines the strongest aspects
-      5. Maintain the same format as the original responses
-      6. Prioritize medical accuracy and patient safety
-      
-      Provide your final synthesized response:
-    `;
+    // Check if this is a diagnosis generation prompt
+    const isDiagnosisPrompt = prompt.includes('diagnoses') && prompt.includes('JSON');
     
-    try {
-      const synthesizedResponse = await callGeminiDirect(criticalThinkingPrompt, geminiKeys[0]);
-      console.log('Critical thinking synthesis completed');
-      return synthesizedResponse;
-    } catch (error) {
-      console.log('Critical thinking failed, using best single response:', error);
-      // Fall back to the first successful response
-      return successfulResults[0].response;
+    if (isDiagnosisPrompt) {
+      const criticalThinkingPrompt = `
+        Analyze these medical diagnosis responses and provide the best synthesized answer.
+        
+        Original Query: ${prompt}
+        
+        Response 1 (${successfulResults[0].source}): ${successfulResults[0].response}
+        Response 2 (${successfulResults[1].source}): ${successfulResults[1].response}
+        
+        Return ONLY a valid JSON object with this EXACT structure (no additional text):
+        {
+          "diagnoses": [
+            {
+              "name": "Diagnosis Name",
+              "confidence": 45,
+              "description": "Brief description",
+              "symptoms": ["symptom1", "symptom2"]
+            }
+          ]
+        }
+        
+        Provide exactly 5 diagnoses with realistic confidence levels (25-65% range).
+      `;
+      
+      try {
+        const synthesizedResponse = await callGeminiDirect(criticalThinkingPrompt, geminiKeys[0]);
+        console.log('Critical thinking synthesis completed');
+        return synthesizedResponse;
+      } catch (error) {
+        console.log('Critical thinking failed, using best single response:', error);
+        return successfulResults[0].response;
+      }
+    } else {
+      // For question generation
+      const criticalThinkingPrompt = `
+        Analyze these medical question responses and provide the best synthesized answer.
+        
+        Original Query: ${prompt}
+        
+        Response 1 (${successfulResults[0].source}): ${successfulResults[0].response}
+        Response 2 (${successfulResults[1].source}): ${successfulResults[1].response}
+        
+        Return ONLY a valid JSON object with this EXACT structure (no additional text):
+        {
+          "question": "Your best synthesized question here?",
+          "type": "yes_no",
+          "diseaseImpacts": {
+            "Disease Name": 15,
+            "Another Disease": -10
+          }
+        }
+        
+        The question should be medically accurate and help distinguish between conditions.
+      `;
+      
+      try {
+        const synthesizedResponse = await callGeminiDirect(criticalThinkingPrompt, geminiKeys[0]);
+        console.log('Critical thinking synthesis completed');
+        return synthesizedResponse;
+      } catch (error) {
+        console.log('Critical thinking failed, using best single response:', error);
+        return successfulResults[0].response;
+      }
     }
   }
   
