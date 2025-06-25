@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,7 +48,12 @@ const SimpleChatInterface: React.FC<SimpleChatInterfaceProps> = ({ onHistoryCont
     if (savedMessages) {
       try {
         const parsedMessages = JSON.parse(savedMessages);
-        setMessages(prevMessages => [...prevMessages, ...parsedMessages]);
+        // Convert timestamp strings back to Date objects
+        const messagesWithDates = parsedMessages.map((msg: any) => ({
+          ...msg,
+          timestamp: typeof msg.timestamp === 'string' ? new Date(msg.timestamp) : msg.timestamp
+        }));
+        setMessages(prevMessages => [...prevMessages, ...messagesWithDates]);
       } catch (error) {
         console.error('Error loading chat history:', error);
       }
@@ -205,7 +209,12 @@ const SimpleChatInterface: React.FC<SimpleChatInterfaceProps> = ({ onHistoryCont
                   message.type === 'user' ? 'justify-end' : 'justify-start'
                 }`}>
                   <Clock className="h-3 w-3" />
-                  <span>{message.timestamp.toLocaleTimeString()}</span>
+                  <span>
+                    {message.timestamp instanceof Date 
+                      ? message.timestamp.toLocaleTimeString()
+                      : new Date(message.timestamp).toLocaleTimeString()
+                    }
+                  </span>
                 </div>
               </div>
             </div>
