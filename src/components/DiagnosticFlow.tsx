@@ -11,18 +11,18 @@ import { generateDiagnosisFromSymptoms, generateFollowUpQuestion } from '@/servi
 import { useToast } from '@/hooks/use-toast';
 
 const ProcessingOverlay = () => (
-  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-6 shadow-2xl max-w-xs w-full">
-      <div className="text-center spacing-responsive">
-        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto animate-pulse">
-          <Brain className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+  <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-2xl max-w-sm w-full border border-gray-200 dark:border-gray-700">
+      <div className="text-center space-y-4">
+        <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto animate-pulse">
+          <Brain className="h-8 w-8 text-white" />
         </div>
         <div>
-          <h3 className="text-responsive-base font-semibold text-gray-900 dark:text-white mb-1">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
             AI Processing...
           </h3>
-          <p className="text-responsive-xs text-gray-600 dark:text-gray-400">
-            Please wait while we analyze
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Please wait while we analyze your symptoms
           </p>
         </div>
         <div className="flex justify-center space-x-1">
@@ -37,92 +37,83 @@ const ProcessingOverlay = () => (
 
 const InitialStep: React.FC<{ onStart: () => void; isProcessing: boolean }> = ({ onStart, isProcessing }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-slate-900/40 to-slate-900"></div>
-      <div className="absolute top-0 -left-4 w-48 h-48 sm:w-72 sm:h-72 bg-blue-600/10 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
-      <div className="absolute top-0 -right-4 w-48 h-48 sm:w-72 sm:h-72 bg-purple-600/10 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse delay-75"></div>
-      <div className="absolute -bottom-8 left-20 w-48 h-48 sm:w-72 sm:h-72 bg-indigo-600/10 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse delay-150"></div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-gray-900/50 dark:to-gray-800/50"></div>
       
-      <div className="relative z-10 min-h-screen flex items-center justify-center container-responsive">
-        <div className="max-w-sm w-full">
-          {/* Main Card */}
-          <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl">
-            {/* Logo/Icon */}
-            <div className="text-center spacing-responsive">
+      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
+        <div className="max-w-md w-full">
+          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-3xl p-8 shadow-2xl">
+            <div className="text-center space-y-6">
               <div className="relative inline-block">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto shadow-lg">
-                  <Stethoscope className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg">
+                  <Stethoscope className="h-10 w-10 text-white" />
                 </div>
-                <div className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-green-500 rounded-full flex items-center justify-center">
-                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full animate-pulse"></div>
+                <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                  <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                 </div>
               </div>
               
-              <h1 className="text-responsive-xl font-bold text-white bg-gradient-to-r from-blue-200 via-white to-purple-200 bg-clip-text text-transparent">
-                AI Health Assistant
-              </h1>
-              <p className="text-blue-200/80 text-responsive-sm leading-relaxed">
-                Get instant, personalized health insights powered by advanced medical AI
-              </p>
-            </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                  AI Health Assistant
+                </h1>
+                <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                  Get instant, personalized health insights powered by advanced medical AI
+                </p>
+              </div>
 
-            {/* Features Grid */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 spacing-responsive">
-              <div className="text-center">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-green-500/20 to-emerald-600/20 rounded-lg border border-green-500/20 flex items-center justify-center mx-auto mb-1 sm:mb-2">
-                  <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-green-400" />
+              <div className="grid grid-cols-3 gap-4">
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl border border-green-200 dark:border-green-700 flex items-center justify-center mx-auto mb-2">
+                    <Zap className="h-6 w-6 text-green-600 dark:text-green-400" />
+                  </div>
+                  <p className="text-xs text-green-700 dark:text-green-300 font-medium">Instant</p>
                 </div>
-                <p className="text-xs text-green-200 font-medium">Instant</p>
-              </div>
-              <div className="text-center">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500/20 to-indigo-600/20 rounded-lg border border-purple-500/20 flex items-center justify-center mx-auto mb-1 sm:mb-2">
-                  <Brain className="h-4 w-4 sm:h-5 sm:w-5 text-purple-400" />
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl border border-purple-200 dark:border-purple-700 flex items-center justify-center mx-auto mb-2">
+                    <Brain className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <p className="text-xs text-purple-700 dark:text-purple-300 font-medium">AI Powered</p>
                 </div>
-                <p className="text-xs text-purple-200 font-medium">AI Powered</p>
-              </div>
-              <div className="text-center">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500/20 to-cyan-600/20 rounded-lg border border-blue-500/20 flex items-center justify-center mx-auto mb-1 sm:mb-2">
-                  <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl border border-blue-200 dark:border-blue-700 flex items-center justify-center mx-auto mb-2">
+                    <Shield className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <p className="text-xs text-blue-700 dark:text-blue-300 font-medium">Secure</p>
                 </div>
-                <p className="text-xs text-blue-200 font-medium">Secure</p>
               </div>
-            </div>
 
-            {/* CTA Button */}
-            <Button 
-              onClick={onStart}
-              disabled={isProcessing}
-              className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 text-white button-responsive font-semibold rounded-xl sm:rounded-2xl shadow-xl hover:shadow-2xl transform hover:scale-[1.02] transition-all duration-300 border-0"
-            >
-              <div className="flex items-center justify-center gap-2">
-                <Sparkles className="icon-responsive" />
-                <span>Start Assessment</span>
-                <Send className="icon-responsive" />
-              </div>
-            </Button>
+              <Button 
+                onClick={onStart}
+                disabled={isProcessing}
+                className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 text-white py-3 px-6 font-semibold rounded-2xl shadow-xl hover:shadow-2xl transform hover:scale-[1.02] transition-all duration-300 border-0"
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <Sparkles className="h-5 w-5" />
+                  <span>Start Assessment</span>
+                  <Send className="h-5 w-5" />
+                </div>
+              </Button>
 
-            {/* Trust Indicators */}
-            <div className="mt-3 sm:mt-4 flex items-center justify-center gap-3 sm:gap-4 text-xs text-blue-200/60">
-              <div className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                <span className="hidden sm:inline">2-3 min</span>
-                <span className="sm:hidden">Fast</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Shield className="h-3 w-3" />
-                <span>Private</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Heart className="h-3 w-3" />
-                <span>Trusted</span>
+              <div className="flex items-center justify-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                <div className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  <span>2-3 min</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Shield className="h-3 w-3" />
+                  <span>Private</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Heart className="h-3 w-3" />
+                  <span>Trusted</span>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Disclaimer */}
-          <div className="mt-4 text-center">
-            <p className="text-xs text-blue-300/60 leading-relaxed px-2">
+          <div className="mt-6 text-center">
+            <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed px-4">
               This AI assessment provides educational insights only. Always consult healthcare professionals for medical concerns.
             </p>
           </div>
@@ -143,48 +134,51 @@ const SymptomsStep: React.FC<{
   progress: number;
 }> = ({ symptoms, setSymptoms, severityValue, setSeverityValue, onSubmit, isAnalyzing, isProcessing, progress }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 container-responsive py-4">
-      <div className="max-w-lg mx-auto spacing-responsive">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-4">
+      <div className="max-w-2xl mx-auto space-y-6">
         {/* Progress Header */}
-        <div className="glass-card">
-          <div className="flex items-center justify-between mb-2 sm:mb-3">
-            <h2 className="text-responsive-base font-semibold text-white">Health Assessment</h2>
-            <span className="text-responsive-xs text-gray-400">{Math.round(progress)}% Complete</span>
+        <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl p-6 shadow-lg">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Health Assessment</h2>
+            <span className="text-sm text-gray-600 dark:text-gray-400">{Math.round(progress)}% Complete</span>
           </div>
-          <Progress value={progress} className="h-2 bg-gray-700" />
+          <Progress 
+            value={progress} 
+            className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden"
+          />
         </div>
 
         {/* Main Content */}
-        <div className="glass-card spacing-responsive">
-          <div className="text-center spacing-responsive">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto">
-              <Activity className="icon-responsive text-white" />
+        <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl p-8 shadow-lg">
+          <div className="text-center space-y-6">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto">
+              <Activity className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h1 className="text-responsive-lg font-bold text-white mb-1">Describe Your Symptoms</h1>
-              <p className="text-responsive-xs text-gray-400">Be as detailed as possible for better assessment</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Describe Your Symptoms</h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Be as detailed as possible for better assessment</p>
             </div>
           </div>
 
-          <div className="spacing-responsive">
-            <div className="space-y-2">
-              <label className="block text-responsive-xs font-medium text-gray-300">Tell us about your symptoms</label>
+          <div className="space-y-6 mt-8">
+            <div className="space-y-3">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tell us about your symptoms</label>
               <Textarea
                 value={symptoms}
                 onChange={(e) => setSymptoms(e.target.value)}
                 placeholder="Example: I've been experiencing persistent headaches for 3 days, along with fatigue and mild nausea..."
-                className="min-h-[100px] sm:min-h-[120px] bg-gray-700/50 border-gray-600 focus:border-blue-500 text-white placeholder-gray-400 rounded-lg resize-none text-sm"
+                className="min-h-[120px] bg-white/50 dark:bg-gray-800/50 border-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 rounded-xl resize-none"
                 rows={4}
                 disabled={isProcessing}
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <label className="block text-xs font-medium text-gray-300">Duration</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Duration</label>
                 <select 
                   disabled={isProcessing}
-                  className="w-full p-2 rounded-lg border border-gray-600 bg-gray-700/50 text-white text-sm focus:border-blue-500"
+                  className="w-full p-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400"
                 >
                   <option>Select duration</option>
                   <option>Less than 1 day</option>
@@ -194,9 +188,9 @@ const SymptomsStep: React.FC<{
                 </select>
               </div>
               
-              <div className="space-y-2">
-                <label className="block text-xs font-medium text-gray-300">Severity: {severityValue[0]}/10</label>
-                <div className="px-1 py-2">
+              <div className="space-y-3">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Severity: {severityValue[0]}/10</label>
+                <div className="px-2 py-3">
                   <Slider
                     value={severityValue}
                     onValueChange={setSeverityValue}
@@ -206,7 +200,7 @@ const SymptomsStep: React.FC<{
                     className="w-full"
                     disabled={isProcessing}
                   />
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-2">
                     <span>Mild</span>
                     <span>Severe</span>
                   </div>
@@ -217,9 +211,9 @@ const SymptomsStep: React.FC<{
             <Button 
               onClick={onSubmit}
               disabled={!symptoms.trim() || isAnalyzing || isProcessing}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white button-responsive font-medium rounded-xl shadow-lg"
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 px-6 font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
             >
-              <Send className="icon-responsive mr-2" />
+              <Send className="h-5 w-5 mr-2" />
               {isAnalyzing || isProcessing ? 'Analyzing Symptoms...' : 'Start Analysis'}
             </Button>
           </div>
@@ -230,20 +224,23 @@ const SymptomsStep: React.FC<{
 };
 
 const AnalysisStep: React.FC<{ progress: number }> = ({ progress }) => (
-  <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center container-responsive">
-    <div className="max-w-sm w-full text-center spacing-responsive">
-      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto">
-        <Activity className="h-6 w-6 sm:h-8 sm:w-8 text-white animate-pulse" />
+  <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+    <div className="max-w-md w-full text-center space-y-6">
+      <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto">
+        <Activity className="h-10 w-10 text-white animate-pulse" />
       </div>
       
-      <div className="spacing-responsive">
-        <h1 className="text-responsive-lg font-bold text-white">Analyzing Your Health</h1>
-        <p className="text-gray-400 text-responsive-xs">Processing symptoms with AI medical knowledge</p>
+      <div className="space-y-4">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Analyzing Your Health</h1>
+        <p className="text-gray-600 dark:text-gray-400">Processing symptoms with AI medical knowledge</p>
       </div>
       
-      <div className="glass-card">
-        <Progress value={progress} className="h-2 bg-gray-700 mb-2" />
-        <p className="text-responsive-xs text-gray-400">Processing medical data...</p>
+      <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl p-6 shadow-lg">
+        <Progress 
+          value={progress} 
+          className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-3"
+        />
+        <p className="text-sm text-gray-600 dark:text-gray-400">Processing medical data...</p>
       </div>
     </div>
   </div>
@@ -279,19 +276,19 @@ const QuestionsStep: React.FC<{
   const viableDiseases = diseases.filter(d => d.confidence > 0).sort((a, b) => b.confidence - a.confidence);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 container-responsive py-4">
-      <div className="max-w-md mx-auto spacing-responsive">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-4">
+      <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-responsive-base font-bold text-white">Diagnostic Assessment</h1>
-            <p className="text-responsive-xs text-gray-400">Question {questionHistory.length + 1} • {viableDiseases.length} conditions</p>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Diagnostic Assessment</h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Question {questionHistory.length + 1} • {viableDiseases.length} conditions</p>
           </div>
           <Button
             onClick={restartDiagnosis}
             variant="outline"
             size="sm"
-            className="border-gray-600 text-gray-300 hover:bg-gray-700"
+            className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
             disabled={isProcessing}
           >
             <RotateCcw className="h-4 w-4" />
@@ -299,43 +296,46 @@ const QuestionsStep: React.FC<{
         </div>
 
         {/* Progress */}
-        <div className="glass-card p-3">
-          <Progress value={progress} className="h-2 bg-gray-700" />
+        <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl p-4 shadow-lg">
+          <Progress 
+            value={progress} 
+            className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden"
+          />
         </div>
 
         {/* Question Card */}
         {currentQuestion && (
-          <div className="glass-card spacing-responsive">
+          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl p-8 shadow-lg space-y-6">
             <div className="text-center">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3">
-                <MessageSquare className="icon-responsive text-white" />
+              <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <MessageSquare className="h-8 w-8 text-white" />
               </div>
               
-              <h2 className="text-responsive-base font-semibold text-white mb-2 sm:mb-3">Follow-up Question</h2>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Follow-up Question</h2>
               
-              <div className="bg-gray-700/50 p-3 sm:p-4 rounded-lg border border-gray-600">
-                <p className="text-white leading-relaxed text-responsive-sm">{currentQuestion.text}</p>
+              <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl border border-gray-200 dark:border-gray-600">
+                <p className="text-gray-900 dark:text-white leading-relaxed">{currentQuestion.text}</p>
               </div>
             </div>
             
             {!showCustomAnswer ? (
-              <div className="spacing-responsive">
+              <div className="space-y-4">
                 {currentQuestion.type === 'yes_no' && (
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-4">
                     <Button 
                       onClick={() => handleAnswerQuestion('yes')}
-                      className="bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white button-responsive rounded-xl"
+                      className="bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 px-6 rounded-xl"
                       disabled={isProcessing}
                     >
-                      <CheckCircle className="icon-responsive mr-2" />
+                      <CheckCircle className="h-5 w-5 mr-2" />
                       Yes
                     </Button>
                     <Button 
                       onClick={() => handleAnswerQuestion('no')}
-                      className="bg-gradient-to-br from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white button-responsive rounded-xl"
+                      className="bg-gradient-to-br from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white py-3 px-6 rounded-xl"
                       disabled={isProcessing}
                     >
-                      <AlertTriangle className="icon-responsive mr-2" />
+                      <AlertTriangle className="h-5 w-5 mr-2" />
                       No
                     </Button>
                   </div>
@@ -344,28 +344,28 @@ const QuestionsStep: React.FC<{
                 <Button
                   onClick={() => setShowCustomAnswer(true)}
                   variant="outline"
-                  className="w-full border-gray-600 text-gray-300 hover:bg-gray-700 border-dashed"
+                  className="w-full border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border-dashed py-3"
                   disabled={isProcessing}
                 >
-                  <MessageSquare className="icon-responsive mr-2" />
+                  <MessageSquare className="h-5 w-5 mr-2" />
                   Write detailed answer
                 </Button>
               </div>
             ) : (
-              <div className="spacing-responsive">
+              <div className="space-y-4">
                 <Textarea
                   value={customAnswer}
                   onChange={(e) => setCustomAnswer(e.target.value)}
                   placeholder="Please provide more details..."
-                  className="min-h-[80px] bg-gray-700/50 border-gray-600 focus:border-blue-500 text-white placeholder-gray-400 rounded-lg resize-none text-sm"
+                  className="min-h-[100px] bg-white/50 dark:bg-gray-800/50 border-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 rounded-xl resize-none"
                   rows={3}
                   disabled={isProcessing}
                 />
-                <div className="flex space-x-2">
+                <div className="flex space-x-3">
                   <Button
                     onClick={handleCustomAnswerSubmit}
                     disabled={!customAnswer.trim() || isProcessing}
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-2 rounded-xl"
+                    className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 rounded-xl"
                   >
                     <Send className="h-4 w-4 mr-2" />
                     Submit
@@ -376,7 +376,7 @@ const QuestionsStep: React.FC<{
                       setCustomAnswer('');
                     }}
                     variant="outline"
-                    className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                    className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                     disabled={isProcessing}
                   >
                     Back
@@ -388,33 +388,36 @@ const QuestionsStep: React.FC<{
         )}
 
         {/* Active Conditions */}
-        <div className="glass-card">
-          <div className="flex items-center justify-between mb-2 sm:mb-3">
-            <h3 className="text-responsive-sm font-semibold text-white">Active Conditions</h3>
-            <Badge variant="outline" className="border-gray-600 text-gray-300 text-xs">{viableDiseases.length}</Badge>
+        <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl p-6 shadow-lg">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Active Conditions</h3>
+            <Badge variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">{viableDiseases.length}</Badge>
           </div>
           
-          <div className="space-y-2 max-h-40 sm:max-h-48 overflow-y-auto">
+          <div className="space-y-3 max-h-64 overflow-y-auto">
             {viableDiseases.map((disease, index) => (
-              <div key={disease.id} className="bg-gray-700/50 p-2 sm:p-3 rounded-lg border border-gray-600">
-                <div className="flex justify-between items-center mb-1 sm:mb-2">
-                  <div className="flex items-center space-x-2">
-                    <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-white font-bold text-xs ${
+              <div key={disease.id} className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-200 dark:border-gray-600">
+                <div className="flex justify-between items-center mb-3">
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
                       index === 0 ? 'bg-green-500' :
                       index === 1 ? 'bg-yellow-500' :
                       'bg-gray-500'
                     }`}>
                       {index + 1}
                     </div>
-                    <h4 className="font-medium text-white text-responsive-xs">{disease.name}</h4>
+                    <h4 className="font-medium text-gray-900 dark:text-white">{disease.name}</h4>
                   </div>
-                  <Badge className={`text-xs px-2 py-1 ${
+                  <Badge className={`px-3 py-1 ${
                     disease.confidence >= 60 ? 'bg-green-600 text-white' : 'bg-yellow-600 text-white'
                   }`}>
                     {Math.round(disease.confidence)}%
                   </Badge>
                 </div>
-                <Progress value={disease.confidence} className="h-1.5 bg-gray-600" />
+                <Progress 
+                  value={disease.confidence} 
+                  className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden"
+                />
               </div>
             ))}
           </div>
@@ -432,53 +435,53 @@ const ResultsStep: React.FC<{
   const topDisease = sortedDiseases[0];
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 container-responsive py-4 sm:py-8">
-      <div className="max-w-md mx-auto spacing-responsive">
-        <div className="text-center spacing-responsive">
-          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto">
-            <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-4">
+      <div className="max-w-2xl mx-auto space-y-6">
+        <div className="text-center space-y-6">
+          <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto">
+            <CheckCircle className="h-10 w-10 text-white" />
           </div>
           <div>
-            <h1 className="text-responsive-lg font-bold text-white mb-1 sm:mb-2">Assessment Complete</h1>
-            <p className="text-gray-400 text-responsive-xs">Based on your symptoms and responses</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Assessment Complete</h1>
+            <p className="text-gray-600 dark:text-gray-400">Based on your symptoms and responses</p>
           </div>
         </div>
 
         {/* Main Result */}
-        <div className="bg-gradient-to-br from-green-900/40 to-emerald-900/40 border border-green-700/50 rounded-lg sm:rounded-xl p-4 sm:p-5 spacing-responsive">
-          <div className="flex items-center justify-between mb-2 sm:mb-4">
-            <div className="flex items-center space-x-2">
-              <Target className="icon-responsive text-green-400" />
-              <h2 className="text-responsive-base font-semibold text-green-100">Most Likely:</h2>
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-700/50 rounded-2xl p-8 shadow-lg">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-3">
+              <Target className="h-6 w-6 text-green-600 dark:text-green-400" />
+              <h2 className="text-xl font-semibold text-green-900 dark:text-green-100">Most Likely:</h2>
             </div>
-            <Badge className="bg-green-600 text-white text-xs px-2 sm:px-3 py-1">
+            <Badge className="bg-green-600 text-white px-4 py-2">
               {Math.round(topDisease?.confidence || 0)}% Confidence
             </Badge>
           </div>
           
           <div>
-            <h3 className="text-responsive-lg font-bold text-white mb-1 sm:mb-2">{topDisease?.name}</h3>
-            <p className="text-green-200 text-responsive-xs leading-relaxed">{topDisease?.description}</p>
+            <h3 className="text-2xl font-bold text-green-900 dark:text-white mb-3">{topDisease?.name}</h3>
+            <p className="text-green-800 dark:text-green-200 leading-relaxed">{topDisease?.description}</p>
           </div>
         </div>
 
         {/* Complete Results */}
-        <div className="glass-card spacing-responsive">
-          <h3 className="text-responsive-sm font-semibold text-white mb-2 sm:mb-3">Complete Assessment Results:</h3>
-          <div className="space-y-2">
+        <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl p-6 shadow-lg">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Complete Assessment Results:</h3>
+          <div className="space-y-3">
             {sortedDiseases.map((disease, index) => (
-              <div key={disease.id} className="flex justify-between items-center p-2 sm:p-3 bg-gray-700/50 rounded-lg">
-                <div className="flex items-center space-x-2">
-                  <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-white font-bold text-xs ${
+              <div key={disease.id} className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
+                <div className="flex items-center space-x-3">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
                     index === 0 ? 'bg-green-500' :
                     index === 1 ? 'bg-yellow-500' :
                     'bg-gray-500'
                   }`}>
                     {index + 1}
                   </div>
-                  <span className="font-medium text-white text-responsive-xs">{disease.name}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{disease.name}</span>
                 </div>
-                <Badge variant="outline" className="border-gray-500 text-gray-300 text-xs">
+                <Badge variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
                   {Math.round(disease.confidence)}%
                 </Badge>
               </div>
@@ -487,13 +490,13 @@ const ResultsStep: React.FC<{
         </div>
 
         {/* Disclaimer */}
-        <div className="bg-orange-900/40 border border-orange-700/50 rounded-lg sm:rounded-xl p-3 sm:p-4">
-          <div className="flex items-start space-x-2">
-            <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-orange-400 flex-shrink-0 mt-0.5" />
+        <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700/50 rounded-2xl p-6">
+          <div className="flex items-start space-x-3">
+            <AlertTriangle className="h-6 w-6 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
             <div>
-              <h4 className="font-medium text-orange-200 text-responsive-xs mb-1">Important Medical Disclaimer</h4>
-              <p className="text-orange-300 text-xs leading-relaxed">
-                This AI assessment is for informational purposes only. Always consult with a qualified healthcare professional.
+              <h4 className="font-medium text-orange-900 dark:text-orange-200 mb-2">Important Medical Disclaimer</h4>
+              <p className="text-orange-800 dark:text-orange-300 text-sm leading-relaxed">
+                This AI assessment is for informational purposes only. Always consult with a qualified healthcare professional for proper diagnosis and treatment.
               </p>
             </div>
           </div>
@@ -501,9 +504,9 @@ const ResultsStep: React.FC<{
 
         <Button
           onClick={restartDiagnosis}
-          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white button-responsive font-medium rounded-xl"
+          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 px-6 font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
         >
-          <RotateCcw className="icon-responsive mr-2" />
+          <RotateCcw className="h-5 w-5 mr-2" />
           Start New Assessment
         </Button>
       </div>
