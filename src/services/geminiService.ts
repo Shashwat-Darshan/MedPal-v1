@@ -1,4 +1,5 @@
-import { makeParallelAPICalls, getChatResponseFromGemini } from './apiService';
+
+import { makeParallelAPICalls, getChatResponseFromGemini, transcribeAudioWithGroq } from './apiService';
 
 export interface Disease {
   id: string;
@@ -13,6 +14,9 @@ export interface ChatMessage {
   content: string;
   timestamp: Date;
 }
+
+// Export the functions from apiService
+export { getChatResponseFromGemini, transcribeAudioWithGroq };
 
 export const generateDiagnosisFromSymptoms = async (symptoms: string): Promise<Disease[]> => {
   const prompt = `Given the following symptoms: "${symptoms}", what are the possible diseases or conditions?
@@ -63,7 +67,10 @@ Create a synthesized JSON array that combines the best elements. Return ONLY val
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0]);
           console.log('Parsed diagnoses:', parsed);
-          return parsed;
+          return parsed.map((disease: any, index: number) => ({
+            id: `disease_${index + 1}`,
+            ...disease
+          }));
         }
         throw new Error('Invalid diagnosis format in synthesized response');
       } catch (parseError) {
@@ -204,4 +211,11 @@ export const chatAboutDiagnosis = async (
     console.error('Error in chat about diagnosis:', error);
     return 'Sorry, I encountered an error. Please try again.';
   }
+};
+
+// Export geminiService object for backward compatibility
+export const geminiService = {
+  chatAboutDiagnosis,
+  generateDiagnosisFromSymptoms,
+  generateFollowUpQuestion
 };

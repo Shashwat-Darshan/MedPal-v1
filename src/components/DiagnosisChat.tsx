@@ -1,11 +1,10 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageSquare, Send, Bot, User } from 'lucide-react';
-import { geminiService, Disease, ChatMessage } from '@/services/geminiService';
+import { chatAboutDiagnosis, Disease, ChatMessage } from '@/services/geminiService';
 import LoadingSpinner from './LoadingSpinner';
 
 interface DiagnosisChatProps {
@@ -57,7 +56,7 @@ All considered conditions: ${allDiseases.map(d => `${d.name} (${d.confidence}%)`
     setIsLoading(true);
 
     try {
-      const response = await geminiService.chatAboutDiagnosis(
+      const response = await chatAboutDiagnosis(
         diagnosisContext,
         inputMessage,
         messages
