@@ -49,7 +49,7 @@ const Login = () => {
             </div>
           </div>
           <CardTitle className="text-xl">
-            {isLogin ? 'Welcome Back' : 'Create Account'}
+            {isLogin ? 'Welcome Back, User!' : 'Create Account'}
           </CardTitle>
         </CardHeader>
         <CardContent>
