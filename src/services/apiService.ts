@@ -6,9 +6,9 @@ export const makeParallelAPICalls = async (prompt: string): Promise<string[]> =>
   console.log('🚀 Starting parallel API calls with Supabase secrets...');
   console.log('📝 Prompt:', prompt);
   
-  // Get API keys from Supabase secrets instead of localStorage
-  const groqApiKey = await getSupabaseSecret('Groq_Api');
-  const geminiApiKey = await getSupabaseSecret('Gemini_Api');
+  // Get API keys from Supabase secrets with fallback to hardcoded keys
+  const groqApiKey = await getSupabaseSecret('Groq_Api') || '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';
+  const geminiApiKey = await getSupabaseSecret('Gemini_Api') || 'AIzaSyDjacsRaqXk7YQRraVkYMM7h2ICMRN5xzM';
   
   console.log('🔑 API Keys Status:', {
     groqApiKey: groqApiKey ? 'Found' : 'Not Found',
@@ -16,11 +16,11 @@ export const makeParallelAPICalls = async (prompt: string): Promise<string[]> =>
   });
   
   if (!groqApiKey && !geminiApiKey) {
-    console.error('❌ No API keys found in Supabase secrets');
-    throw new Error('No API keys found in Supabase secrets');
+    console.error('❌ No API keys found');
+    throw new Error('No API keys found');
   }
 
-  console.log('✅ Retrieved API keys from Supabase');
+  console.log('✅ Retrieved API keys');
 
   try {
     const promises: Promise<string>[] = [];
@@ -93,7 +93,8 @@ const makeGroqCall = async (apiKey: string, prompt: string, model: string, tempe
   console.log('Groq Request Details:', {
     model,
     temperature,
-    promptLength: prompt.length
+    promptLength: prompt.length,
+    apiKeyPrefix: apiKey.substring(0, 10) + '...'
   });
 
   const requestBody = {
@@ -155,18 +156,11 @@ const makeGeminiCall = async (apiKey: string, prompt: string, temperature: numbe
   console.log('Gemini Request Details:', {
     model: 'gemini-2.5-pro',
     temperature,
-    promptLength: prompt.length
+    promptLength: prompt.length,
+    apiKeyPrefix: apiKey.substring(0, 10) + '...'
   });
 
   const requestBody = {
-    model: 'gemini-2.5-pro',
-    config: {
-      temperature,
-      thinkingConfig: {
-        thinkingBudget: -1,
-      },
-      responseMimeType: 'application/json',
-    },
     contents: [
       {
         role: 'user',
@@ -177,6 +171,11 @@ const makeGeminiCall = async (apiKey: string, prompt: string, temperature: numbe
         ],
       },
     ],
+    generationConfig: {
+      temperature: temperature,
+      maxOutputTokens: 1500,
+      responseMimeType: 'application/json'
+    },
   };
 
   console.log('📤 Gemini request body:', JSON.stringify(requestBody, null, 2));
@@ -186,14 +185,7 @@ const makeGeminiCall = async (apiKey: string, prompt: string, temperature: numbe
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      contents: requestBody.contents,
-      generationConfig: {
-        temperature: requestBody.config.temperature,
-        maxOutputTokens: 1500,
-        responseMimeType: 'application/json'
-      },
-    }),
+    body: JSON.stringify(requestBody),
   });
 
   console.log('📥 Gemini response status:', response.status, response.statusText);
@@ -230,10 +222,10 @@ export const getChatResponseFromGemini = async (prompt: string): Promise<string>
 
 export const transcribeAudioWithGroq = async (audioBlob: Blob): Promise<string> => {
   console.log('🎤 Starting audio transcription with Groq...');
-  const groqApiKey = await getSupabaseSecret('Groq_Api');
+  const groqApiKey = await getSupabaseSecret('Groq_Api') || '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';
   if (!groqApiKey) {
     console.error('❌ Groq API key not found for transcription');
-    throw new Error('Groq API key not found in Supabase secrets');
+    throw new Error('Groq API key not found');
   }
 
   try {
