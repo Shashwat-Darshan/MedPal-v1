@@ -32,66 +32,75 @@ const extractJsonFromResponse = (response: string): any => {
 };
 
 export const generateDiagnosisFromSymptoms = async (symptoms: string): Promise<Disease[]> => {
-  const prompt = `Given the following symptoms: "${symptoms}", what are the possible diseases or conditions?
-  Return a JSON array of diagnoses with name, confidence (0-100), description, and potential symptoms.
-  Be as accurate as possible.
-  
-  CRITICAL: Return ONLY valid JSON in this exact format:
-  [
-    {
-      "name": "Disease Name",
-      "confidence": 85,
-      "description": "A brief description of the disease.",
-      "symptoms": ["symptom1", "symptom2"]
-    }
-  ]`;
+  const prompt = `Analyze these symptoms: "${symptoms}"
+
+Create exactly 5 possible medical conditions with confidence scores based on the provided symptoms.
+
+CRITICAL: Return ONLY valid JSON in this exact format:
+[
+  {
+    "name": "Condition Name",
+    "confidence": 75,
+    "description": "Brief medical description of the condition.",
+    "symptoms": ["symptom1", "symptom2", "symptom3"]
+  },
+  {
+    "name": "Another Condition",
+    "confidence": 60,
+    "description": "Brief medical description.",
+    "symptoms": ["symptom1", "symptom2"]
+  }
+]
+
+Requirements:
+- Exactly 5 conditions
+- Confidence scores should realistically reflect symptom match (0-100)
+- Include relevant symptoms for each condition
+- Be medically accurate but general (not specific diagnoses)`;
 
   try {
-    console.log('Attempting parallel API calls for diagnosis generation...');
+    console.log('Generating initial diagnosis from symptoms...');
     const responses = await makeParallelAPICalls(prompt);
-
-    if (responses.length >= 1) {
-      // Use the first response, or synthesize if we have multiple
-      let finalResponse = responses[0];
-      
-      if (responses.length >= 2) {
-        console.log('Using Gemini for critical thinking analysis...');
-        const criticalThinkingPrompt = `Analyze these diagnosis responses and create the best diagnosis list:
+    
+    let finalResponse = responses[0];
+    
+    if (responses.length >= 2) {
+      console.log('Synthesizing multiple responses...');
+      const synthesisPrompt = `Analyze these medical assessment responses and create the best combined result:
 
 Response 1: ${responses[0]}
 Response 2: ${responses[1]}
 
-Create a synthesized JSON array that combines the best elements. Return ONLY valid JSON:
+Create a synthesized JSON array of exactly 5 conditions that combines the best medical insights. Return ONLY valid JSON:
 [
   {
-    "name": "Disease Name",
-    "confidence": 85,
-    "description": "A brief description of the disease.",
+    "name": "Condition Name",
+    "confidence": 75,
+    "description": "Brief description",
     "symptoms": ["symptom1", "symptom2"]
   }
 ]`;
 
-        try {
-          finalResponse = await getChatResponseFromGemini(criticalThinkingPrompt);
-        } catch (synthError) {
-          console.warn('Synthesis failed, using first response:', synthError);
-          finalResponse = responses[0];
-        }
+      try {
+        finalResponse = await getChatResponseFromGemini(synthesisPrompt);
+      } catch (synthError) {
+        console.warn('Synthesis failed, using first response:', synthError);
+        finalResponse = responses[0];
       }
+    }
 
-      console.log('Raw API response:', finalResponse);
+    console.log('Raw diagnosis response:', finalResponse);
 
-      const parsed = extractJsonFromResponse(finalResponse);
-      if (parsed && Array.isArray(parsed)) {
-        console.log('Parsed diagnoses:', parsed);
-        return parsed.map((disease: any, index: number) => ({
-          id: `disease_${index + 1}`,
-          name: disease.name || 'Unknown Disease',
-          confidence: disease.confidence || 50,
-          description: disease.description || 'No description available',
-          symptoms: Array.isArray(disease.symptoms) ? disease.symptoms : [symptoms]
-        }));
-      }
+    const parsed = extractJsonFromResponse(finalResponse);
+    if (parsed && Array.isArray(parsed)) {
+      console.log('Parsed diagnoses:', parsed);
+      return parsed.map((disease: any, index: number) => ({
+        id: `disease_${index + 1}`,
+        name: disease.name || 'Unknown Condition',
+        confidence: Math.min(100, Math.max(0, disease.confidence || 30)),
+        description: disease.description || 'No description available',
+        symptoms: Array.isArray(disease.symptoms) ? disease.symptoms : [symptoms]
+      }));
     }
     
     console.warn('Falling back to default diagnosis');
@@ -107,15 +116,36 @@ const generateFallbackDiagnosis = (symptoms: string): Disease[] => {
     {
       id: 'disease_1',
       name: 'General Health Concern',
-      confidence: 60,
+      confidence: 50,
       description: 'Based on the symptoms provided, this appears to be a general health concern that should be evaluated by a healthcare professional.',
       symptoms: [symptoms]
     },
     {
       id: 'disease_2',
       name: 'Stress-Related Condition',
-      confidence: 40,
+      confidence: 35,
       description: 'Symptoms may be related to stress or lifestyle factors.',
+      symptoms: [symptoms]
+    },
+    {
+      id: 'disease_3',
+      name: 'Minor Infection',
+      confidence: 30,
+      description: 'Could be related to a minor viral or bacterial infection.',
+      symptoms: [symptoms]
+    },
+    {
+      id: 'disease_4',
+      name: 'Allergic Reaction',
+      confidence: 25,
+      description: 'May be an allergic response to environmental factors.',
+      symptoms: [symptoms]
+    },
+    {
+      id: 'disease_5',
+      name: 'Fatigue Syndrome',
+      confidence: 20,
+      description: 'Could be related to fatigue or sleep-related issues.',
       symptoms: [symptoms]
     }
   ];
@@ -128,68 +158,77 @@ export const generateFollowUpQuestion = async (
   answerHistory: string[],
   previousQuestion: string = ''
 ): Promise<{ question: string; diseaseImpacts: Record<string, number> }> => {
-  console.log('Attempting parallel API calls for question generation...');
+  console.log('Generating targeted follow-up question...');
 
-  const diseaseList = diseases.map(d => `${d.name}: ${d.confidence}%`).join(', ');
-  const historyContext = questionHistory.length > 0 
-    ? `Previous questions asked: ${questionHistory.join(', ')}. Previous answers: ${answerHistory.join(', ')}.`
+  const topDiseases = diseases.sort((a, b) => b.confidence - a.confidence).slice(0, 3);
+  const diseaseContext = topDiseases.map(d => `${d.name}: ${d.confidence}%`).join(', ');
+  
+  const conversationHistory = questionHistory.length > 0 
+    ? `Previous questions: ${questionHistory.join(' | ')}. Previous answers: ${answerHistory.join(' | ')}.`
     : '';
 
-  const prompt = `Based on these symptoms: "${symptoms}" and current disease probabilities: ${diseaseList}. ${historyContext}
+  const prompt = `Medical Context:
+- Original symptoms: "${symptoms}"
+- Current top conditions: ${diseaseContext}
+- ${conversationHistory}
 
-Generate a specific follow-up question to help differentiate between the most likely conditions. 
+Generate ONE specific diagnostic question to differentiate between the top conditions. The question should help boost confidence in the correct diagnosis.
 
-CRITICAL: Return ONLY valid JSON in this exact format:
+Example approach: If user has "sore eye" → ask "Did you have any recent eye trauma or injury, or when did you last touch/rub your eyes?"
+
+CRITICAL: Return ONLY valid JSON:
 {
   "question": "Your specific diagnostic question here?",
   "diseaseImpacts": {
-    "Disease Name 1": 15,
-    "Disease Name 2": -10,
-    "Disease Name 3": 5
+    "${topDiseases[0]?.name}": 12,
+    "${topDiseases[1]?.name}": -8,
+    "${topDiseases[2]?.name}": 5
   }
 }
 
-The question should be clear, specific, and help distinguish between the top conditions. Disease impacts should be between -20 and +20.`;
+Rules:
+- Question should be clear and specific
+- Disease impacts should be realistic (-15 to +15)
+- Focus on differentiating between top conditions`;
 
   try {
     const responses = await makeParallelAPICalls(prompt);
     
-    if (responses.length >= 1) {
-      let finalResponse = responses[0];
-      
-      if (responses.length >= 2) {
-        console.log('Using Gemini for critical thinking analysis...');
-        const criticalThinkingPrompt = `Analyze these question generation responses and create the best diagnostic question:
+    let finalResponse = responses[0];
+    
+    if (responses.length >= 2) {
+      console.log('Synthesizing question responses...');
+      const synthesisPrompt = `Analyze these diagnostic question responses:
 
 Response 1: ${responses[0]}
 Response 2: ${responses[1]}
 
-Create a synthesized question that combines the best elements. Return ONLY valid JSON:
+Create the best diagnostic question. Return ONLY valid JSON:
 {
-  "question": "Your synthesized question?",
+  "question": "Best diagnostic question?",
   "diseaseImpacts": {
-    "${diseases[0]?.name || 'Disease 1'}": 10,
-    "${diseases[1]?.name || 'Disease 2'}": -5
+    "${topDiseases[0]?.name}": 10,
+    "${topDiseases[1]?.name}": -5,
+    "${topDiseases[2]?.name}": 3
   }
 }`;
 
-        try {
-          finalResponse = await getChatResponseFromGemini(criticalThinkingPrompt);
-        } catch (synthError) {
-          console.warn('Question synthesis failed, using first response:', synthError);
-          finalResponse = responses[0];
-        }
+      try {
+        finalResponse = await getChatResponseFromGemini(synthesisPrompt);
+      } catch (synthError) {
+        console.warn('Question synthesis failed, using first response:', synthError);
+        finalResponse = responses[0];
       }
+    }
 
-      console.log('Raw question response:', finalResponse);
+    console.log('Raw question response:', finalResponse);
 
-      const parsed = extractJsonFromResponse(finalResponse);
-      if (parsed && parsed.question && parsed.diseaseImpacts) {
-        return {
-          question: parsed.question,
-          diseaseImpacts: parsed.diseaseImpacts
-        };
-      }
+    const parsed = extractJsonFromResponse(finalResponse);
+    if (parsed && parsed.question && parsed.diseaseImpacts) {
+      return {
+        question: parsed.question,
+        diseaseImpacts: parsed.diseaseImpacts
+      };
     }
     
     console.warn('Falling back to default question');
@@ -203,30 +242,32 @@ Create a synthesized question that combines the best elements. Return ONLY valid
 const generateFallbackQuestion = (diseases: Disease[]): { question: string; diseaseImpacts: Record<string, number> } => {
   const fallbackQuestions = [
     {
-      question: "Are you experiencing any nausea or sensitivity to light along with your symptoms?",
-      impacts: { "Migraine": 15, "Tension Headache": -5, "Sinusitis": 0 }
+      question: "When did these symptoms first start, and have they gotten worse or better over time?",
+      impacts: [12, -5, 8, -3, 5]
     },
     {
-      question: "Is the pain constant or does it come and go?",
-      impacts: { "Migraine": 10, "Cluster Headache": 15, "Tension Headache": -5 }
+      question: "Are you experiencing any fever, chills, or body aches along with these symptoms?",
+      impacts: [15, -8, 10, -5, 3]
     },
     {
-      question: "Does the pain feel like pressure or tightness?",
-      impacts: { "Tension Headache": 15, "Migraine": -10, "Sinusitis": 5 }
+      question: "Have you been exposed to anyone sick recently, or been in crowded places?",
+      impacts: [8, 12, -6, 4, -2]
     },
     {
-      question: "Have you noticed any triggers that make the symptoms worse?",
-      impacts: { "Migraine": 12, "Stress-Related": 8, "General Health Concern": -3 }
+      question: "Does anything specific make your symptoms better or worse (food, activity, rest)?",
+      impacts: [10, -4, 12, -8, 6]
+    },
+    {
+      question: "Are you taking any medications or have any known allergies?",
+      impacts: [-3, 8, -5, 15, -2]
     }
   ];
 
   const randomQuestion = fallbackQuestions[Math.floor(Math.random() * fallbackQuestions.length)];
   
-  // Map disease names to actual diseases
   const diseaseImpacts: Record<string, number> = {};
-  diseases.forEach((disease, index) => {
-    const fallbackImpact = Object.values(randomQuestion.impacts)[index] || 0;
-    diseaseImpacts[disease.name] = fallbackImpact;
+  diseases.slice(0, 5).forEach((disease, index) => {
+    diseaseImpacts[disease.name] = randomQuestion.impacts[index] || 0;
   });
   
   return {
