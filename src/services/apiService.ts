@@ -13,47 +13,54 @@ export const makeParallelAPICalls = async (prompt: string): Promise<string[]> =>
   try {
     // Make two parallel calls to Groq for better results
     const promises = [
-      fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${groqApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'llama-3.1-70b-versatile',
-          messages: [{ role: 'user', content: prompt }],
-          temperature: 0.7,
-          max_tokens: 1000,
-        }),
-      }),
-      fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${groqApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'llama-3.1-8b-instant',
-          messages: [{ role: 'user', content: prompt }],
-          temperature: 0.8,
-          max_tokens: 1000,
-        }),
-      })
+      makeGroqCall(groqApiKey, prompt, 'llama-3.1-70b-versatile', 0.7),
+      makeGroqCall(groqApiKey, prompt, 'llama-3.1-8b-instant', 0.8)
     ];
 
-    const responses = await Promise.all(promises);
-    const results = await Promise.all(responses.map(r => r.json()));
-    
-    const validResponses = results
-      .filter(result => result.choices && result.choices[0])
-      .map(result => result.choices[0].message.content);
+    const responses = await Promise.allSettled(promises);
+    const successfulResponses = responses
+      .filter((result): result is PromiseFulfilledResult<string> => result.status === 'fulfilled')
+      .map(result => result.value);
 
-    console.log('Received', validResponses.length, 'successful responses');
-    return validResponses;
+    console.log('Received', successfulResponses.length, 'successful responses');
+    
+    if (successfulResponses.length === 0) {
+      throw new Error('All API calls failed');
+    }
+    
+    return successfulResponses;
   } catch (error) {
     console.error('Error in parallel API calls:', error);
     throw error;
   }
+};
+
+const makeGroqCall = async (apiKey: string, prompt: string, model: string, temperature: number): Promise<string> => {
+  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model,
+      messages: [{ role: 'user', content: prompt }],
+      temperature,
+      max_tokens: 1500,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`API call failed: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  
+  if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+    throw new Error('Invalid response format');
+  }
+  
+  return data.choices[0].message.content;
 };
 
 export const getChatResponseFromGemini = async (prompt: string): Promise<string> => {
@@ -63,28 +70,9 @@ export const getChatResponseFromGemini = async (prompt: string): Promise<string>
   }
 
   try {
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${groqApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'llama-3.1-70b-versatile',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.7,
-        max_tokens: 1500,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`API call failed: ${response.statusText}`);
-    }
-
-    const data = await response.json();
+    const response = await makeGroqCall(groqApiKey, prompt, 'llama-3.1-70b-versatile', 0.7);
     console.log('Critical thinking synthesis completed');
-    
-    return data.choices[0].message.content;
+    return response;
   } catch (error) {
     console.error('Error in getChatResponseFromGemini:', error);
     throw error;
