@@ -1,4 +1,4 @@
-import { makeParallelAPICalls, getChatResponseFromGemini, transcribeAudioWithGroq } from './apiService';
+import { getChatResponseFromGemini } from './apiService';
 
 export interface Disease {
   id: string;
@@ -14,8 +14,8 @@ export interface ChatMessage {
   timestamp: Date;
 }
 
-// Export the functions from apiService for backward compatibility
-export { getChatResponseFromGemini, transcribeAudioWithGroq };
+// Export the function from apiService for backward compatibility
+export { getChatResponseFromGemini };
 
 const extractJsonFromResponse = (response: string): any => {
   console.log('🔍 Extracting JSON from response:', response);
@@ -71,40 +71,9 @@ Requirements:
   console.log('📤 Sending diagnosis prompt:', prompt);
 
   try {
-    console.log('🚀 Generating initial diagnosis from symptoms...');
-    const responses = await makeParallelAPICalls(prompt);
-    console.log('📥 Received responses:', responses);
-    
-    let finalResponse = responses[0];
-    console.log('🎯 Using primary response:', finalResponse);
-    
-    if (responses.length >= 2) {
-      console.log('🔄 Multiple responses available, attempting synthesis...');
-      const synthesisPrompt = `Analyze these medical assessment responses and create the best combined result:
-
-Response 1: ${responses[0]}
-Response 2: ${responses[1]}
-
-Create a synthesized JSON array of exactly 5 conditions that combines the best medical insights. Return ONLY valid JSON:
-[
-  {
-    "name": "Condition Name",
-    "confidence": 75,
-    "description": "Brief description",
-    "symptoms": ["symptom1", "symptom2"]
-  }
-]`;
-
-      console.log('📤 Sending synthesis prompt:', synthesisPrompt);
-
-      try {
-        finalResponse = await getChatResponseFromGemini(synthesisPrompt);
-        console.log('✅ Synthesis successful:', finalResponse);
-      } catch (synthError) {
-        console.warn('⚠️ Synthesis failed, using first response:', synthError);
-        finalResponse = responses[0];
-      }
-    }
+    console.log('🚀 Generating diagnosis from symptoms...');
+    const finalResponse = await getChatResponseFromGemini(prompt);
+    console.log('📥 Received response:', finalResponse);
 
     console.log('📄 Final raw diagnosis response:', finalResponse);
 
@@ -234,39 +203,9 @@ Rules:
   console.log('📤 Sending question generation prompt:', prompt);
 
   try {
-    const responses = await makeParallelAPICalls(prompt);
-    console.log('📥 Received question responses:', responses);
-    
-    let finalResponse = responses[0];
-    console.log('🎯 Using primary question response:', finalResponse);
-    
-    if (responses.length >= 2) {
-      console.log('🔄 Multiple question responses, attempting synthesis...');
-      const synthesisPrompt = `Analyze these diagnostic question responses:
-
-Response 1: ${responses[0]}
-Response 2: ${responses[1]}
-
-Create the best diagnostic question. Return ONLY valid JSON:
-{
-  "question": "Best diagnostic question?",
-  "diseaseImpacts": {
-    "${topDiseases[0]?.name}": 10,
-    "${topDiseases[1]?.name}": -5,
-    "${topDiseases[2]?.name}": 3
-  }
-}`;
-
-      console.log('📤 Sending question synthesis prompt:', synthesisPrompt);
-
-      try {
-        finalResponse = await getChatResponseFromGemini(synthesisPrompt);
-        console.log('✅ Question synthesis successful:', finalResponse);
-      } catch (synthError) {
-        console.warn('⚠️ Question synthesis failed, using first response:', synthError);
-        finalResponse = responses[0];
-      }
-    }
+    console.log('🚀 Generating follow-up question...');
+    const finalResponse = await getChatResponseFromGemini(prompt);
+    console.log('📥 Received question response:', finalResponse);
 
     console.log('📄 Final raw question response:', finalResponse);
 
