@@ -1,4 +1,6 @@
 import { getChatResponseFromGemini } from './apiService';
+// Add imports for Groq and Mistral provider logic
+import { groqProvider, mistralProvider, geminiProvider } from './apiService';
 
 export interface Disease {
   id: string;
@@ -18,62 +20,59 @@ export interface ChatMessage {
 export { getChatResponseFromGemini };
 
 const extractJsonFromResponse = (response: string): any => {
-  console.log('🔍 Extracting JSON from response:', response);
+  const isFastMode = localStorage.getItem('medpal_fast_mode') === 'true';
+  
+  if (!isFastMode) {
+    console.log('🔍 Extracting JSON from response:', response);
+  }
   
   // Try to find JSON in the response
   const jsonMatch = response.match(/\[[\s\S]*\]/) || response.match(/\{[\s\S]*\}/);
   if (jsonMatch) {
-    console.log('📋 Found JSON match:', jsonMatch[0]);
+    if (!isFastMode) {
+      console.log('📋 Found JSON match:', jsonMatch[0]);
+    }
     try {
       const parsed = JSON.parse(jsonMatch[0]);
-      console.log('✅ Successfully parsed JSON:', parsed);
+      if (!isFastMode) {
+        console.log('✅ Successfully parsed JSON:', parsed);
+      }
       return parsed;
     } catch (e) {
       console.error('❌ Failed to parse JSON:', e);
       console.error('Raw JSON string:', jsonMatch[0]);
     }
   } else {
-    console.warn('⚠️ No JSON pattern found in response');
+    if (!isFastMode) {
+      console.warn('⚠️ No JSON pattern found in response');
+    }
   }
   return null;
 };
 
 export const generateDiagnosisFromSymptoms = async (symptoms: string): Promise<Disease[]> => {
-  console.log('🏥 ========== DIAGNOSIS GENERATION START ==========');
-  console.log('📝 Input symptoms:', symptoms);
+  const isFastMode = localStorage.getItem('medpal_fast_mode') === 'true';
+  
+  if (!isFastMode) {
+    console.log('🏥 Generating diagnosis for:', symptoms);
+  }
 
-  const prompt = `You are an experienced medical AI assistant. Analyze these symptoms: "${symptoms}"
+  const prompt = `Analyze symptoms: "${symptoms}"
 
-Based on the symptoms, provide a differential diagnosis with exactly 5 possible conditions. Consider the most likely medical explanations for the given symptoms.
-
-Return your analysis in this exact JSON format:
+Provide 5 possible conditions in JSON format:
 [
   {
-    "name": "Most Likely Condition Name",
+    "name": "Condition Name",
     "confidence": 65,
-    "description": "Clear medical explanation of why this condition fits the symptoms",
-    "symptoms": ["key symptom 1", "key symptom 2", "key symptom 3"]
-  },
-  {
-    "name": "Second Possibility",
-    "confidence": 45,
-    "description": "Medical reasoning for this condition",
-    "symptoms": ["relevant symptom 1", "relevant symptom 2"]
+    "description": "Brief medical explanation",
+    "symptoms": ["symptom1", "symptom2"]
   }
 ]
 
-Guidelines:
-- Order by likelihood (highest confidence first)
-- Confidence scores should reflect realistic medical assessment (most conditions 30-70%, rarely above 80% without tests)
-- Include common conditions before rare ones
-- Descriptions should explain the medical connection to symptoms
-- Use proper medical terminology but keep explanations clear
-- Consider age-appropriate conditions (assume adult if not specified)`;
+Order by likelihood, confidence 30-70%, common conditions first.`;
 
   try {
     const response = await getChatResponseFromGemini(prompt);
-    console.log('📄 Raw diagnosis response:', response);
-
     const parsed = extractJsonFromResponse(response);
     if (parsed && Array.isArray(parsed)) {
       const formattedDiseases = parsed.map((disease: any, index: number) => ({
@@ -84,7 +83,9 @@ Guidelines:
         symptoms: Array.isArray(disease.symptoms) ? disease.symptoms : [symptoms]
       }));
       
-      console.log('✅ Generated diagnoses:', formattedDiseases);
+      if (!isFastMode) {
+        console.log('✅ Diagnoses:', formattedDiseases.map(d => `${d.name} (${d.confidence}%)`));
+      }
       return formattedDiseases;
     }
     
@@ -96,7 +97,7 @@ Guidelines:
 };
 
 const generateFallbackDiagnosis = (symptoms: string): Disease[] => {
-  console.log('🔄 Generating fallback diagnosis for symptoms:', symptoms);
+  console.log('🔄 Using fallback diagnosis for:', symptoms);
   return [
     {
       id: 'disease_1',
@@ -143,7 +144,11 @@ export const generateFollowUpQuestion = async (
   answerHistory: string[],
   previousQuestion: string = ''
 ): Promise<{ question: string; diseaseImpacts: Record<string, number> }> => {
-  console.log('❓ ========== GENERATING INTELLIGENT FOLLOW-UP ==========');
+  const isFastMode = localStorage.getItem('medpal_fast_mode') === 'true';
+  
+  if (!isFastMode) {
+    console.log('❓ Generating follow-up question...');
+  }
   
   const topDiseases = diseases
     .filter(d => d.confidence > 10)
@@ -158,57 +163,77 @@ export const generateFollowUpQuestion = async (
     ? `\nPrevious questions asked: ${questionHistory.join(', ')}\nPrevious answers: ${answerHistory.join(', ')}`
     : '';
 
-  const prompt = `You are an experienced physician conducting a diagnostic interview. 
-
-Current Case:
-- Patient's symptoms: "${symptoms}"
-- Top differential diagnoses: 
-  1. ${topDiseases[0].name} (${topDiseases[0].confidence}% confidence)
-  2. ${topDiseases[1].name} (${topDiseases[1].confidence}% confidence)
-  ${topDiseases[2] ? `3. ${topDiseases[2].name} (${topDiseases[2].confidence}% confidence)` : ''}
+  const prompt = `Symptoms: "${symptoms}"
+Top conditions: ${topDiseases.map(d => `${d.name} (${d.confidence}%)`).join(', ')}
 ${conversationContext}
 
-Generate ONE highly specific follow-up question that will help distinguish between these conditions. The question should target key differentiating factors.
+Generate ONE follow-up question to distinguish between these conditions.
 
-Examples of good questions:
-- "Have you noticed any changes in your vision or sensitivity to light?"
-- "Does the pain worsen when you move your neck or turn your head?"
-- "Have you had any recent travel or exposure to sick individuals?"
-- "Do you experience symptoms more at certain times of day?"
-
-Return ONLY this JSON format:
+Return JSON:
 {
-  "question": "Your targeted diagnostic question?",
+  "question": "Your question?",
   "diseaseImpacts": {
     "${topDiseases[0].name}": 10,
     "${topDiseases[1].name}": -8,
-    "${topDiseases[2]?.name || 'Other'}": 5
+    "${topDiseases[2]?.name || 'Other'}": 10
   }
-}
+}`;
 
-The question should be:
-- Medically relevant and specific
-- Directly helpful for differential diagnosis
-- Not already covered in previous questions
-- Clear and easy to understand`;
+  // Fast mode: use Gemini directly
+  if (isFastMode) {
+    try {
+      const response = await getChatResponseFromGemini(prompt);
+      const parsed = extractJsonFromResponse(response);
+      if (parsed?.question && parsed?.diseaseImpacts) {
+        if (!isFastMode) {
+          console.log('✅ Question:', parsed.question);
+        }
+        return {
+          question: parsed.question,
+          diseaseImpacts: parsed.diseaseImpacts
+        };
+      }
+    } catch (error) {
+      console.error('Error generating follow-up question (fast mode):', error);
+    }
+    return generateTargetedFallback(diseases, symptoms, questionHistory);
+  }
 
+  // Multi-provider: try Groq, then Mistral, fallback to Gemini
+  const providers = [groqProvider, mistralProvider];
+  let lastError: Error | null = null;
+  for (const provider of providers) {
+    if (!provider.getApiKey()) continue;
+    try {
+      const response = await provider.makeRequest(prompt, 0.35);
+      const parsed = extractJsonFromResponse(response);
+      if (parsed?.question && parsed?.diseaseImpacts) {
+        console.log(`✅ Question from ${provider.name}:`, parsed.question);
+        return {
+          question: parsed.question,
+          diseaseImpacts: parsed.diseaseImpacts
+        };
+      }
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error('Unknown error');
+      console.warn(`⚠️ ${provider.name} failed for follow-up question:`, lastError.message);
+    }
+  }
+  // Fallback to Gemini if both fail
   try {
-    const response = await getChatResponseFromGemini(prompt);
+    const response = await geminiProvider.makeRequest(prompt, 0.35);
     const parsed = extractJsonFromResponse(response);
-    
     if (parsed?.question && parsed?.diseaseImpacts) {
-      console.log('✅ Generated targeted question:', parsed.question);
+      console.log('✅ Question from Gemini (fallback):', parsed.question);
       return {
         question: parsed.question,
         diseaseImpacts: parsed.diseaseImpacts
       };
     }
-    
-    return generateTargetedFallback(diseases, symptoms, questionHistory);
   } catch (error) {
-    console.error('Error generating follow-up question:', error);
-    return generateTargetedFallback(diseases, symptoms, questionHistory);
+    console.error('Gemini fallback failed for follow-up question:', error);
   }
+  return generateTargetedFallback(diseases, symptoms, questionHistory);
 };
 
 const generateTargetedFallback = (
@@ -216,7 +241,7 @@ const generateTargetedFallback = (
   symptoms: string, 
   questionHistory: string[]
 ): { question: string; diseaseImpacts: Record<string, number> } => {
-  console.log('🎯 Generating targeted fallback question');
+  console.log('🎯 Using fallback question');
   
   // Medical question banks based on common symptom patterns
   const medicalQuestions = [
@@ -287,7 +312,7 @@ const generateTargetedFallback = (
     diseaseImpacts[disease.name] = selectedQuestion.impacts[index] || 0;
   });
 
-  console.log('🎯 Selected targeted question:', selectedQuestion.question);
+  console.log('🎯 Question:', selectedQuestion.question);
   return {
     question: selectedQuestion.question,
     diseaseImpacts

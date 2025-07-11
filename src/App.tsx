@@ -15,6 +15,7 @@ import Dashboard from "./pages/Dashboard";
 import HealthChat from "./pages/HealthChat";
 import History from "./pages/History";
 import HealthMonitor from "./pages/HealthMonitor";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -61,6 +62,11 @@ const App = () => (
                   <Route path="/monitor" element={
                     <ProtectedRoute>
                       <HealthMonitor />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/settings" element={
+                    <ProtectedRoute>
+                      <Settings />
                     </ProtectedRoute>
                   } />
                   <Route path="*" element={<NotFound />} />

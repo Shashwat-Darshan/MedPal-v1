@@ -1,73 +1,126 @@
-# Welcome to your Lovable project
+# MedPal - AI-Powered Health Assistant
 
-## Project info
+A comprehensive health monitoring and AI-powered diagnostic assistant built with React, TypeScript, and Google Gemini AI.
 
-**URL**: https://lovable.dev/projects/e9c941d1-e838-40b2-adfb-c4236666e316
+## Features
 
-## How can I edit this code?
+- 🤖 **AI Health Assistant**: Powered by Google Gemini 1.5 Pro
+- 🏥 **Symptom Analysis**: Get potential diagnoses based on symptoms
+- 💬 **Intelligent Chat**: Interactive health conversations
+- 📊 **Health Monitoring**: Track your health metrics
+- 🎯 **Diagnostic Flow**: Step-by-step symptom analysis
+- 📱 **Responsive Design**: Works on desktop and mobile
+- 🌙 **Dark Mode**: Beautiful dark and light themes
 
-There are several ways of editing your application.
+## Quick Start
 
-**Use Lovable**
+### Prerequisites
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/e9c941d1-e838-40b2-adfb-c4236666e316) and start prompting.
+- Node.js 18+ and npm
+- Google Gemini API key (free from [Google AI Studio](https://aistudio.google.com/app/apikey))
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+### Installation
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# Clone the repository
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Navigate to the project directory
+cd MedPal-v1
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Configure Gemini AI
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+**Important**: You need to configure your Gemini API key before using the AI features.
 
-**Use GitHub Codespaces**
+1. Get a free API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
+2. Open the app and go to Settings
+3. Paste your API key and click "Save"
+4. Test the connection with the "Test" button
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+For detailed setup instructions, see [SETUP.md](./SETUP.md).
 
-## What technologies are used for this project?
+## Technology Stack
 
-This project is built with:
+- **Frontend**: React 18, TypeScript, Vite
+- **UI Components**: shadcn/ui, Tailwind CSS
+- **AI**: Google Gemini 1.5 Pro
+- **Database**: Supabase (optional)
+- **State Management**: React Hooks
+- **Routing**: React Router DOM
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Project Structure
 
-## How can I deploy this project?
+```
+src/
+├── components/          # React components
+│   ├── ui/             # shadcn/ui components
+│   └── ...             # Feature components
+├── pages/              # Page components
+├── services/           # API services
+│   ├── apiService.ts   # Gemini AI integration
+│   └── geminiService.ts # Health-specific AI logic
+├── hooks/              # Custom React hooks
+└── integrations/       # Third-party integrations
+```
 
-Simply open [Lovable](https://lovable.dev/projects/e9c941d1-e838-40b2-adfb-c4236666e316) and click on Share -> Publish.
+## Development
 
-## Can I connect a custom domain to my Lovable project?
+```sh
+# Start development server
+npm run dev
 
-Yes, you can!
+# Build for production
+npm run build
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+# Preview production build
+npm run preview
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+# Lint code
+npm run lint
+```
+
+## Deployment
+
+### Via Lovable
+1. Open [Lovable](https://lovable.dev/projects/e9c941d1-e838-40b2-adfb-c4236666e316)
+2. Click Share → Publish
+
+### Manual Deployment
+1. Build the project: `npm run build`
+2. Deploy the `dist` folder to your hosting provider
+
+## Custom Domain
+
+To connect a custom domain:
+1. Navigate to Project > Settings > Domains
+2. Click "Connect Domain"
+3. Follow the DNS configuration instructions
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## Support
+
+- **Setup Issues**: See [SETUP.md](./SETUP.md)
+- **API Key Problems**: Check the browser console for detailed error messages
+- **General Issues**: Open an issue on GitHub
+
+## License
+
+This project is licensed under the MIT License.
+
+---
+
+**Note**: This application provides general health information only. Always consult healthcare professionals for medical advice.
