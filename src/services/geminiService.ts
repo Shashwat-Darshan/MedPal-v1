@@ -42,72 +42,56 @@ export const generateDiagnosisFromSymptoms = async (symptoms: string): Promise<D
   console.log('🏥 ========== DIAGNOSIS GENERATION START ==========');
   console.log('📝 Input symptoms:', symptoms);
 
-  const prompt = `Analyze these symptoms: "${symptoms}"
+  const prompt = `You are an experienced medical AI assistant. Analyze these symptoms: "${symptoms}"
 
-Create exactly 5 possible medical conditions with confidence scores based on the provided symptoms.
+Based on the symptoms, provide a differential diagnosis with exactly 5 possible conditions. Consider the most likely medical explanations for the given symptoms.
 
-CRITICAL: Return ONLY valid JSON in this exact format:
+Return your analysis in this exact JSON format:
 [
   {
-    "name": "Condition Name",
-    "confidence": 75,
-    "description": "Brief medical description of the condition.",
-    "symptoms": ["symptom1", "symptom2", "symptom3"]
+    "name": "Most Likely Condition Name",
+    "confidence": 65,
+    "description": "Clear medical explanation of why this condition fits the symptoms",
+    "symptoms": ["key symptom 1", "key symptom 2", "key symptom 3"]
   },
   {
-    "name": "Another Condition",
-    "confidence": 60,
-    "description": "Brief medical description.",
-    "symptoms": ["symptom1", "symptom2"]
+    "name": "Second Possibility",
+    "confidence": 45,
+    "description": "Medical reasoning for this condition",
+    "symptoms": ["relevant symptom 1", "relevant symptom 2"]
   }
 ]
 
-Requirements:
-- Exactly 5 conditions
-- Confidence scores should realistically reflect symptom match (0-100)
-- Include relevant symptoms for each condition
-- Be medically accurate but general (not specific diagnoses)`;
-
-  console.log('📤 Sending diagnosis prompt:', prompt);
+Guidelines:
+- Order by likelihood (highest confidence first)
+- Confidence scores should reflect realistic medical assessment (most conditions 30-70%, rarely above 80% without tests)
+- Include common conditions before rare ones
+- Descriptions should explain the medical connection to symptoms
+- Use proper medical terminology but keep explanations clear
+- Consider age-appropriate conditions (assume adult if not specified)`;
 
   try {
-    console.log('🚀 Generating diagnosis from symptoms...');
-    const finalResponse = await getChatResponseFromGemini(prompt);
-    console.log('📥 Received response:', finalResponse);
+    const response = await getChatResponseFromGemini(prompt);
+    console.log('📄 Raw diagnosis response:', response);
 
-    console.log('📄 Final raw diagnosis response:', finalResponse);
-
-    const parsed = extractJsonFromResponse(finalResponse);
+    const parsed = extractJsonFromResponse(response);
     if (parsed && Array.isArray(parsed)) {
-      console.log('✅ Successfully parsed diagnoses:', parsed);
-      const formattedDiseases = parsed.map((disease: any, index: number) => {
-        const formatted = {
-          id: `disease_${index + 1}`,
-          name: disease.name || 'Unknown Condition',
-          confidence: Math.min(100, Math.max(0, disease.confidence || 30)),
-          description: disease.description || 'No description available',
-          symptoms: Array.isArray(disease.symptoms) ? disease.symptoms : [symptoms]
-        };
-        console.log(`📋 Formatted disease ${index + 1}:`, formatted);
-        return formatted;
-      });
+      const formattedDiseases = parsed.map((disease: any, index: number) => ({
+        id: `condition_${index + 1}`,
+        name: disease.name || `Condition ${index + 1}`,
+        confidence: Math.min(85, Math.max(15, disease.confidence || 30)),
+        description: disease.description || 'Medical condition requiring further evaluation',
+        symptoms: Array.isArray(disease.symptoms) ? disease.symptoms : [symptoms]
+      }));
       
-      console.log('🏁 Final formatted diseases:', formattedDiseases);
-      console.log('🏥 ========== DIAGNOSIS GENERATION END ==========');
+      console.log('✅ Generated diagnoses:', formattedDiseases);
       return formattedDiseases;
     }
     
-    console.warn('⚠️ Parsing failed, falling back to default diagnosis');
-    const fallback = generateFallbackDiagnosis(symptoms);
-    console.log('🔄 Using fallback diagnosis:', fallback);
-    console.log('🏥 ========== DIAGNOSIS GENERATION END (FALLBACK) ==========');
-    return fallback;
+    return generateFallbackDiagnosis(symptoms);
   } catch (error) {
     console.error('💥 Error generating diagnosis:', error);
-    const fallback = generateFallbackDiagnosis(symptoms);
-    console.log('🔄 Error fallback diagnosis:', fallback);
-    console.log('🏥 ========== DIAGNOSIS GENERATION END (ERROR) ==========');
-    return fallback;
+    return generateFallbackDiagnosis(symptoms);
   }
 };
 
@@ -159,120 +143,155 @@ export const generateFollowUpQuestion = async (
   answerHistory: string[],
   previousQuestion: string = ''
 ): Promise<{ question: string; diseaseImpacts: Record<string, number> }> => {
-  console.log('❓ ========== QUESTION GENERATION START ==========');
-  console.log('📊 Input diseases:', diseases.map(d => `${d.name}: ${d.confidence}%`));
-  console.log('📝 Original symptoms:', symptoms);
-  console.log('📚 Question history:', questionHistory);
-  console.log('💬 Answer history:', answerHistory);
-  console.log('🔙 Previous question:', previousQuestion);
-
-  const topDiseases = diseases.sort((a, b) => b.confidence - a.confidence).slice(0, 3);
-  const diseaseContext = topDiseases.map(d => `${d.name}: ${d.confidence}%`).join(', ');
+  console.log('❓ ========== GENERATING INTELLIGENT FOLLOW-UP ==========');
   
-  const conversationHistory = questionHistory.length > 0 
-    ? `Previous questions: ${questionHistory.join(' | ')}. Previous answers: ${answerHistory.join(' | ')}.`
+  const topDiseases = diseases
+    .filter(d => d.confidence > 10)
+    .sort((a, b) => b.confidence - a.confidence)
+    .slice(0, 3);
+
+  if (topDiseases.length < 2) {
+    return generateTargetedFallback(diseases, symptoms, questionHistory);
+  }
+
+  const conversationContext = questionHistory.length > 0 
+    ? `\nPrevious questions asked: ${questionHistory.join(', ')}\nPrevious answers: ${answerHistory.join(', ')}`
     : '';
 
-  console.log('🎯 Top diseases for question:', diseaseContext);
-  console.log('💭 Conversation context:', conversationHistory);
+  const prompt = `You are an experienced physician conducting a diagnostic interview. 
 
-  const prompt = `Medical Context:
-- Original symptoms: "${symptoms}"
-- Current top conditions: ${diseaseContext}
-- ${conversationHistory}
+Current Case:
+- Patient's symptoms: "${symptoms}"
+- Top differential diagnoses: 
+  1. ${topDiseases[0].name} (${topDiseases[0].confidence}% confidence)
+  2. ${topDiseases[1].name} (${topDiseases[1].confidence}% confidence)
+  ${topDiseases[2] ? `3. ${topDiseases[2].name} (${topDiseases[2].confidence}% confidence)` : ''}
+${conversationContext}
 
-Generate ONE specific diagnostic question to differentiate between the top conditions. The question should help boost confidence in the correct diagnosis.
+Generate ONE highly specific follow-up question that will help distinguish between these conditions. The question should target key differentiating factors.
 
-Example approach: If user has "sore eye" → ask "Did you have any recent eye trauma or injury, or when did you last touch/rub your eyes?"
+Examples of good questions:
+- "Have you noticed any changes in your vision or sensitivity to light?"
+- "Does the pain worsen when you move your neck or turn your head?"
+- "Have you had any recent travel or exposure to sick individuals?"
+- "Do you experience symptoms more at certain times of day?"
 
-CRITICAL: Return ONLY valid JSON:
+Return ONLY this JSON format:
 {
-  "question": "Your specific diagnostic question here?",
+  "question": "Your targeted diagnostic question?",
   "diseaseImpacts": {
-    "${topDiseases[0]?.name}": 12,
-    "${topDiseases[1]?.name}": -8,
-    "${topDiseases[2]?.name}": 5
+    "${topDiseases[0].name}": 10,
+    "${topDiseases[1].name}": -8,
+    "${topDiseases[2]?.name || 'Other'}": 5
   }
 }
 
-Rules:
-- Question should be clear and specific
-- Disease impacts should be realistic (-15 to +15)
-- Focus on differentiating between top conditions`;
-
-  console.log('📤 Sending question generation prompt:', prompt);
+The question should be:
+- Medically relevant and specific
+- Directly helpful for differential diagnosis
+- Not already covered in previous questions
+- Clear and easy to understand`;
 
   try {
-    console.log('🚀 Generating follow-up question...');
-    const finalResponse = await getChatResponseFromGemini(prompt);
-    console.log('📥 Received question response:', finalResponse);
-
-    console.log('📄 Final raw question response:', finalResponse);
-
-    const parsed = extractJsonFromResponse(finalResponse);
-    if (parsed && parsed.question && parsed.diseaseImpacts) {
-      console.log('✅ Successfully parsed question data:', parsed);
-      console.log('❓ ========== QUESTION GENERATION END ==========');
+    const response = await getChatResponseFromGemini(prompt);
+    const parsed = extractJsonFromResponse(response);
+    
+    if (parsed?.question && parsed?.diseaseImpacts) {
+      console.log('✅ Generated targeted question:', parsed.question);
       return {
         question: parsed.question,
         diseaseImpacts: parsed.diseaseImpacts
       };
     }
     
-    console.warn('⚠️ Question parsing failed, falling back to default question');
-    const fallback = generateFallbackQuestion(diseases);
-    console.log('🔄 Using fallback question:', fallback);
-    console.log('❓ ========== QUESTION GENERATION END (FALLBACK) ==========');
-    return fallback;
+    return generateTargetedFallback(diseases, symptoms, questionHistory);
   } catch (error) {
-    console.error('💥 Error in question generation:', error);
-    const fallback = generateFallbackQuestion(diseases);
-    console.log('🔄 Error fallback question:', fallback);
-    console.log('❓ ========== QUESTION GENERATION END (ERROR) ==========');
-    return fallback;
+    console.error('Error generating follow-up question:', error);
+    return generateTargetedFallback(diseases, symptoms, questionHistory);
   }
 };
 
-const generateFallbackQuestion = (diseases: Disease[]): { question: string; diseaseImpacts: Record<string, number> } => {
-  console.log('🔄 Generating fallback question for diseases:', diseases.map(d => d.name));
+const generateTargetedFallback = (
+  diseases: Disease[], 
+  symptoms: string, 
+  questionHistory: string[]
+): { question: string; diseaseImpacts: Record<string, number> } => {
+  console.log('🎯 Generating targeted fallback question');
   
-  const fallbackQuestions = [
+  // Medical question banks based on common symptom patterns
+  const medicalQuestions = [
     {
-      question: "When did these symptoms first start, and have they gotten worse or better over time?",
-      impacts: [12, -5, 8, -3, 5]
+      question: "Have you noticed any specific triggers that make your symptoms worse or better?",
+      category: "triggers",
+      impacts: [8, -4, 6]
     },
     {
-      question: "Are you experiencing any fever, chills, or body aches along with these symptoms?",
-      impacts: [15, -8, 10, -5, 3]
+      question: "Are your symptoms constant throughout the day, or do they come and go?",
+      category: "pattern",
+      impacts: [10, -6, 8]
     },
     {
-      question: "Have you been exposed to anyone sick recently, or been in crowded places?",
-      impacts: [8, 12, -6, 4, -2]
+      question: "Have you experienced any fever, night sweats, or unexplained weight changes recently?",
+      category: "systemic",
+      impacts: [12, -8, 4]
     },
     {
-      question: "Does anything specific make your symptoms better or worse (food, activity, rest)?",
-      impacts: [10, -4, 12, -8, 6]
+      question: "Do you have any family history of similar health conditions?",
+      category: "family_history",
+      impacts: [6, 8, -4]
     },
     {
-      question: "Are you taking any medications or have any known allergies?",
-      impacts: [-3, 8, -5, 15, -2]
+      question: "Have you traveled anywhere recently or been exposed to anyone who was sick?",
+      category: "exposure",
+      impacts: [15, -5, 10]
+    },
+    {
+      question: "Are you currently taking any medications, supplements, or have any known allergies?",
+      category: "medications",
+      impacts: [-2, 12, -6]
+    },
+    {
+      question: "How would you describe your sleep pattern and stress levels lately?",
+      category: "lifestyle",
+      impacts: [4, -8, 12]
+    },
+    {
+      question: "Have you noticed any changes in your appetite, energy level, or mood?",
+      category: "general_health",
+      impacts: [6, 5, -10]
     }
   ];
 
-  const randomQuestion = fallbackQuestions[Math.floor(Math.random() * fallbackQuestions.length)];
-  
+  // Filter out questions we've already asked
+  const usedCategories: string[] = questionHistory.map(q => {
+    if (q.includes('trigger')) return 'triggers';
+    if (q.includes('constant') || q.includes('come and go')) return 'pattern';
+    if (q.includes('fever') || q.includes('weight')) return 'systemic';
+    if (q.includes('family')) return 'family_history';
+    if (q.includes('travel') || q.includes('exposed')) return 'exposure';
+    if (q.includes('medication') || q.includes('allergies')) return 'medications';
+    if (q.includes('sleep') || q.includes('stress')) return 'lifestyle';
+    if (q.includes('appetite') || q.includes('energy')) return 'general_health';
+    return '';
+  }).filter(cat => cat !== '');
+
+  const availableQuestions = medicalQuestions.filter(q => !usedCategories.includes(q.category));
+  const selectedQuestion = availableQuestions.length > 0 
+    ? availableQuestions[Math.floor(Math.random() * availableQuestions.length)]
+    : medicalQuestions[Math.floor(Math.random() * medicalQuestions.length)];
+
   const diseaseImpacts: Record<string, number> = {};
-  diseases.slice(0, 5).forEach((disease, index) => {
-    diseaseImpacts[disease.name] = randomQuestion.impacts[index] || 0;
-  });
+  const topDiseases = diseases.slice(0, 3);
   
-  const result = {
-    question: randomQuestion.question,
+  topDiseases.forEach((disease, index) => {
+    diseaseImpacts[disease.name] = selectedQuestion.impacts[index] || 0;
+  });
+
+  console.log('🎯 Selected targeted question:', selectedQuestion.question);
+  return {
+    question: selectedQuestion.question,
     diseaseImpacts
   };
-  
-  console.log('🔄 Generated fallback question:', result);
-  return result;
 };
 
 export const chatAboutDiagnosis = async (
@@ -285,8 +304,8 @@ export const chatAboutDiagnosis = async (
     .map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
     .join('\n');
 
-  const prompt = `You are a helpful AI assistant providing information about medical diagnoses.
-  
+  const prompt = `You are a helpful AI health assistant. Respond naturally in plain text without any JSON formatting.
+
 Context: ${diagnosisContext}
 
 Recent conversation:
@@ -294,10 +313,19 @@ ${history}
 
 User question: ${userMessage}
 
-Provide a concise, helpful, and supportive response. Remember to always recommend consulting healthcare professionals for medical advice.`;
+Provide a concise, helpful, and supportive response in plain conversational text. Always recommend consulting healthcare professionals for medical advice.`;
 
   try {
     const response = await getChatResponseFromGemini(prompt);
+    // Ensure we return clean text, not JSON
+    if (response.includes('"response":') || response.includes('{') || response.includes('}')) {
+      try {
+        const parsed = JSON.parse(response);
+        return parsed.response || parsed.content || response;
+      } catch {
+        return response.replace(/[{}"\[\]]/g, '').replace(/response:|content:/g, '').trim();
+      }
+    }
     return response;
   } catch (error) {
     console.error('Error in chat about diagnosis:', error);
