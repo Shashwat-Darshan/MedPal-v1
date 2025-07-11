@@ -69,8 +69,8 @@ const makeGeminiCall = async (apiKey: string, prompt: string, temperature: numbe
     ],
     generationConfig: {
       temperature: temperature,
-      maxOutputTokens: 1500,
-      responseMimeType: 'application/json'
+      maxOutputTokens: 1500
+      // Removed responseMimeType to get plain text responses
     },
   };
 
