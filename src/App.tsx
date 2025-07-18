@@ -9,6 +9,7 @@ import { DarkModeProvider } from "@/hooks/useDarkMode";
 import { NotificationProvider } from "@/hooks/useNotifications";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
@@ -38,7 +39,8 @@ const App = () => (
               <Sonner />
               <BrowserRouter>
                 <Routes>
-                  <Route path="/" element={<Login />} />
+                  <Route path="/" element={<Landing />} />
+                  <Route path="/auth" element={<Login />} />
                   <Route path="/dashboard" element={
                     <ProtectedRoute>
                       <Dashboard />
