@@ -6,23 +6,23 @@ import { Card } from '@/components/ui/card';
 
 const Landing = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 scroll-smooth">{/* Header */}
-      <header className="px-4 sm:px-6 lg:px-8 py-6 animate-fade-in">
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 scroll-smooth">{/* Header */}
+      <header className="px-4 sm:px-6 lg:px-8 py-6 animate-fade-in bg-white/10 backdrop-blur-sm border-b border-white/20">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3 group">
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12">
+            <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12">
               <Stethoscope className="h-6 w-6 text-white" />
             </div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold text-white">
               MedPal
             </h1>
           </div>
           <div className="flex items-center space-x-4">
             <Link to="/auth">
-              <Button variant="ghost" className="hover:scale-105 transition-transform duration-200">Sign In</Button>
+              <Button variant="ghost" className="hover:scale-105 transition-transform duration-200 text-white border-white/30 hover:bg-white/20">Sign In</Button>
             </Link>
             <Link to="/auth">
-              <Button className="hover:scale-105 transition-transform duration-200 hover:shadow-lg">Get Started</Button>
+              <Button className="hover:scale-105 transition-transform duration-200 hover:shadow-lg bg-white text-blue-600 hover:bg-white/90">Get Started</Button>
             </Link>
           </div>
         </div>
@@ -31,23 +31,23 @@ const Landing = () => {
       {/* Hero Section */}
       <section className="px-4 sm:px-6 lg:px-8 py-20 animate-fade-in">
         <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6 animate-scale-in">
+          <h2 className="text-5xl lg:text-6xl font-bold text-white mb-6 animate-scale-in drop-shadow-lg">
             AI-Powered Health
-            <span className="block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="block text-yellow-300">
               Assistant
             </span>
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto opacity-0 animate-fade-in [animation-delay:200ms] [animation-fill-mode:forwards]">
+          <p className="text-xl text-white/90 mb-8 max-w-3xl mx-auto opacity-0 animate-fade-in [animation-delay:200ms] [animation-fill-mode:forwards] drop-shadow-md">
             Get instant health assessments, symptom analysis, and personalized medical insights 
             powered by advanced AI technology. Your health companion is here.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center opacity-0 animate-fade-in [animation-delay:400ms] [animation-fill-mode:forwards]">
             <Link to="/auth">
-              <Button size="lg" className="text-lg px-8 py-3 hover:scale-105 transition-all duration-300 hover:shadow-xl">
+              <Button size="lg" className="text-lg px-8 py-3 hover:scale-105 transition-all duration-300 hover:shadow-xl bg-white text-blue-600 hover:bg-white/90">
                 Start Free Diagnosis
               </Button>
             </Link>
-            <Button variant="outline" size="lg" className="text-lg px-8 py-3 hover:scale-105 transition-all duration-300 hover:shadow-lg">
+            <Button variant="outline" size="lg" className="text-lg px-8 py-3 hover:scale-105 transition-all duration-300 hover:shadow-lg text-white border-white/30 hover:bg-white/20">
               Learn More
             </Button>
           </div>
@@ -55,7 +55,7 @@ const Landing = () => {
       </section>
 
       {/* Features Section */}
-      <section className="px-4 sm:px-6 lg:px-8 py-16 bg-white/50 dark:bg-gray-900/50 opacity-0 animate-fade-in [animation-delay:600ms] [animation-fill-mode:forwards]">
+      <section className="px-4 sm:px-6 lg:px-8 py-16 bg-white dark:bg-gray-900 opacity-0 animate-fade-in [animation-delay:600ms] [animation-fill-mode:forwards]">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-4 animate-scale-in">
