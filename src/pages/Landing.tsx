@@ -54,12 +54,12 @@ const Landing = () => {
           <div className={`flex items-center space-x-4 transition-all duration-700 delay-200 ${
             isVisible ? 'translate-x-0 opacity-100' : 'translate-x-10 opacity-0'
           }`}>
-            <Link to="/login">
+            <Link to="/auth">
               <Button variant="ghost" className="hover:bg-blue-500/10 hover:text-blue-600 transition-all duration-300 hover:scale-105">
                 Sign In
               </Button>
             </Link>
-            <Link to="/login">
+            <Link to="/auth">
               <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105">
                 Get Started
               </Button>
@@ -96,7 +96,7 @@ const Landing = () => {
           <div className={`flex flex-col sm:flex-row gap-6 justify-center transition-all duration-1000 delay-500 ${
             isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
           }`}>
-            <Link to="/login">
+            <Link to="/diagnosis">
               <Button size="lg" className="text-xl px-12 py-4 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 shadow-2xl hover:shadow-3xl hover:shadow-blue-500/30 transition-all duration-500 hover:scale-110 group relative overflow-hidden">
                 <span className="relative z-10 flex items-center space-x-2">
                   <Stethoscope className="w-5 h-5 group-hover:animate-pulse" />
@@ -255,7 +255,7 @@ const Landing = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <Link to="/login">
+            <Link to="/diagnosis">
               <Button size="lg" className="text-xl px-12 py-4 bg-white text-gray-900 hover:bg-gray-100 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-110 group relative overflow-hidden">
                 <span className="relative z-10 flex items-center space-x-2">
                   <Sparkles className="w-5 h-5 group-hover:animate-spin" />
