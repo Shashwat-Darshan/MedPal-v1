@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Heart, Mail, Lock } from 'lucide-react';
+import { Heart, Mail, Lock, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
@@ -37,7 +37,18 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+      <div className="w-full max-w-md">
+        {/* Back to Landing Button */}
+        <Button
+          variant="ghost"
+          onClick={() => navigate('/')}
+          className="mb-4 text-blue-600 hover:text-blue-800"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Home
+        </Button>
+        
+        <Card className="w-full">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
             <div className="bg-blue-600 p-2 rounded-lg">
@@ -119,6 +130,7 @@ const Login = () => {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };
