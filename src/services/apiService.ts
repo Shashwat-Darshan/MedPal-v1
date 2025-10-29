@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Simple toast notification function
+// Simple toast notification function 
 const showToast = (message: string, type: 'info' | 'warning' | 'error' = 'info') => {
   // Create a simple toast notification
   const toast = document.createElement('div');
