@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Simple toast notification function
+// Simple toast notification function 
 const showToast = (message: string, type: 'info' | 'warning' | 'error' = 'info') => {
   // Create a simple toast notification
   const toast = document.createElement('div');
@@ -75,37 +76,22 @@ const geminiProvider: ApiProvider = {
 
     console.log('🔑 Using Gemini API key:', apiKey.substring(0, 10) + '...');
 
-    const requestBody = {
-      contents: [
-        {
-          parts: [
-            { text: prompt }
-          ]
-        }
-      ],
-      generationConfig: {
-        maxOutputTokens: 1000, // Reduced from 1500 for faster responses
-        temperature: 0.3, // Lower temperature for faster, more focused responses
-        topP: 0.8,
-        topK: 20 // Reduced for faster generation
-      }
-    };
-
-    console.log('📤 Sending request to Gemini API...');
+    console.log('📤 Setting up Gemini client...');
+    
+    const genAI = new GoogleGenAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 
     try {
-      // Create AbortController for timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
-
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache' // Ensure fresh responses
+      console.log('📤 Sending request to Gemini API...');
+      
+      const result = await model.generateContent({
+        contents: [{ role: 'user', parts: [{ text: prompt }]}],
+        generationConfig: {
+          maxOutputTokens: 1000,
+          temperature: 0.3,
+          topP: 0.8,
+          topK: 20
         },
-        body: JSON.stringify(requestBody),
-        signal: controller.signal
       });
 
       clearTimeout(timeoutId);
@@ -153,12 +139,25 @@ const geminiProvider: ApiProvider = {
 
       const data = await response.json();
       
-      if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
+      // Handle different response formats
+      let responseText;
+      
+      if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+        // New format
+        responseText = data.candidates[0].content.parts[0].text;
+      } else if (data.candidates?.[0]?.text) {
+        // Older format
+        responseText = data.candidates[0].text;
+      } else {
         console.error('❌ Invalid Gemini response format:', data);
         throw new Error('Invalid Gemini response format - no text content found');
       }
 
-      const responseText = data.candidates[0].content.parts[0].text;
+      // Log the response format for debugging
+      console.log('📄 Response format:', {
+        hasNewFormat: !!data.candidates?.[0]?.content?.parts?.[0]?.text,
+        hasOldFormat: !!data.candidates?.[0]?.text
+      });
       const responseTime = Date.now() - startTime;
       console.log(`✅ Gemini Response (${responseTime}ms):`, responseText);
       
