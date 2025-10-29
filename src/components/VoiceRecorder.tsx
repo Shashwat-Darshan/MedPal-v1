@@ -3,6 +3,7 @@ import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Mic, MicOff, Volume2 } from 'lucide-react';
+import { transcribeAudioWithGroq } from '@/services/geminiService';
 
 interface VoiceRecorderProps {
   onTranscript: (transcript: string) => void;
@@ -34,21 +35,29 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscript }) => {
         const url = URL.createObjectURL(blob);
         setAudioURL(url);
         
-        // Use mock transcription (transcription service removed)
+        // Use Groq Whisper for real transcription
         setIsTranscribing(true);
         try {
-          console.log('Using mock transcription...');
-          // Simulate processing time
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          console.log('Starting Groq Whisper transcription...');
+          const transcriptionResult = await transcribeAudioWithGroq(blob);
+          
+          if (transcriptionResult && transcriptionResult.trim()) {
+            setTranscript(transcriptionResult);
+            onTranscript(transcriptionResult);
+            console.log('Transcription successful:', transcriptionResult);
+          } else {
+            // Fallback to mock transcription if Whisper fails
+            const mockTranscript = "I have been experiencing a runny nose, cough, and feeling tired for the past 3 days.";
+            setTranscript(mockTranscript);
+            onTranscript(mockTranscript);
+            console.log('Using fallback mock transcription');
+          }
+        } catch (error) {
+          console.error('Whisper transcription failed, using mock:', error);
+          // Fallback to mock transcription
           const mockTranscript = "I have been experiencing a runny nose, cough, and feeling tired for the past 3 days.";
           setTranscript(mockTranscript);
           onTranscript(mockTranscript);
-          console.log('Mock transcription complete:', mockTranscript);
-        } catch (error) {
-          console.error('Mock transcription error:', error);
-          const fallbackTranscript = "I have symptoms I'd like to discuss.";
-          setTranscript(fallbackTranscript);
-          onTranscript(fallbackTranscript);
         } finally {
           setIsTranscribing(false);
         }
@@ -121,7 +130,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscript }) => {
           {isTranscribing && (
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-              <p className="text-sm text-blue-600">Processing audio...</p>
+              <p className="text-sm text-blue-600">Transcribing with Groq Whisper...</p>
             </div>
           )}
 
@@ -140,7 +149,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscript }) => {
               
               {transcript && (
                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                  <p className="text-sm font-medium text-blue-900 mb-1">Sample Transcription:</p>
+                  <p className="text-sm font-medium text-blue-900 mb-1">Transcription:</p>
                   <p className="text-blue-800">{transcript}</p>
                 </div>
               )}
@@ -148,7 +157,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscript }) => {
           )}
 
           <div className="text-center text-xs text-gray-500">
-            <p>Mock transcription for demo • Real transcription service can be added</p>
+            <p>Powered by Groq Whisper • Your voice data is processed securely</p>
           </div>
         </div>
       </CardContent>

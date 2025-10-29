@@ -1,6 +1,4 @@
-import { getChatResponseFromGemini } from './apiService';
-// Add imports for Groq and Mistral provider logic
-import { groqProvider, mistralProvider, geminiProvider } from './apiService';
+import { makeParallelAPICalls, getChatResponseFromGemini, transcribeAudioWithGroq } from './apiService';
 
 export interface Disease {
   id: string;
@@ -16,88 +14,136 @@ export interface ChatMessage {
   timestamp: Date;
 }
 
-// Export the function from apiService for backward compatibility
-export { getChatResponseFromGemini };
+// Export the functions from apiService for backward compatibility
+export { getChatResponseFromGemini, transcribeAudioWithGroq };
 
 const extractJsonFromResponse = (response: string): any => {
-  const isFastMode = localStorage.getItem('medpal_fast_mode') === 'true';
-  
-  if (!isFastMode) {
-    console.log('🔍 Extracting JSON from response:', response);
-  }
+  console.log('🔍 Extracting JSON from response:', response);
   
   // Try to find JSON in the response
   const jsonMatch = response.match(/\[[\s\S]*\]/) || response.match(/\{[\s\S]*\}/);
   if (jsonMatch) {
-    if (!isFastMode) {
-      console.log('📋 Found JSON match:', jsonMatch[0]);
-    }
+    console.log('📋 Found JSON match:', jsonMatch[0]);
     try {
       const parsed = JSON.parse(jsonMatch[0]);
-      if (!isFastMode) {
-        console.log('✅ Successfully parsed JSON:', parsed);
-      }
+      console.log('✅ Successfully parsed JSON:', parsed);
       return parsed;
     } catch (e) {
       console.error('❌ Failed to parse JSON:', e);
       console.error('Raw JSON string:', jsonMatch[0]);
     }
   } else {
-    if (!isFastMode) {
-      console.warn('⚠️ No JSON pattern found in response');
-    }
+    console.warn('⚠️ No JSON pattern found in response');
   }
   return null;
 };
 
 export const generateDiagnosisFromSymptoms = async (symptoms: string): Promise<Disease[]> => {
-  const isFastMode = localStorage.getItem('medpal_fast_mode') === 'true';
-  
-  if (!isFastMode) {
-    console.log('🏥 Generating diagnosis for:', symptoms);
-  }
+  console.log('🏥 ========== DIAGNOSIS GENERATION START ==========');
+  console.log('📝 Input symptoms:', symptoms);
 
-  const prompt = `Analyze symptoms: "${symptoms}"
+  const prompt = `Analyze these symptoms: "${symptoms}"
 
-Provide 5 possible conditions in JSON format:
+Create exactly 5 possible medical conditions with confidence scores based on the provided symptoms.
+
+CRITICAL: Return ONLY valid JSON in this exact format:
 [
   {
     "name": "Condition Name",
-    "confidence": 65,
-    "description": "Brief medical explanation",
+    "confidence": 75,
+    "description": "Brief medical description of the condition.",
+    "symptoms": ["symptom1", "symptom2", "symptom3"]
+  },
+  {
+    "name": "Another Condition",
+    "confidence": 60,
+    "description": "Brief medical description.",
     "symptoms": ["symptom1", "symptom2"]
   }
 ]
 
-Order by likelihood, confidence 30-70%, common conditions first.`;
+Requirements:
+- Exactly 5 conditions
+- Confidence scores should realistically reflect symptom match (0-100)
+- Include relevant symptoms for each condition
+- Be medically accurate but general (not specific diagnoses)`;
+
+  console.log('📤 Sending diagnosis prompt:', prompt);
 
   try {
-    const response = await getChatResponseFromGemini(prompt);
-    const parsed = extractJsonFromResponse(response);
-    if (parsed && Array.isArray(parsed)) {
-      const formattedDiseases = parsed.map((disease: any, index: number) => ({
-        id: `condition_${index + 1}`,
-        name: disease.name || `Condition ${index + 1}`,
-        confidence: Math.min(85, Math.max(15, disease.confidence || 30)),
-        description: disease.description || 'Medical condition requiring further evaluation',
-        symptoms: Array.isArray(disease.symptoms) ? disease.symptoms : [symptoms]
-      }));
-      
-      if (!isFastMode) {
-        console.log('✅ Diagnoses:', formattedDiseases.map(d => `${d.name} (${d.confidence}%)`));
+    console.log('🚀 Generating initial diagnosis from symptoms...');
+    const responses = await makeParallelAPICalls(prompt);
+    console.log('📥 Received responses:', responses);
+    
+    let finalResponse = responses[0];
+    console.log('🎯 Using primary response:', finalResponse);
+    
+    if (responses.length >= 2) {
+      console.log('🔄 Multiple responses available, attempting synthesis...');
+      const synthesisPrompt = `Analyze these medical assessment responses and create the best combined result:
+
+Response 1: ${responses[0]}
+Response 2: ${responses[1]}
+
+Create a synthesized JSON array of exactly 5 conditions that combines the best medical insights. Return ONLY valid JSON:
+[
+  {
+    "name": "Condition Name",
+    "confidence": 75,
+    "description": "Brief description",
+    "symptoms": ["symptom1", "symptom2"]
+  }
+]`;
+
+      console.log('📤 Sending synthesis prompt:', synthesisPrompt);
+
+      try {
+        finalResponse = await getChatResponseFromGemini(synthesisPrompt);
+        console.log('✅ Synthesis successful:', finalResponse);
+      } catch (synthError) {
+        console.warn('⚠️ Synthesis failed, using first response:', synthError);
+        finalResponse = responses[0];
       }
+    }
+
+    console.log('📄 Final raw diagnosis response:', finalResponse);
+
+    const parsed = extractJsonFromResponse(finalResponse);
+    if (parsed && Array.isArray(parsed)) {
+      console.log('✅ Successfully parsed diagnoses:', parsed);
+      const formattedDiseases = parsed.map((disease: any, index: number) => {
+        const formatted = {
+          id: `disease_${index + 1}`,
+          name: disease.name || 'Unknown Condition',
+          confidence: Math.min(100, Math.max(0, disease.confidence || 30)),
+          description: disease.description || 'No description available',
+          symptoms: Array.isArray(disease.symptoms) ? disease.symptoms : [symptoms]
+        };
+        console.log(`📋 Formatted disease ${index + 1}:`, formatted);
+        return formatted;
+      });
+      
+      console.log('🏁 Final formatted diseases:', formattedDiseases);
+      console.log('🏥 ========== DIAGNOSIS GENERATION END ==========');
       return formattedDiseases;
     }
     
-    return generateFallbackDiagnosis(symptoms);
+    console.warn('⚠️ Parsing failed, falling back to default diagnosis');
+    const fallback = generateFallbackDiagnosis(symptoms);
+    console.log('🔄 Using fallback diagnosis:', fallback);
+    console.log('🏥 ========== DIAGNOSIS GENERATION END (FALLBACK) ==========');
+    return fallback;
   } catch (error) {
     console.error('💥 Error generating diagnosis:', error);
-    return generateFallbackDiagnosis(symptoms);
+    const fallback = generateFallbackDiagnosis(symptoms);
+    console.log('🔄 Error fallback diagnosis:', fallback);
+    console.log('🏥 ========== DIAGNOSIS GENERATION END (ERROR) ==========');
+    return fallback;
   }
 };
 
 const generateFallbackDiagnosis = (symptoms: string): Disease[] => {
-  console.log('🔄 Using fallback diagnosis for:', symptoms);
+  console.log('🔄 Generating fallback diagnosis for symptoms:', symptoms);
   return [
     {
       id: 'disease_1',
@@ -144,179 +190,150 @@ export const generateFollowUpQuestion = async (
   answerHistory: string[],
   previousQuestion: string = ''
 ): Promise<{ question: string; diseaseImpacts: Record<string, number> }> => {
-  const isFastMode = localStorage.getItem('medpal_fast_mode') === 'true';
-  
-  if (!isFastMode) {
-    console.log('❓ Generating follow-up question...');
-  }
-  
-  const topDiseases = diseases
-    .filter(d => d.confidence > 10)
-    .sort((a, b) => b.confidence - a.confidence)
-    .slice(0, 3);
+  console.log('❓ ========== QUESTION GENERATION START ==========');
+  console.log('📊 Input diseases:', diseases.map(d => `${d.name}: ${d.confidence}%`));
+  console.log('📝 Original symptoms:', symptoms);
+  console.log('📚 Question history:', questionHistory);
+  console.log('💬 Answer history:', answerHistory);
+  console.log('🔙 Previous question:', previousQuestion);
 
-  if (topDiseases.length < 2) {
-    return generateTargetedFallback(diseases, symptoms, questionHistory);
-  }
-
-  const conversationContext = questionHistory.length > 0 
-    ? `\nPrevious questions asked: ${questionHistory.join(', ')}\nPrevious answers: ${answerHistory.join(', ')}`
+  const topDiseases = diseases.sort((a, b) => b.confidence - a.confidence).slice(0, 3);
+  const diseaseContext = topDiseases.map(d => `${d.name}: ${d.confidence}%`).join(', ');
+  
+  const conversationHistory = questionHistory.length > 0 
+    ? `Previous questions: ${questionHistory.join(' | ')}. Previous answers: ${answerHistory.join(' | ')}.`
     : '';
 
-  const prompt = `Symptoms: "${symptoms}"
-Top conditions: ${topDiseases.map(d => `${d.name} (${d.confidence}%)`).join(', ')}
-${conversationContext}
+  console.log('🎯 Top diseases for question:', diseaseContext);
+  console.log('💭 Conversation context:', conversationHistory);
 
-Generate ONE follow-up question to distinguish between these conditions.
+  const prompt = `Medical Context:
+- Original symptoms: "${symptoms}"
+- Current top conditions: ${diseaseContext}
+- ${conversationHistory}
 
-Return JSON:
+Generate ONE specific diagnostic question to differentiate between the top conditions. The question should help boost confidence in the correct diagnosis.
+
+Example approach: If user has "sore eye" → ask "Did you have any recent eye trauma or injury, or when did you last touch/rub your eyes?"
+
+CRITICAL: Return ONLY valid JSON:
 {
-  "question": "Your question?",
+  "question": "Your specific diagnostic question here?",
   "diseaseImpacts": {
-    "${topDiseases[0].name}": 10,
-    "${topDiseases[1].name}": -8,
-    "${topDiseases[2]?.name || 'Other'}": 10
+    "${topDiseases[0]?.name}": 12,
+    "${topDiseases[1]?.name}": -8,
+    "${topDiseases[2]?.name}": 5
+  }
+}
+
+Rules:
+- Question should be clear and specific
+- Disease impacts should be realistic (-15 to +15)
+- Focus on differentiating between top conditions`;
+
+  console.log('📤 Sending question generation prompt:', prompt);
+
+  try {
+    const responses = await makeParallelAPICalls(prompt);
+    console.log('📥 Received question responses:', responses);
+    
+    let finalResponse = responses[0];
+    console.log('🎯 Using primary question response:', finalResponse);
+    
+    if (responses.length >= 2) {
+      console.log('🔄 Multiple question responses, attempting synthesis...');
+      const synthesisPrompt = `Analyze these diagnostic question responses:
+
+Response 1: ${responses[0]}
+Response 2: ${responses[1]}
+
+Create the best diagnostic question. Return ONLY valid JSON:
+{
+  "question": "Best diagnostic question?",
+  "diseaseImpacts": {
+    "${topDiseases[0]?.name}": 10,
+    "${topDiseases[1]?.name}": -5,
+    "${topDiseases[2]?.name}": 3
   }
 }`;
 
-  // Fast mode: use Gemini directly
-  if (isFastMode) {
-    try {
-      const response = await getChatResponseFromGemini(prompt);
-      const parsed = extractJsonFromResponse(response);
-      if (parsed?.question && parsed?.diseaseImpacts) {
-        if (!isFastMode) {
-          console.log('✅ Question:', parsed.question);
-        }
-        return {
-          question: parsed.question,
-          diseaseImpacts: parsed.diseaseImpacts
-        };
-      }
-    } catch (error) {
-      console.error('Error generating follow-up question (fast mode):', error);
-    }
-    return generateTargetedFallback(diseases, symptoms, questionHistory);
-  }
+      console.log('📤 Sending question synthesis prompt:', synthesisPrompt);
 
-  // Multi-provider: try Groq, then Mistral, fallback to Gemini
-  const providers = [groqProvider, mistralProvider];
-  let lastError: Error | null = null;
-  for (const provider of providers) {
-    if (!provider.getApiKey()) continue;
-    try {
-      const response = await provider.makeRequest(prompt, 0.35);
-      const parsed = extractJsonFromResponse(response);
-      if (parsed?.question && parsed?.diseaseImpacts) {
-        console.log(`✅ Question from ${provider.name}:`, parsed.question);
-        return {
-          question: parsed.question,
-          diseaseImpacts: parsed.diseaseImpacts
-        };
+      try {
+        finalResponse = await getChatResponseFromGemini(synthesisPrompt);
+        console.log('✅ Question synthesis successful:', finalResponse);
+      } catch (synthError) {
+        console.warn('⚠️ Question synthesis failed, using first response:', synthError);
+        finalResponse = responses[0];
       }
-    } catch (error) {
-      lastError = error instanceof Error ? error : new Error('Unknown error');
-      console.warn(`⚠️ ${provider.name} failed for follow-up question:`, lastError.message);
     }
-  }
-  // Fallback to Gemini if both fail
-  try {
-    const response = await geminiProvider.makeRequest(prompt, 0.35);
-    const parsed = extractJsonFromResponse(response);
-    if (parsed?.question && parsed?.diseaseImpacts) {
-      console.log('✅ Question from Gemini (fallback):', parsed.question);
+
+    console.log('📄 Final raw question response:', finalResponse);
+
+    const parsed = extractJsonFromResponse(finalResponse);
+    if (parsed && parsed.question && parsed.diseaseImpacts) {
+      console.log('✅ Successfully parsed question data:', parsed);
+      console.log('❓ ========== QUESTION GENERATION END ==========');
       return {
         question: parsed.question,
         diseaseImpacts: parsed.diseaseImpacts
       };
     }
+    
+    console.warn('⚠️ Question parsing failed, falling back to default question');
+    const fallback = generateFallbackQuestion(diseases);
+    console.log('🔄 Using fallback question:', fallback);
+    console.log('❓ ========== QUESTION GENERATION END (FALLBACK) ==========');
+    return fallback;
   } catch (error) {
-    console.error('Gemini fallback failed for follow-up question:', error);
+    console.error('💥 Error in question generation:', error);
+    const fallback = generateFallbackQuestion(diseases);
+    console.log('🔄 Error fallback question:', fallback);
+    console.log('❓ ========== QUESTION GENERATION END (ERROR) ==========');
+    return fallback;
   }
-  return generateTargetedFallback(diseases, symptoms, questionHistory);
 };
 
-const generateTargetedFallback = (
-  diseases: Disease[], 
-  symptoms: string, 
-  questionHistory: string[]
-): { question: string; diseaseImpacts: Record<string, number> } => {
-  console.log('🎯 Using fallback question');
+const generateFallbackQuestion = (diseases: Disease[]): { question: string; diseaseImpacts: Record<string, number> } => {
+  console.log('🔄 Generating fallback question for diseases:', diseases.map(d => d.name));
   
-  // Medical question banks based on common symptom patterns
-  const medicalQuestions = [
+  const fallbackQuestions = [
     {
-      question: "Have you noticed any specific triggers that make your symptoms worse or better?",
-      category: "triggers",
-      impacts: [8, -4, 6]
+      question: "When did these symptoms first start, and have they gotten worse or better over time?",
+      impacts: [12, -5, 8, -3, 5]
     },
     {
-      question: "Are your symptoms constant throughout the day, or do they come and go?",
-      category: "pattern",
-      impacts: [10, -6, 8]
+      question: "Are you experiencing any fever, chills, or body aches along with these symptoms?",
+      impacts: [15, -8, 10, -5, 3]
     },
     {
-      question: "Have you experienced any fever, night sweats, or unexplained weight changes recently?",
-      category: "systemic",
-      impacts: [12, -8, 4]
+      question: "Have you been exposed to anyone sick recently, or been in crowded places?",
+      impacts: [8, 12, -6, 4, -2]
     },
     {
-      question: "Do you have any family history of similar health conditions?",
-      category: "family_history",
-      impacts: [6, 8, -4]
+      question: "Does anything specific make your symptoms better or worse (food, activity, rest)?",
+      impacts: [10, -4, 12, -8, 6]
     },
     {
-      question: "Have you traveled anywhere recently or been exposed to anyone who was sick?",
-      category: "exposure",
-      impacts: [15, -5, 10]
-    },
-    {
-      question: "Are you currently taking any medications, supplements, or have any known allergies?",
-      category: "medications",
-      impacts: [-2, 12, -6]
-    },
-    {
-      question: "How would you describe your sleep pattern and stress levels lately?",
-      category: "lifestyle",
-      impacts: [4, -8, 12]
-    },
-    {
-      question: "Have you noticed any changes in your appetite, energy level, or mood?",
-      category: "general_health",
-      impacts: [6, 5, -10]
+      question: "Are you taking any medications or have any known allergies?",
+      impacts: [-3, 8, -5, 15, -2]
     }
   ];
 
-  // Filter out questions we've already asked
-  const usedCategories: string[] = questionHistory.map(q => {
-    if (q.includes('trigger')) return 'triggers';
-    if (q.includes('constant') || q.includes('come and go')) return 'pattern';
-    if (q.includes('fever') || q.includes('weight')) return 'systemic';
-    if (q.includes('family')) return 'family_history';
-    if (q.includes('travel') || q.includes('exposed')) return 'exposure';
-    if (q.includes('medication') || q.includes('allergies')) return 'medications';
-    if (q.includes('sleep') || q.includes('stress')) return 'lifestyle';
-    if (q.includes('appetite') || q.includes('energy')) return 'general_health';
-    return '';
-  }).filter(cat => cat !== '');
-
-  const availableQuestions = medicalQuestions.filter(q => !usedCategories.includes(q.category));
-  const selectedQuestion = availableQuestions.length > 0 
-    ? availableQuestions[Math.floor(Math.random() * availableQuestions.length)]
-    : medicalQuestions[Math.floor(Math.random() * medicalQuestions.length)];
-
-  const diseaseImpacts: Record<string, number> = {};
-  const topDiseases = diseases.slice(0, 3);
+  const randomQuestion = fallbackQuestions[Math.floor(Math.random() * fallbackQuestions.length)];
   
-  topDiseases.forEach((disease, index) => {
-    diseaseImpacts[disease.name] = selectedQuestion.impacts[index] || 0;
+  const diseaseImpacts: Record<string, number> = {};
+  diseases.slice(0, 5).forEach((disease, index) => {
+    diseaseImpacts[disease.name] = randomQuestion.impacts[index] || 0;
   });
-
-  console.log('🎯 Question:', selectedQuestion.question);
-  return {
-    question: selectedQuestion.question,
+  
+  const result = {
+    question: randomQuestion.question,
     diseaseImpacts
   };
+  
+  console.log('🔄 Generated fallback question:', result);
+  return result;
 };
 
 export const chatAboutDiagnosis = async (
@@ -329,8 +346,8 @@ export const chatAboutDiagnosis = async (
     .map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
     .join('\n');
 
-  const prompt = `You are a helpful AI health assistant. Respond naturally in plain text without any JSON formatting.
-
+  const prompt = `You are a helpful AI assistant providing information about medical diagnoses.
+  
 Context: ${diagnosisContext}
 
 Recent conversation:
@@ -338,19 +355,10 @@ ${history}
 
 User question: ${userMessage}
 
-Provide a concise, helpful, and supportive response in plain conversational text. Always recommend consulting healthcare professionals for medical advice.`;
+Provide a concise, helpful, and supportive response. Remember to always recommend consulting healthcare professionals for medical advice.`;
 
   try {
     const response = await getChatResponseFromGemini(prompt);
-    // Ensure we return clean text, not JSON
-    if (response.includes('"response":') || response.includes('{') || response.includes('}')) {
-      try {
-        const parsed = JSON.parse(response);
-        return parsed.response || parsed.content || response;
-      } catch {
-        return response.replace(/[{}"\[\]]/g, '').replace(/response:|content:/g, '').trim();
-      }
-    }
     return response;
   } catch (error) {
     console.error('Error in chat about diagnosis:', error);

@@ -9,14 +9,12 @@ import { DarkModeProvider } from "@/hooks/useDarkMode";
 import { NotificationProvider } from "@/hooks/useNotifications";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import HealthChat from "./pages/HealthChat";
 import History from "./pages/History";
 import HealthMonitor from "./pages/HealthMonitor";
-import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -39,8 +37,7 @@ const App = () => (
               <Sonner />
               <BrowserRouter>
                 <Routes>
-                  <Route path="/" element={<Landing />} />
-                  <Route path="/auth" element={<Login />} />
+                  <Route path="/" element={<Login />} />
                   <Route path="/dashboard" element={
                     <ProtectedRoute>
                       <Dashboard />
@@ -64,11 +61,6 @@ const App = () => (
                   <Route path="/monitor" element={
                     <ProtectedRoute>
                       <HealthMonitor />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/settings" element={
-                    <ProtectedRoute>
-                      <Settings />
                     </ProtectedRoute>
                   } />
                   <Route path="*" element={<NotFound />} />

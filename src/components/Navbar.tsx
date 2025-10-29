@@ -159,11 +159,6 @@ const Navbar = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem onClick={() => navigate('/settings')}>
-                    <Settings className="h-4 w-4 mr-2" />
-                    Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="text-red-600 dark:text-red-400 focus:text-red-700 dark:focus:text-red-300">
                     <LogOut className="h-4 w-4 mr-2" />
                     Sign Out
@@ -203,17 +198,6 @@ const Navbar = () => {
                   {item.label}
                 </Button>
               ))}
-              <Button 
-                variant={location.pathname === '/settings' ? "default" : "ghost"} 
-                className="w-full justify-start" 
-                onClick={() => {
-                  navigate('/settings');
-                  setMobileMenuOpen(false);
-                }}
-              >
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </Button>
               
               {/* Mobile Menu Footer */}
               <div className="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
