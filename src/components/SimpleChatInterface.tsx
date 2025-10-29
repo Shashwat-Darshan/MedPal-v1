@@ -53,7 +53,11 @@ const SimpleChatInterface: React.FC<SimpleChatInterfaceProps> = ({ onHistoryCont
           ...msg,
           timestamp: typeof msg.timestamp === 'string' ? new Date(msg.timestamp) : msg.timestamp
         }));
-        setMessages(prevMessages => [...prevMessages, ...messagesWithDates]);
+        
+        // Only load if we have more than just the initial message
+        if (messagesWithDates.length > 0) {
+          setMessages(prevMessages => [prevMessages[0], ...messagesWithDates]);
+        }
       } catch (error) {
         console.error('Error loading chat history:', error);
       }
