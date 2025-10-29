@@ -1,4 +1,6 @@
-import { supabase } from '@/integrations/supabase/client';
+import { getChatResponseFromGemini } from './apiService';
+// Add imports for Groq and Mistral provider logic
+import { groqProvider, mistralProvider, geminiProvider } from './apiService';
 
 export interface Disease {
   id: string;
@@ -14,23 +16,77 @@ export interface ChatMessage {
   timestamp: Date;
 }
 
+// Export the function from apiService for backward compatibility
+export { getChatResponseFromGemini };
+
+const extractJsonFromResponse = (response: string): any => {
+  const isFastMode = localStorage.getItem('medpal_fast_mode') === 'true';
+  
+  if (!isFastMode) {
+    console.log('🔍 Extracting JSON from response:', response);
+  }
+  
+  // Try to find JSON in the response
+  const jsonMatch = response.match(/\[[\s\S]*\]/) || response.match(/\{[\s\S]*\}/);
+  if (jsonMatch) {
+    if (!isFastMode) {
+      console.log('📋 Found JSON match:', jsonMatch[0]);
+    }
+    try {
+      const parsed = JSON.parse(jsonMatch[0]);
+      if (!isFastMode) {
+        console.log('✅ Successfully parsed JSON:', parsed);
+      }
+      return parsed;
+    } catch (e) {
+      console.error('❌ Failed to parse JSON:', e);
+      console.error('Raw JSON string:', jsonMatch[0]);
+    }
+  } else {
+    if (!isFastMode) {
+      console.warn('⚠️ No JSON pattern found in response');
+    }
+  }
+  return null;
+};
 
 export const generateDiagnosisFromSymptoms = async (symptoms: string): Promise<Disease[]> => {
-  console.log('🏥 Generating diagnosis for:', symptoms);
+  const isFastMode = localStorage.getItem('medpal_fast_mode') === 'true';
+  
+  if (!isFastMode) {
+    console.log('🏥 Generating diagnosis for:', symptoms);
+  }
+
+  const prompt = `Analyze symptoms: "${symptoms}"
+
+Provide 5 possible conditions in JSON format:
+[
+  {
+    "name": "Condition Name",
+    "confidence": 65,
+    "description": "Brief medical explanation",
+    "symptoms": ["symptom1", "symptom2"]
+  }
+]
+
+Order by likelihood, confidence 30-70%, common conditions first.`;
 
   try {
-    const { data, error } = await supabase.functions.invoke('generate-diagnosis', {
-      body: { symptoms }
-    });
-
-    if (error) {
-      console.error('Error calling generate-diagnosis:', error);
-      return generateFallbackDiagnosis(symptoms);
-    }
-
-    if (data?.diseases && Array.isArray(data.diseases)) {
-      console.log('✅ Diagnoses:', data.diseases.map((d: Disease) => `${d.name} (${d.confidence}%)`));
-      return data.diseases;
+    const response = await getChatResponseFromGemini(prompt);
+    const parsed = extractJsonFromResponse(response);
+    if (parsed && Array.isArray(parsed)) {
+      const formattedDiseases = parsed.map((disease: any, index: number) => ({
+        id: `condition_${index + 1}`,
+        name: disease.name || `Condition ${index + 1}`,
+        confidence: Math.min(85, Math.max(15, disease.confidence || 30)),
+        description: disease.description || 'Medical condition requiring further evaluation',
+        symptoms: Array.isArray(disease.symptoms) ? disease.symptoms : [symptoms]
+      }));
+      
+      if (!isFastMode) {
+        console.log('✅ Diagnoses:', formattedDiseases.map(d => `${d.name} (${d.confidence}%)`));
+      }
+      return formattedDiseases;
     }
     
     return generateFallbackDiagnosis(symptoms);
@@ -44,35 +100,35 @@ const generateFallbackDiagnosis = (symptoms: string): Disease[] => {
   console.log('🔄 Using fallback diagnosis for:', symptoms);
   return [
     {
-      id: '1',
+      id: 'disease_1',
       name: 'General Health Concern',
       confidence: 50,
       description: 'Based on the symptoms provided, this appears to be a general health concern that should be evaluated by a healthcare professional.',
       symptoms: [symptoms]
     },
     {
-      id: '2',
+      id: 'disease_2',
       name: 'Stress-Related Condition',
       confidence: 35,
       description: 'Symptoms may be related to stress or lifestyle factors.',
       symptoms: [symptoms]
     },
     {
-      id: '3',
+      id: 'disease_3',
       name: 'Minor Infection',
       confidence: 30,
       description: 'Could be related to a minor viral or bacterial infection.',
       symptoms: [symptoms]
     },
     {
-      id: '4',
+      id: 'disease_4',
       name: 'Allergic Reaction',
       confidence: 25,
       description: 'May be an allergic response to environmental factors.',
       symptoms: [symptoms]
     },
     {
-      id: '5',
+      id: 'disease_5',
       name: 'Fatigue Syndrome',
       confidence: 20,
       description: 'Could be related to fatigue or sleep-related issues.',
@@ -88,7 +144,11 @@ export const generateFollowUpQuestion = async (
   answerHistory: string[],
   previousQuestion: string = ''
 ): Promise<{ question: string; diseaseImpacts: Record<string, number> }> => {
-  console.log('❓ Generating follow-up question...');
+  const isFastMode = localStorage.getItem('medpal_fast_mode') === 'true';
+  
+  if (!isFastMode) {
+    console.log('❓ Generating follow-up question...');
+  }
   
   const topDiseases = diseases
     .filter(d => d.confidence > 10)
@@ -99,29 +159,81 @@ export const generateFollowUpQuestion = async (
     return generateTargetedFallback(diseases, symptoms, questionHistory);
   }
 
-  try {
-    const { data, error } = await supabase.functions.invoke('generate-follow-up', {
-      body: { diseases, symptoms, questionHistory, answerHistory }
-    });
+  const conversationContext = questionHistory.length > 0 
+    ? `\nPrevious questions asked: ${questionHistory.join(', ')}\nPrevious answers: ${answerHistory.join(', ')}`
+    : '';
 
-    if (error) {
-      console.error('Error calling generate-follow-up:', error);
-      return generateTargetedFallback(diseases, symptoms, questionHistory);
-    }
+  const prompt = `Symptoms: "${symptoms}"
+Top conditions: ${topDiseases.map(d => `${d.name} (${d.confidence}%)`).join(', ')}
+${conversationContext}
 
-    if (data?.question && data?.diseaseImpacts) {
-      console.log('✅ Question:', data.question);
-      return {
-        question: data.question,
-        diseaseImpacts: data.diseaseImpacts
-      };
+Generate ONE follow-up question to distinguish between these conditions.
+
+Return JSON:
+{
+  "question": "Your question?",
+  "diseaseImpacts": {
+    "${topDiseases[0].name}": 10,
+    "${topDiseases[1].name}": -8,
+    "${topDiseases[2]?.name || 'Other'}": 10
+  }
+}`;
+
+  // Fast mode: use Gemini directly
+  if (isFastMode) {
+    try {
+      const response = await getChatResponseFromGemini(prompt);
+      const parsed = extractJsonFromResponse(response);
+      if (parsed?.question && parsed?.diseaseImpacts) {
+        if (!isFastMode) {
+          console.log('✅ Question:', parsed.question);
+        }
+        return {
+          question: parsed.question,
+          diseaseImpacts: parsed.diseaseImpacts
+        };
+      }
+    } catch (error) {
+      console.error('Error generating follow-up question (fast mode):', error);
     }
-    
-    return generateTargetedFallback(diseases, symptoms, questionHistory);
-  } catch (error) {
-    console.error('Error generating follow-up question:', error);
     return generateTargetedFallback(diseases, symptoms, questionHistory);
   }
+
+  // Multi-provider: try Groq, then Mistral, fallback to Gemini
+  const providers = [groqProvider, mistralProvider];
+  let lastError: Error | null = null;
+  for (const provider of providers) {
+    if (!provider.getApiKey()) continue;
+    try {
+      const response = await provider.makeRequest(prompt, 0.35);
+      const parsed = extractJsonFromResponse(response);
+      if (parsed?.question && parsed?.diseaseImpacts) {
+        console.log(`✅ Question from ${provider.name}:`, parsed.question);
+        return {
+          question: parsed.question,
+          diseaseImpacts: parsed.diseaseImpacts
+        };
+      }
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error('Unknown error');
+      console.warn(`⚠️ ${provider.name} failed for follow-up question:`, lastError.message);
+    }
+  }
+  // Fallback to Gemini if both fail
+  try {
+    const response = await geminiProvider.makeRequest(prompt, 0.35);
+    const parsed = extractJsonFromResponse(response);
+    if (parsed?.question && parsed?.diseaseImpacts) {
+      console.log('✅ Question from Gemini (fallback):', parsed.question);
+      return {
+        question: parsed.question,
+        diseaseImpacts: parsed.diseaseImpacts
+      };
+    }
+  } catch (error) {
+    console.error('Gemini fallback failed for follow-up question:', error);
+  }
+  return generateTargetedFallback(diseases, symptoms, questionHistory);
 };
 
 const generateTargetedFallback = (
@@ -212,17 +324,34 @@ export const chatAboutDiagnosis = async (
   userMessage: string,
   chatHistory: ChatMessage[]
 ): Promise<string> => {
+  const history = chatHistory
+    .slice(-6) // Keep last 6 messages for context
+    .map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
+    .join('\n');
+
+  const prompt = `You are a helpful AI health assistant. Respond naturally in plain text without any JSON formatting.
+
+Context: ${diagnosisContext}
+
+Recent conversation:
+${history}
+
+User question: ${userMessage}
+
+Provide a concise, helpful, and supportive response in plain conversational text. Always recommend consulting healthcare professionals for medical advice.`;
+
   try {
-    const { data, error } = await supabase.functions.invoke('diagnosis-chat', {
-      body: { diagnosisContext, userMessage, chatHistory }
-    });
-
-    if (error) {
-      console.error('Error calling diagnosis-chat:', error);
-      return 'I apologize, but I encountered an error. Please try again.';
+    const response = await getChatResponseFromGemini(prompt);
+    // Ensure we return clean text, not JSON
+    if (response.includes('"response":') || response.includes('{') || response.includes('}')) {
+      try {
+        const parsed = JSON.parse(response);
+        return parsed.response || parsed.content || response;
+      } catch {
+        return response.replace(/[{}"\[\]]/g, '').replace(/response:|content:/g, '').trim();
+      }
     }
-
-    return data?.reply || 'I apologize, but I couldn\'t generate a response.';
+    return response;
   } catch (error) {
     console.error('Error in chat about diagnosis:', error);
     return 'I apologize, but I encountered an error. Please try rephrasing your question, or consider consulting with a healthcare professional for personalized medical advice.';

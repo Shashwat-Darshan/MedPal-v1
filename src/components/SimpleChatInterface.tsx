@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Send, Bot, User, History, Clock, Brain } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { getChatResponseFromGemini } from '@/services/geminiService';
 
 interface Message {
   id: string;
@@ -95,16 +95,12 @@ const SimpleChatInterface: React.FC<SimpleChatInterfaceProps> = ({ onHistoryCont
         .map(msg => `${msg.type === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
         .join('\n');
 
-      const { data, error } = await supabase.functions.invoke('health-chat', {
-        body: { message: input.trim(), context: contextPrompt }
-      });
-
-      if (error) throw error;
+      const response = await getChatResponseFromGemini(contextPrompt);
       
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
-        content: data?.reply || "I apologize, but I couldn't generate a response.",
+        content: response,
         timestamp: new Date()
       };
 
